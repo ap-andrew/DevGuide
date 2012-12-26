@@ -1,0 +1,199 @@
+<p>[toc]</p>
+<p>In the previous quick start, [node:3971], you learned how to write and execute simple JavaScript in an API flow. You can also use the Apigee API platform to create a standalone composite service by attaching a entire JavaScript app to an API facade, using the API Platform as a managed container for your code.</p>
+<p>In this quick start, you create a JavaScript app that calls two third-party APIs and returns a custom response. Unlike other API facades,&nbsp;the API facade that you create here does not define a target endpoint. Instead, the JavaScript app that runs in the API facade functions as an HTTP client, making two sequential API calls before returning a response to the client app.</p>
+<p>If you have been following the Apigee Platform&nbsp;<a href="/docs/api/quick-starts-index">quick starts</a>, it's a good idea to clean up the Simple Proxy by deleting all policies under&nbsp;<code>apiproxy/policies</code>, and to delete any flows defined in your proxy endpoint configuration file&nbsp;<code>apiproxy/proxies/default.xml</code></p>
+<p>In this quick start, you create a composite service (also known as a 'mashup') by writing a Java app written to the [node:3976].</p>
+<p>The composite service consumes two public APIs:</p>
+<ul>
+	<li>The Google Geocoding API</li>
+	<li>The Google Elevation API</li>
+</ul>
+<p>From the client app's point of view, the composite service returns a JSON response that includes the geocoded location for the center of the postal code, combined with the elevation at that location.</p>
+<p>The composite service also makes you an API provider--your service exposes its own API, which takes two query parameters:</p>
+<ol>
+	<li>postalcode: A postal code valid in the country specified</li>
+	<li>country: A two-letter country code</li>
+</ol>
+<p>The steps involved in attaching and deploying the JavaScript are the same as those covered in [node:3971].</p>
+<h2>Step 1: Create a JavaScript resource</h2>
+<p>The focus of this quick start is the JavaScript itself. In effect, you will write a self-contained JavaScript app that you then attach to the API proxy flow. An interesting aspect of this JavaScript is the way that it handles all HTTP calls itself (instead of relying on the target endpoint to act as the HTTP client).</p>
+<p>Under <code>apiproxy/resources/jsc</code>, create a file called <code>MashItUp.js</code>. The content of that JavaScript is the code that you walk through here:</p>
+<h3>Initialize any responses</h3>
+<div id="well">
+	<pre>response.content = '';
+response.headers['Content-Type'] = 'application/json';
+
+try {
+   if ((request.queryParams.postalcode == undefined) ||
+       (request.queryParams.country == undefined)) {
+     throw '"postalcode" and "country" query parameters are required';
+   }
+</pre>
+</div>
+<h4>Construct a URL and call the geocoding API</h4>
+<div id="well">
+	<pre>   var geocoding = httpClient.get(
+        'http://maps.googleapis.com/maps/api/geocode/json?address=' +
+        request.queryParams.postalcode +
+        '&amp;region=' + request.queryParams.country +
+        '&amp;sensor=false');
+    geocoding.waitForComplete();
+    if (!geocoding.isSuccess()) {
+	throw 'Error contacting geocoding web service';
+    }</pre>
+</div>
+<h4>Parse the JSON response</h4>
+<p>The JSON response is parsed into a JavaScript object</p>
+<div id="well">
+	<pre>    geocodeResponse = geocoding.getResponse().content.asJSON;
+    if (geocodeResponse.status != 'OK') {
+	throw 'Error returned from geocoding web service: ' + geocodeResponse.status;
+    }</pre>
+</div>
+<h4>Retrieve latitude and longitude from the response</h4>
+<p>Populate two variables with the latitude and longitude returned by the geocoding service.</p>
+<div id="well">
+	<pre>    var lat = geocodeResponse.results[0].geometry.location.lat;
+    var lng = geocodeResponse.results[0].geometry.location.lng;</pre>
+</div>
+<h4>Construct a URL and call the elevation API</h4>
+<p>Using the latitude and longitude returned from the geocoding service, construct a request to the elevation API.</p>
+<div id="well">
+	<pre>    var altitude = httpClient.get(
+        'http://maps.googleapis.com/maps/api/elevation/json?sensor=false&amp;locations=' +
+            lat + ',' + lng);
+    altitude.waitForComplete();
+    if (!altitude.isSuccess()) {
+	throw 'Error contacting altitude web service';
+    }
+    altitudeResponse = altitude.getResponse().content.asJSON;
+    if (altitudeResponse.status != 'OK') {
+	throw 'Error returned from altitude web service: ' + altitudeResponse.status;
+    }
+</pre>
+	<h4><span style="font-family:arial,helvetica,sans-serif;">Retrieve elevation from the response</span></h4>
+	<p>Using JavaScript, you can populate a variable with the elevation returned by the elevation service.</p>
+	<div id="well">
+		<pre>var alt = altitudeResponse.results[0].elevation;</pre>
+	</div>
+	<h4>Assemble the parts of the response as a JavaScript object</h4>
+	<div id="well">
+		<pre>    var location = new Object();
+    location.latitude = lat;
+    location.longitude = lng;
+
+    var altitude = new Object();
+    altitude.meters = alt;
+    altitude.feet = alt * 3.2808399;</pre>
+	</div>
+	<h4>Assemble response as a JSON object</h4>
+	<div id="well">
+		<pre>    var body = response.content.asJSON;
+    body.country = request.queryParams.country;
+    body.postalcode = request.queryParams.postalcode;
+    body.elevation = location;
+    body.altitude = altitude;
+} </pre>
+	</div>
+	<h4>Handle any errors</h4>
+	<div id="well">
+		<pre>catch (err) {response.content.asJSON.error = err;
+}</pre>
+	</div>
+	<h2>Step 2: Create a JavaScript policy</h2>
+	<p>Under <code>apiproxy/policies</code>, create a policy called <code>MashItUp.xml</code> of type JavaScript that references the JavaScript resource.</p>
+	<div id="well">
+		<pre>&lt;JavaScript name="MashItUp" timeout="10000"&gt;
+  &lt;ResourceURL&gt;jsc://MashItUp.js&lt;/ResourceURL&gt;
+&lt;/JavaScript&gt;</pre>
+	</div>
+	<h2>Step 3: Attach the JavaScript policy to the proxy endpoint</h2>
+	<p>Note that the target endpoint definition is not invoked by the route rule. For this reason, the processing pipeline is agnostic about the existence of the <code>apiproxy/targets/default.xml</code> configuration that you have seen in other tutorials. The JavaScript app itself makes all of the necessary API calls.</p>
+	<div id="well">
+		<pre>&lt;ProxyEndpoint name="default"&gt;
+  &lt;Flows&gt;
+    &lt;Flow name="default"&gt;
+      &lt;Request/&gt;
+      &lt;Response&gt;
+	&lt;!-- Call the JavaScript that invokes both APIs and returns a response --&gt;
+	&lt;Step&gt;&lt;Name&gt;MashItUp&lt;/Name&gt;&lt;/Step&gt;
+      &lt;/Response&gt;
+    &lt;/Flow&gt;
+  &lt;/Flows&gt;
+
+  &lt;HTTPProxyConnection&gt;
+    &lt;!-- Add a base path to the proxy to distinguish from others in the environment --&gt;
+    &lt;BasePath&gt;/weather&lt;/BasePath&gt;
+    &lt;VirtualHost&gt;default&lt;/VirtualHost&gt;
+  &lt;/HTTPProxyConnection&gt;
+  &lt;RouteRule name="default"&gt;
+    &lt;!-- No route. The proxy will return the request and not call a backend service. --&gt;
+  &lt;/RouteRule&gt;
+&lt;/ProxyEndpoint&gt;</pre>
+	</div>
+	<h2>Step 4: Import and deploy the API proxy</h2>
+	<p>Run the deploy tool in the base directory of the API platform samples distribution, substituting your username and password for <code>myname:mypass</code>, and your Apigee organization for <code>myorg</code>.</p>
+	<div id="well">
+		<pre>$ python tools/deploy.py -n weatherapi -u myname:mypass -h
+https://api.enterprise.apigee.com -o myorg -e test -p / -d
+simpleProxy
+Writing simpleProxy/apiproxy/weatherapi.xml to apiproxy/weatherapi.xml
+Writing simpleProxy/apiproxy/policies/MashItUp.xml to
+apiproxy/policies/MashItUp.xml
+Writing simpleProxy/apiproxy/proxies/default.xml to apiproxy/proxies/default.xml
+Writing simpleProxy/apiproxy/resources/jsc/MashItUp.js to
+apiproxy/resources/jsc/MashItUp.js
+Writing simpleProxy/apiproxy/targets/default.xml to apiproxy/targets/default.xml
+Imported new proxy version 28
+Undeploying revision 1 in same environment and path:
+Environment: test
+  Revision: 2 BasePath = /
+  State: deployed</pre>
+	</div>
+	<h2>Step 5: Test the JavaScript</h2>
+	<div id="well">
+		<pre>$ curl http://myorg-test.apigee.net/weather?"postalcode=94306&amp;country=us"</pre>
+	</div>
+	<p>Sample Response</p>
+	<div id="well">
+		<pre>{"country":us,"postalcode":29407,"elevation":{"latitude":32.8017595,"longitude":-79.99759159999999},"altitude":{"meters":0.758330225944519,"feet":2.4879600626547935}}</pre>
+	</div>
+	<h2>Step 6: Create an API console for your new API</h2>
+	<p>You now know how to write and deploy full-fledged JavaScript apps that do most of the work involved in calling remote APIs, parsing results, and creating rich, tailored response messages for client apps.</p>
+	<p>You can now [node:282] to show other developers how to use the API you have created. To do so you first create a WADL file that describes the API. A sample WADL file is provided below. This WADL file contains Apigee-specific extensions that control how the console displays your API. Copy the XML below and paste it into a file called <code>elevation.wadl.xml</code>.</p>
+	<div id="well">
+		<pre>&lt;application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             xmlns:apigee="http://api.apigee.com/wadl/2010/07/"
+             xmlns="http://wadl.dev.java.net/2009/02"
+             xsi:schemaLocation="http://wadl.dev.java.net/2009/02 \
+                                 http://apigee.com/schemas/wadl-schema.xsd \
+                                 http://api.apigee.com/wadl/2010/07/ \
+                                 http://apigee.com/schemas/apigee-wadl-extensions.xsd"&gt;
+    &lt;resources base="http://{myorg}-test.apigee.net/v1"&gt;
+		&lt;resource path="weather"&gt;
+		    &lt;method id="getGeocodedElevation" name="GET" apigee:displayName="Get Geocoded Elevation"&gt;
+		        &lt;apigee:tags&gt;
+		            &lt;apigee:tag primary="true"&gt;Weather&lt;/apigee:tag&gt;
+		        &lt;/apigee:tags&gt;
+		        &lt;apigee:authentication required="false"/&gt;
+		        &lt;apigee:example url="weather"/&gt;
+		        &lt;doc apigee:url="http://apigee.com/docs/api/content/building-composite-service-2-JavaScript-app"&gt;Return geocoded elevation data based on postal code and country code.&lt;/doc&gt;
+		        &lt;request&gt;
+		            &lt;param name="postalcode" type="xsd:string" style="query" default=""/&gt;
+		            &lt;param name="country" type="xsd:string" style="query" default=""/&gt;
+		        &lt;/request&gt;
+		    &lt;/method&gt;
+		&lt;/resource&gt;
+    &lt;/resources&gt;
+&lt;/application&gt;</pre>
+	</div>
+	<p>Next, you create an API Console and upload this file using the <a href="https://apigee.com/togo">Console To-Go</a> tool. (To do this you need to set up a free Console account.)</p>
+	<p>After you generate the API Console, you will be able to make requests to your composite service, and see the requests.</p>
+	<h2>Next Steps</h2>
+	<p>If you run into problems or have questions, post to the <a href="http://support.apigee.com">Developer Forum</a>.</p>
+	<p>Also, remember that you can use all of the tools available to you in the <a href="http://enterprise.apigee.com">Apigee UI</a> to help you craft your API facade.</p>
+	<p><a href="/docs/api/quick-starts-index">See all Quick starts</a></p>
+	<p>Next: [node:428]</p>
+</div>
+<p>&nbsp;</p>

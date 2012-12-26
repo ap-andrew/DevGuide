@@ -1,0 +1,256 @@
+<p>[toc]</p>
+<p>Now that apps are able to consume your API, you can analyze the data collected by the API Platform to explore how the API is being used and how it is performing.</p>
+<p>This quick start is based on the <a href="http://itunes.apple.com/us/app/apigee-api-dashboard-app/id548752481">Apigee API Dashboard App</a>.</p>
+<h2>Building a Report: Dimensions, Functions, and Metrics</h2>
+<p>You'll start by building a report that shows request message counts (that is, total throughput) for all APIs for a day. Note in this API call, you'll define three key elements:</p>
+<ul>
+	<li>Dimension: The dimension selected from the list of dimensions recorded by Apigee.</li>
+	<li>Metrics: The metric for the chosen dimension.</li>
+	<li>Time range: Timestamp is in Unix time (seconds since January 1, 1970, Midnight GMT.)</li>
+</ul>
+<p>A "dimension" is the entity for which Apigee collects metrics. The <em>dimension </em>that is set for this report is <em>apis</em>. There is long list of dimensions that can be used in your reports. As a developer, you may want to use the following dimenions to get insights into how your APIs are being consumed.</p>
+<ul>
+	<li>client_ip: The IP address of the app making the request to your API</li>
+	<li>developer: The developer of the app making the request to your API</li>
+	<li>developer_app: The name of the app making the request to your API</li>
+	<li>access_token: The app end user's OAuth access token</li>
+</ul>
+<p>The function run on the metric in this example is 'sum'. The other functions you can use are sum, average, min, and max.&nbsp;</p>
+<p>The metric in this request is 'message_count'.</p>
+<p>Other metrics you can use are:</p>
+<ul>
+	<li>target_response_time: How long it takes the backend service to respond</li>
+	<li>response_status_code: The status code of the response, which is good for measuring specific errors</li>
+	<li>message_count: Total number of messages</li>
+	<li>request_size: Size if the request message</li>
+	<li>response_processing_latency: Duration of processing by the Apigee response pipeline</li>
+	<li>response_size: Size of the response message</li>
+	<li>request_processing_latency: Duratio nof processing by the Apigee request pipeline.</li>
+	<li>total_response_time: Overall duration of processing for Apigee plus the backend service.</li>
+	<li>is_error: Defines a message as an error</li>
+</ul>
+<p>This example collects a sum of message count for all APIs. The report provides a snapshot of the throughput to all APIs in the environment specified (in this case, 'test'):</p>
+<div id="well">
+	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{myorg}/environments/test/stats/apis?'select=sum(message_count)&amp;timeRange=7/24/2012%2000:00~8/25/2012%2000:00&amp;timeUnit=day'</pre>
+</div>
+<p>Sample Response</p>
+<div id="well">
+	<pre>{
+  "environments" : [ {
+    "dimensions" : [ {
+      "metrics" : [ {
+        "name" : "sum(message_count)",
+        "values" : [ {
+          "timestamp" : 1343088000000,
+          "value" : "5.0"
+        }, {
+          "timestamp" : 1343174400000,
+          "value" : "0"
+        } ]
+      } ],
+      "name" : "myAPI"
+    }, {
+      "metrics" : [ {
+        "name" : "sum(message_count)",
+        "values" : [ {
+          "timestamp" : 1343088000000,
+          "value" : "0"
+        }, {
+          "timestamp" : 1343174400000,
+          "value" : "2.0"
+        } ]
+      } ],
+      "name" : "weatherAPI"
+    } ],
+    "name" : "test"
+  } ],
+  "metaData" : {
+    "samplingRate" : "100"
+  }
+}</pre>
+</div>
+<p>You can select other dimensions to build reports on. For example, you can specify the 'target_url' dimensions to retrieve metrics on backend services. The following report shows the total throughput to target URLs for the specified time interval:</p>
+<div id="well">
+	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{myorg}/environments/test/stats/target_url?'select=sum(message_count)&amp;timeRange=7/24/2012%2000:00~8/25/2012%2000:00&amp;timeUnit=day''</pre>
+</div>
+<div id="well">
+	<pre>{
+  "environments" : [ {
+    "dimensions" : [ {
+      "metrics" : [ {
+        "name" : "sum(message_count)",
+        "values" : [ {
+          "timestamp" : 1344816000000,
+          "value" : "1.0"
+        }, {
+          "timestamp" : 1345075200000,
+          "value" : "8.0"
+        }, {
+          "timestamp" : 1345161600000,
+          "value" : "8.0"
+        } ]
+      } ],
+      "name" : "https://api.partner.com"
+    }, {
+      "metrics" : [ {
+        "name" : "sum(message_count)",
+        "values" : [ {
+          "timestamp" : 1344816000000,
+          "value" : "3.0"
+        }, {
+          "timestamp" : 1345075200000,
+          "value" : "0"
+        }, {
+          "timestamp" : 1345161600000,
+          "value" : "3.0"
+        } ]
+      } ],
+      "name" : "http://weather.yahooapis.com/forecastrss?w=12797282&amp;"
+    } ],
+    "name" : "test"
+  } ],
+  "metaData" : {
+    "samplingRate" : "100"
+  }
+}</pre>
+</div>
+<h2>Get a count of error messages returned by target URLs for the past week</h2>
+<p>For this report, you'll specify a dimension of <em>target_url,</em> and the metric <em>count </em>for the<em> is_error</em> variable. This variation on the report will show how many errors were returned by target URLs:</p>
+<div id="well">
+	<pre>$ curl -u myname:mypass -H "Content-type:application/octet-stream" 'https://api.eterprise.apigee.com/v1/o/{myorg}/environments/test/stats/target_url?select=count(is_error)&amp;timeRange=8/08/2012%2000:00~8/15/2012%2000:00&amp;timeUnit=week'</pre>
+</div>
+<div id="well">
+	<pre>{
+  "environments" : [ {
+    "dimensions" : [ {
+      "metrics" : [ {
+        "name" : "count(is_error)",
+        "values" : [ {
+          "timestamp" : 1344211200000,
+          "value" : "44.0"
+        }, {
+          "timestamp" : 1344816000000,
+          "value" : "1.0"
+        } ]
+      } ],
+      "name" : "https://api.company.com"
+    }, {
+      "metrics" : [ {
+        "name" : "count(is_error)",
+        "values" : [ {
+          "timestamp" : 1344211200000,
+          "value" : "23.0"
+        }, {
+          "timestamp" : 1344816000000,
+          "value" : "3.0"
+        } ]
+      } ],
+      "name" : "http://weather.yahooapis.com/forecastrss?w=12797282&amp;"
+    }, {
+      "metrics" : [ {
+        "name" : "count(is_error)",
+        "values" : [ {
+          "timestamp" : 1344211200000,
+          "value" : "0"
+        }, {
+          "timestamp" : 1344816000000,
+          "value" : "12.0"
+        } ]
+      } ],
+      "name" : "http://weather.yahooapis.com/forecastrss?w=12797282&amp;"
+    } ],
+    "name" : "test"
+  } ],
+  "metaData" : {
+    "samplingRate" : "100"
+  }</pre>
+</div>
+<h2>Get the Top Target URL by Error Rate for the Week</h2>
+<p>The 'topk' (meaning 'top k' entities) enables you to build reports for the top entities of interest.&nbsp;For example, you may want to find which of your target URLs was the most error prone over the last week.&nbsp;You do this by adding the 'topk' parameter with a value of 1.</p>
+<p>For example you may be interested to know who your top developer are, measured by throughput, what your worst (i.e., 'top slowest') target APIs are by latency:</p>
+<div id="well">
+	<pre>$ curl -u myname:mypass -H "Content-type:application/octet-stream" 'https://api.eterprise.apigee.com/v1/o/apigee-cs/environments/test/stats/target_url?select=count(is_error)&amp;timeRange=8/08/2012%2000:00~8/15/2012%2000:00&amp;timeUnit=week&amp;sortby=count(is_error)&amp;topk=1'</pre>
+</div>
+<div id="well">
+	<pre>{
+  "environments" : [ {
+    "dimensions" : [ {
+      "metrics" : [ {
+        "name" : "count(is_error)",
+        "values" : [ {
+          "timestamp" : 1344816000000,
+          "value" : "1.0"
+        }, {
+          "timestamp" : 1344211200000,
+          "value" : "44.0"
+        } ]
+      } ],
+      "name" : "https://api.company.com"
+    } ],
+    "name" : "test"
+  } ],
+  "metaData" : {
+    "samplingRate" : "100"
+  }
+}</pre>
+</div>
+<p>We can see that the buggiest of the target URLs is at http://api.company.com.</p>
+<h2>Get Statistics for top APIs</h2>
+<p>In this example, you can view the top ranked API, defined by highest throughput in the last week:</p>
+<div id="well">
+	<pre>$ curl -u myname:mypass 'https://api.enterprise.apigee.com/v1/o/{myorg}/environments/test/stats/apis?select=message_count&amp;timeRange=7/24/2012%2000:00~8/25/2012%2000:00&amp;timeUnit=week&amp;sortby=message_count&amp;sort=DESC&amp;topk=1'</pre>
+</div>
+<p>Sample Response</p>
+<div id="well">
+	<pre>{
+  "environments" : [ {
+    "dimensions" : [ {
+      "metrics" : [ {
+        "name" : "message_count",
+        "values" : [ {
+          "timestamp" : 1345420800000,
+          "value" : "14.0"
+        }, {
+          "timestamp" : 1344816000000,
+          "value" : "8.0"
+        }, {
+          "timestamp" : 1344211200000,
+          "value" : "111.0"
+        }, {
+          "timestamp" : 1343606400000,
+          "value" : "405.0"
+        } ]
+      } ],
+      "name" : "weatherAPI"
+    } ],
+    "name" : "test"
+  } ],
+  "metaData" : {
+  }
+}</pre>
+</div>
+<h2>Summary: Analytics Calls Made by the Apigee API Dashboard App</h2>
+<h4>All API Traffic</h4>
+<div id="well">
+	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/organizations/{myorg}/environments/test/stats/?select=message_count&amp;timeRange=7/14/2012%2013:00~8/13/2012%2013:00&amp;sort=ASC&amp;sortby=message_count&amp;timeUnit=hour</pre>
+</div>
+<h4>Top API Movers</h4>
+<div id="well">
+	<pre>$ curl -u myname:mypass 'https://api.enterprise.apigee.com/v1/organizations/{myorg}/environments/test/stats/apis?select=message_count,error_count,&amp;timeRange=7/14/2012%2013:00~8/13/2012%2013:00&amp;sort=ASC&amp;topk=5&amp;sortby=message_count&amp;timeUnit=hour'</pre>
+</div>
+<h4>Top API Products</h4>
+<div id="well">
+	<pre>$ curl -u myname:mypass 'https://api.enterprise.apigee.com/v1/organizations/{myorg}/environments/test/stats/apiproducts?select=message_count,app_count,developer_count&amp;timeRange=7/14/2012%2013:00~8/13/2012%2013:00&amp;sort=ASC&amp;topk=5&amp;sortby=app_count&amp;timeUnit=hour'</pre>
+</div>
+<h4>Top Ranked Apps</h4>
+<div id="well">
+	<pre>$ curl -u myname:mypass 'https://api.enterprise.apigee.com/v1/organizations/{myorg}/environments/test/stats/apps?select=message_count,error_count,user_count&amp;timeRange=7/14/2012%2013:00~8/13/2012%2013:00&amp;sort=ASC&amp;topk=5&amp;sortby=user_count&amp;timeUnit=hour''</pre>
+</div>
+<h4>Top Ranked Developers</h4>
+<div id="well">
+	<pre>$ curl -u myname:mypass 'https://api.enterprise.apigee.com/v1/organizations/{myorg}/environments/test/stats/devs?select=message_count,error_count,user_count&amp;timeRange=7/14/2012%2013:00~8/13/2012%2013:00&amp;sort=ASC&amp;topk=5&amp;sortby=user_count&amp;timeUnit=hour'</pre>
+	<h2>Next steps</h2>
+	<p>For issues and questions, post to the <a href="http://support.apigee.com">Developer Forum</a>.</p>
+	<p>Next: [node:4554]</p>
+	<p><a href="/docs/api/quick-starts-index">All Quick starts</a></p>
+</div>

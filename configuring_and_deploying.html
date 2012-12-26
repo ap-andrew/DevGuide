@@ -1,0 +1,127 @@
+<p>[toc]</p>
+<p>This quick start shows you how to use the Apigee API Platform to create and to interact with API facades.&nbsp;You will create the most basic API facade possible--one configured to receive requests and forward them to the Yahoo Weather API, and then to return the response, unmodified, to the requesting app.</p>
+<p>Apigee API facades are implemented in API proxies, which are bundles of configuration files and (optionally) code.&nbsp;This quick start illustrates the basic Apigee programming model by showing you how to work with configuration files locally on your machine.&nbsp;Apigee enables you develop API proxies locally and host them remotely on the Apigee API Platform. This gives you the flexibility to do advanced configuration and programming on your local machine using your favorite code editor and development tools. Over time, you can optimize your workflow locally and in the Apigee UI.&nbsp;</p>
+<p>To support local development of API facades, Apigee provides an open-source tool written in Python to help you simplify and manage the process of packaging and deploying APIs from your local machine to Apigee. (The [node:2047]&nbsp;provides information on complete set up information.)</p>
+<h2>Step 1: Submit request to Weather API</h2>
+<p>First, submit a request to the Yahoo weather API. &nbsp;This will ensure that your HTTP client and the API (in the case, the Yahoo Weather API) are both running as expected.</p>
+<div class="well">$ curl http://weather.yahooapis.com/forecastrss?w=12797282</div>
+<p>Sample Response</p>
+<div id="well">
+	<pre>&lt;title&gt;Yahoo! Weather - Palo Alto, CA&lt;/title&gt;
+&lt;link&gt;http://us.rd.yahoo.com/dailynews/rss/weather/Palo_Alto__CA/*http://weather.yahoo.com/forecast/USCA1093_f.html&lt;/link&gt;&lt;description&gt;Yahoo! Weather for Palo Alto, CA&lt;/description&gt;
+&lt;language&gt;en-us&lt;/language&gt;
+&lt;lastBuildDate&gt;Wed, 08 Aug 2012 9:47 am PDT&lt;/lastBuildDate&gt;
+&lt;ttl&gt;60&lt;/ttl&gt;
+&lt;yweather:location city="Palo Alto" region="CA"   country="United States"/&gt;
+&lt;yweather:units temperature="F" distance="mi" pressure="in" speed="mph"/&gt;
+&lt;yweather:wind chill="66"   direction="10"   speed="8" /&gt;
+&lt;yweather:atmosphere humidity="73"  visibility=""  pressure="30.02"  rising="0" /&gt;
+&lt;yweather:astronomy sunrise="6:18 am"   sunset="8:08 pm"/&gt;</pre>
+</div>
+<p>Ideally, you will see something like the sample response above. If you get any errors it's a good time to debug curl, your network connection, or Yahoo.</p>
+<p>Once you do get the proper response from Yahoo, move on to the next step.</p>
+<h2>Step 2: Create API proxy configuration files</h2>
+<p>For this quick start, a sample API proxy is included in the API Platform samples available on <a href="https://github.com/apigee/api-platform-samples">Github</a>.</p>
+<p>To download the samples, run:</p>
+<div id="well">
+	<pre>$ git clone https://github.com/apigee/api-platform-samples.git</pre>
+</div>
+<div id="well">
+	<pre>cd api-platform-samples</pre>
+</div>
+<div id="well">
+	<pre>cd simpleProxy</pre>
+</div>
+<p>Alternatively, you can create your own files.&nbsp;</p>
+<h3><a class="jumplink" name="structure"></a>API proxy basic file structure</h3>
+<p>The sample API proxy files can be found in&nbsp;api-platform-samples under <code>simpleProxy/apiproxy</code>.</p>
+<p>The sample API proxy defines an empty processing pipeline with two endpoints:</p>
+<ul>
+	<li>proxy (or inbound) endpoint configuration</li>
+	<li>target (or outbound) endpoint configuration</li>
+</ul>
+<pre>weatherapi.xml
+/proxies
+-default.xml
+/targets
+-default.xml</pre>
+<p>These are the same files that would be created by the Apigee UI when you "Add an API" with the UI.&nbsp;</p>
+<p>(A typical API proxy has two other directories, <span style="font-family:courier new,courier,monospace;">/policies</span> and<span style="font-family:courier new,courier,monospace;"> /resources</span>, which you will create in [node:4133] and [node:3971])</p>
+<p>API proxies created by the Apigee UI always have proxy and target endpoints named <code>default</code>. You can give proxy and target endpoints any name you want. For compatibility with the UI, it's a good idea to name each endpoint <span style="font-family:courier new,courier,monospace;">default</span>.</p>
+<h3><a class="jumplink" name="proxy_file"></a>API proxy file contents</h3>
+<p>An API on the Apigee API Platform is defined by an <em>API proxy configuration</em>.</p>
+<p>At the top-level of an API proxy configuration, you find the API proxy base configuration file.&nbsp;</p>
+<h3>Base Configuration File</h3>
+<h3><span style="font-family:courier new,courier,monospace;">weatherapi.xml</span></h3>
+<pre>&lt;APIProxy name="weatherapi"&gt;
+&lt;/APIProxy&gt;</pre>
+<p>This file defines the most basic API proxy possible:</p>
+<p><strong>APIProxy Name:</strong> The name you give this API</p>
+<h3>Proxy Endpoint Configuration</h3>
+<h3><span style="font-family:courier new,courier,monospace;">/proxies/default.xml</span></h3>
+<p>The proxy endpoint configuration defines the inbound interface for your API facade. The required configuration elements in a basic facade are:</p>
+<p><strong>Base path: </strong>Used to route requests to this API proxy endpoint, based on the URL of the inbound request. The base path defines the URL that needs to invoked to call this API proxy. Messages with this base path appended to the URL defined in the virtual host are routed to this API facade.</p>
+<p><strong>Virtual Host: </strong>A setting that defines URL connections for an environment. A virtual host named 'default' is available in all Apigee trial organizations. Your organization may also have a virtual host named 'secure', which provides SSL configuration.</p>
+<p><font face="arial, helvetica, sans-serif"><strong>Route rule: </strong>A pointer to the named target definition (in this case, 'default') to which requests are passed.</font></p>
+<pre>&lt;ProxyEndpoint name="default"&gt;
+&nbsp; &nbsp; &lt;HTTPProxyConnection&gt;
+&nbsp; &nbsp; &nbsp; &nbsp; &lt;BasePath&gt;/weather&lt;/BasePath&gt;
+&nbsp; &nbsp; &nbsp; &nbsp; &lt;VirtualHost&gt;default&lt;/VirtualHost&gt;
+&nbsp; &nbsp; &lt;/HTTPProxyConnection&gt;
+&nbsp; &lt;RouteRule name="default"&gt;
+&nbsp; &nbsp; &lt;TargetEndpoint&gt;default&lt;/TargetEndpoint&gt;
+&nbsp; &lt;/RouteRule&gt;
+&lt;/ProxyEndpoint&gt;</pre>
+<h3>Target Endpoint Configuration</h3>
+<h3><span style="font-family:courier new,courier,monospace;">/targets/default.xml</span></h3>
+<p><span style="font-family:arial,helvetica,sans-serif;">The target endpoint defines the outbound connection from the Apigee platform to the backend service (in this case the Yahoo weather API).</span></p>
+<p><span style="font-family: arial, helvetica, sans-serif; ">The most important configuration element in a basic facade is:</span></p>
+<p><span style="font-family: arial, helvetica, sans-serif; "><strong>URL:</strong> The URL defined in the HTTP connection for the target defines where requests are forwarded.&nbsp;</span><span style="font-family:arial,helvetica,sans-serif;">The target endpoint definition below is configured to forward requests to&nbsp;</span><span style="font-family:courier new,courier,monospace;">http://weather.yahooapis.com.</span></p>
+<pre>&lt;TargetEndpoint name="default"&gt;
+&nbsp; &nbsp; &lt;HTTPTargetConnection&gt;
+&nbsp; &nbsp; &nbsp; &nbsp; &lt;URL&gt;http://weather.yahooapis.com&lt;/URL&gt;
+&nbsp; &nbsp; &lt;/HTTPTargetConnection&gt;
+&lt;/TargetEndpoint&gt;</pre>
+<p>Advanced configuration of target endpoints support load balancing as well as &nbsp;outbound authentication and authorization to the backend service. For example, see [node:4562] and [node:4572].</p>
+<p>(A typical API proxy has two other directories,&nbsp;<span style="font-family: 'courier new', courier, monospace;">/policies</span>&nbsp;and<span style="font-family: 'courier new', courier, monospace;">&nbsp;/resources</span>, which you will create in [node:4133] and [node:3971])</p>
+<h2><a class="jumplink" name="local_dev"></a>Step 3:&nbsp;Set up a local development environment</h2>
+<p>You may find it helpful to import this file structure into your favorite editor to construct a project that manages the files for you. You might also wish to store the files in a source code repository.</p>
+<h2><a class="jumplink" name="deploy_tool"></a>Step 4: Import and deploy the API using&nbsp;the deploy tool</h2>
+<p>Now you use Apigee’s Python tool to import (upload) and deploy your API in one simple process.</p>
+<p>In the <span style="font-family:courier new,courier,monospace;">api-platform-samples package</span>, the deploy&nbsp;tool, <code>deploy.py</code>, is available under <code>/tools</code></p>
+<p>The command below imports an API proxy called 'weatherapi' to the 'test' environment in the organization you specify in <code>myorg</code>.</p>
+<p>Substitute your username, password, and Apigee API Platform organization for <code>myname:mypass</code> and <code>myorg</code>. (These are the credentials used to login in to your account on <a href="http://enterprise.apigee.com">enterprise.apigee.com</a>.)</p>
+<p>The deploy tool must be run from the base directory in the distribution. You provide a pointer to the directory that contains the <code>/apiproxy</code> directory, in this case <code>simpleProxy</code></p>
+<p>For example, from the base directory of <code>api-platform-samples</code>, run:</p>
+<pre>$ python tools/deploy.py -n weatherapi -u myname:mypass -o myorg -e test -p / -d simpleProxy</pre>
+<p>This single action zips your files, pushes them to your organization on Apigee, and deploys them to the specified environment, in this case 'test'.</p>
+<p>On success you see:</p>
+<pre>Writing ./simpleProxy/apiproxy/weatherapi.xml to apiproxy/weatherapi.xml
+Writing ./simpleProxy/apiproxy/proxies/default.xml to apiproxy/proxies/default.xml
+Writing ./simpleProxy/apiproxy/targets/default.xml to apiproxy/targets/default.xml
+Imported new proxy version 1
+Environment: test
+  Revision: 1 BasePath = /
+  State: deployed</pre>
+<p>The tool has zipped up your files, imported the package to the Apigee Platform, and deployed to the test environment.</p>
+<p>Your API facade is ready to be invoked.</p>
+<h2><a class="jumplink" name="submit"></a>Step 5:&nbsp;Submit requests to your API facade</h2>
+<p>The proxied URL for your API is defined by the environment where you deploy your API proxy. The proxied URL consists of:</p>
+<ul>
+	<li>Your organization name (<span style="font-family:courier new,courier,monospace;">{myorg}</span> in the deploy tool above)</li>
+	<li>The environment name (in this example, 'test')</li>
+	<li>The Apigee base path&nbsp;<span style="font-family:courier new,courier,monospace;">(apigee.net</span>, NOT <span style="font-family:courier new,courier,monospace;">api.enterprise.apigee.com</span>)</li>
+	<li>The base path you configure for the API (in our example, <span style="font-family:courier new,courier,monospace;">/weather</span>)</li>
+</ul>
+<p>The URL for your API facade in this example is:</p>
+<pre>http://{myorg}-test.apigee.net/weather</pre>
+<p>For example, if your organization name is 'apifactory', then your API facade address is:</p>
+<pre>http://apifactory-test.apigee.net/weather</pre>
+<p>To invoke your API, submit requests to:</p>
+<pre>$ curl http://{myorg}-test.apigee.net/weather/forecastrss?w=12797282</pre>
+<p>You should receive exactly the same response that you did when you submitted a request to the unproxied Yahoo weather API. A message router on the&nbsp;Apigee API Platform receives your request, and then routes the request to the correct &nbsp;API facade, based on a basic pattern match consisting of the organization name, the environment, and the base path defined in the proxy endpoint (<span style="font-family: 'courier new', courier, monospace;">/weather</span>).</p>
+<p>The remaining path (the ''path suffix') /<span style="font-family:courier new,courier,monospace;">forecastrss?w=12797282</span>&nbsp;is appended to the URL defined in the target endpoint, <span style="font-family:courier new,courier,monospace;">http://weather.yahooapis.com.&nbsp;</span>This results in an outbound request from the API Platform to&nbsp;<span style="font-family: 'courier new', courier, monospace;">http://weather.yahooapis.com</span>/<span style="font-family: 'courier new', courier, monospace;">forecastrss?w=12797282. <span style="font-family:arial,helvetica,sans-serif;">The API</span></span>&nbsp;Platform receives the response and returns the response to the client app (in this case, your curl client).</p>
+<p>If you do not receive a response from Yahoo weather, see [node:4536].</p>
+<p>If you have other issues or questions, please post them to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
+<h2>Next steps</h2>
+<p>[node:4133]</p>
