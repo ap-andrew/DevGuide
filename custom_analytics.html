@@ -4,7 +4,7 @@
 <h2>Step 1: Create policies</h2>
 <p>The Yahoo Weather API returns XML-formatted responses. For example, to get a weather forecast for Palo Alto:</p>
 <div id="well">
-	<pre>$ curl http://{myorg}-test.apigee.net/weather/forecastrss?w=12797282</pre>
+	<pre>$ curl http://{org_name}-test.apigee.net/weather/forecastrss?w=12797282</pre>
 </div>
 <p>The content within the response that you are interested in analyzing is probably the specific weather report data and forecast:</p>
 <div id="well">
@@ -13,13 +13,13 @@
 &lt;yweather:wind chill="48"   direction="0"   speed="6" /&gt;
 &lt;yweather:atmosphere humidity="82"  visibility=""  pressure="30.19"  rising="0" /&gt;
 &lt;yweather:astronomy sunrise="6:52 am"   sunset="4:54 pm"/&gt;
-. . .
+
 &lt;yweather:forecast day="Mon" date="19 Nov 2012" low="48" high="66" text="Partly Cloudy" code="30" /&gt;
 &lt;yweather:forecast day="Tue" date="20 Nov 2012" low="51" high="66" text="Partly Cloudy" code="30" /&gt;</pre>
 </div>
 <p>For another location:</p>
 <div id="well">
-	<pre>$ curl http://{myorg}-test.apigee.net/weather/forecastrss?w=2520841</pre>
+	<pre>$ curl http://{org_name}-test.apigee.net/weather/forecastrss?w=2520841</pre>
 </div>
 <div id="well">
 	<pre>&lt;yweather:location city="Williamsburg" region="NY"   country="United States"/&gt;
@@ -81,9 +81,9 @@
   &lt;/Statistics&gt;
 &lt;/StatisticsCollector&gt;</pre>
 </div>
-<h2>Step 2: Attach policies to the proxy response flow</h2>
-<p>Attach the policies to the proxy response flow. These policies are enforced on the outbound response message, before the response is returned to the calling client app.</p>
-<p>Populate the variables first, via the ParseWeatherReport policy, and then forward them to Analytics via the AnalyzeWeatherReport policy.</p>
+<h2>Attaching policies to the ProxyEndpoint response flow</h2>
+<p>Policies attached to the ProxyEndpoint response flow are enforced on outbound response messages, before the response is returned to the calling client app.</p>
+<p>The example below parses response, populates variables using the ParseWeatherReport policy, and then forwards those values to Apigee Analytics using the AnalyzeWeatherReport policy.</p>
 <div id="well">
 	<pre>&lt;ProxyEndpoint name="default"&gt;
 &lt;Flows&gt;
@@ -106,9 +106,9 @@
   &lt;/RouteRule&gt;
 &lt;/ProxyEndpoint&gt;</pre>
 </div>
-<h2>Step 3: Import and deploy</h2>
+<h2>Importing and deploying the API proxy</h2>
 <div id="well">
-	<pre>$ python tools/deploy.py -n weatherapi -u myname:mypass -h https://api.enterprise.apigee.com -o myorg -e test -p / -d simpleProxy</pre>
+	<pre>$ python tools/deploy.py -n weatherapi -u myname:mypass -o myorg -e test -p / -d simpleProxy</pre>
 </div>
 <div id="well">
 	<pre>Writing ./simpleProxy/apiproxy.zip to ./apiproxy.zip
@@ -122,29 +122,32 @@ Environment: test
   Revision: 4 BasePath = /
   State: deployed</pre>
 </div>
-<h2>Step 4: Submit requests to the Weather API for different locations</h2>
+<h2>Populating Analytics data for custom variables</h2>
+<p>Before reports can be be built against custom data, requests must be submitted to an API in order to populate analytics data for the custom variables defined in the policies.
+</p>
+<p>For example:</p>
 <p>Palo Alto:</p>
 <div id="well">
-	<pre>$ curl http://{myorg}-test.apigee.net/weather/forecastrss?w=12797282</pre>
+	<pre>$ curl http://{org_name}-test.apigee.net/weather/forecastrss?w=12797282</pre>
 </div>
 <p>Shanghai:</p>
 <div id="well">
-	<pre>$ curl http://{myorg}-test.apigee.net/weather/forecastrss?w=2151849</pre>
+	<pre>$ curl http://{org_name}-test.apigee.net/weather/forecastrss?w=2151849</pre>
 </div>
 <p>London:</p>
 <div id="well">
-	<pre>$ curl http://{myorg}-test.apigee.net/weather/forecastrss?w=44418</pre>
+	<pre>$ curl http://{org_name}-test.apigee.net/weather/forecastrss?w=44418</pre>
 </div>
 <p>Wiliamsburg:</p>
 <div id="well">
-	<pre>$ curl http://{myorg}-test.apigee.net/weather/forecastrss?w=2520841</pre>
+	<pre>$ curl http://{org_name}-test.apigee.net/weather/forecastrss?w=2520841</pre>
 </div>
-<h2>Step 5: Generate a custom Report</h2>
-<p>Now generate a custom report based on the data that Apigee records from calls to the the Weather API. The report you generate here provides the number of requests submitted to the API by location. Here we generate the report using the Apigee API Platform API. You can generate the same custom reoprt using the UI at <a href="http://enterprise.apigee.com">enterprise.apigee.com</a>.</p>
-<p>Before you submit this request, be sure to modify the<span style="font-family:courier new,courier,monospace;"> timeRange</span> parameter so that it includes the time at which you submit requests.</p>
-<p>For example,</p>
+<h2>Generating a custom report</h2>
+<p>Now generate a custom report based on the data that Apigee records from calls to the the Weather API. The report you generate here provides the number of requests submitted to the API by location. Here we generate the report using the Apigee API Platform API. You can generate the same custom report using the UI at <a href="http://enterprise.apigee.com">enterprise.apigee.com</a>.</p>
+<p>Note that the <span style="font-family:courier new,courier,monospace;"> timeRange</span> parameter must be modified to include the time interval when data was collected.</p>
+<p>In the example request below, the custom dimension is called <code>location</code>. This request builds a custom report for locations based on the sum of message counts submitted for each location. </p>
 <div id="well">
-	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{myorg}/environments/test/stats/location?'select=sum(message_count)&amp;timeRange=11/19/2012%2000:00~11/21/2012%2000:00&amp;timeUnit=day'</pre>
+	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/environments/test/stats/location?'select=sum(message_count)&amp;timeRange=11/19/2012%2000:00~11/21/2012%2000:00&amp;timeUnit=day'</pre>
 </div>
 <div id="well">
 	<pre>{
@@ -192,14 +195,14 @@ Environment: test
     "samplingRate" : "100"
   }
 }</pre>
-	<p>If you have too may locations to make the report useful, you may wish, for example, to filter the list to report the top 2 locations by message volume:</p>
+	<p>In some cases, there may be a large number of results. It may be useful to filter the list to report the top 2 locations by message volume. This is done by adding the <code>topk</code> query parameter and providing an integer value for the number to filter:</p>
 </div>
 <div id="well">
-	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{myorg}/environments/test/stats/location?'select=sum(message_count)&amp;timeRange=11/19/2012%2000:00~11/21/2012%2000:00&amp;timeUnit=day&amp;sortby=sum(message_count)&amp;topk=2"</pre>
+	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/environments/test/stats/location?'select=sum(message_count)&amp;timeRange=11/19/2012%2000:00~11/21/2012%2000:00&amp;timeUnit=day&amp;sortby=sum(message_count)&amp;topk=2"</pre>
 </div>
-<p>You can also filter results by specifying the values of the dimensions in which you are interested:</p>
+<p>Results can also be filtered by specifying the values of the dimensions of interest. In the example below, the report is filtered by results for London and Shanghai :</p>
 <div id="well">
-	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{myorg}/environments/test/stats/location?"select=sum(message_count)&amp;timeRange=11/19/2012%2000:00~11/21/2012%2000:00&amp;timeUnit=day&amp;filter=(location%20in%20'London','Shanghai')"
+	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/environments/test/stats/location?"select=sum(message_count)&amp;timeRange=11/19/2012%2000:00~11/21/2012%2000:00&amp;timeUnit=day&amp;filter=(location%20in%20'London','Shanghai')"
 {
   "environments" : [ {
     "dimensions" : [ {

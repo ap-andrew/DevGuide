@@ -49,89 +49,93 @@
 <p>To view collections protected by RBAC:</p>
 <h4>List RBAC Resources</h4>
 <div id="well">
-	<pre>curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{myorg}/resources</pre>
+	<pre>curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/resources</pre>
 	<p>To define RBAC resources to be protected in your Apigee organization:</p>
 </div>
 <h4>Define API proxy RBAC resource</h4>
 <div id="well">
-	<pre>curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{myorg}/resources -H "Content-type:application/json" -X POST -d'{"displayName" : "API", "path" : "/applications"}'</pre>
+	<pre>curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/resources -H "Content-type:application/json" -X POST -d'{"displayName" : "API", "path" : "/applications"}'</pre>
 </div>
 <h4>Define API product RBAC resource</h4>
 <div id="well">
-	<pre>curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{myorg}/resources -H "Content-type:application/json" -X POST -d'{"displayName" : "API Products","path" : "/apiproducts"}' </pre>
+	<pre>curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/resources -H "Content-type:application/json" -X POST -d'{"displayName" : "API Products","path" : "/apiproducts"}' </pre>
 </div>
 <h4>Define app RBAC resource</h4>
 <div id="well">
-	<pre>curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{myorg}/resources -H "Content-type:application/json" -X POST -d'{"displayName" : "Apps","path" : "/apps"}'</pre>
+	<pre>curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/resources -H "Content-type:application/json" -X POST -d'{"displayName" : "Apps","path" : "/apps"}'</pre>
 </div>
 <h4>Define developer RBAC resource</h4>
 <div id="well">
-	<pre>curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{myorg}/resources -H "Content-type:application/json" -X POST -d'{"displayName" : "Developers","path" : "/developers"}'</pre>
+	<pre>curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/resources -H "Content-type:application/json" -X POST -d'{"displayName" : "Developers","path" : "/developers"}'</pre>
 </div>
 <h4>Define reports RBAC resource</h4>
 <div id="well">
-	<pre>curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{myorg}/resources -H "Content-type:application/json" -X POST -d'{"displayName" : "Reports","path" : "/reports"}'</pre>
+	<pre>curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/resources -H "Content-type:application/json" -X POST -d'{"displayName" : "Reports","path" : "/reports"}'</pre>
 </div>
 <h2>Provision Users and Roles</h2>
 <h4>Create a user in your Apigee organization</h4>
 <div id="well">
-	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{myorg}/users -H "Content-type:application/json" -X POST -d'{"emailId" : "justauser@apigee.com","firstName" : "Justa","lastName" : "User", "password" : "secret" }'</pre>
+	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/users -H "Content-type:application/json" -X POST -d'{"emailId" : "justauser@apigee.com","firstName" : "Justa","lastName" : "User", "password" : "secret" }'</pre>
 </div>
 <h4>Create a role: development</h4>
 <p>Create a 'development' role to enable developers to view, create, and update API proxies.</p>
 <div id="well">
-	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{myorg}/userroles -H "Content-type:application/json" -X POST -d'{"name" : "development"}'</pre>
+	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/userroles -H "Content-type:application/json" -X POST -d'{"name" : "development"}'</pre>
 </div>
 <h4>Add permissions to development role</h4>
 <p>The permissions that can be set on collections are GET and PUT. The permissions that can be set on individual members of a collection are GET, PUT, and DELETE. For the 'development' role, we add GET and PUT permissions on APIs. GET enables users to view any APIs, including API proxy configuration files, associated policies, Javascript, XSLT files, and so on. The PUT permission on APIs enables developers to create, modify, import, export, deploy and undeploy API proxies.</p>
 <div id="well">
-	<pre>curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{myorg}/userroles/development/permissions -H "Content-type:application/json" -X POST -d'{"path" : "/applications","permissions" : [ "put", "get" ]}'</pre>
+	<pre>curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/userroles/development/permissions -H "Content-type:application/json" -X POST -d'{"path" : "/applications","permissions" : [ "put", "get" ]}'</pre>
 </div>
 <h4>Create a role: testing</h4>
 <p>Create a 'testing' role to enable quality engineers to view API proxies and their contents (including, for example, policies).</p>
 <div id="well">
-	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{myorg}/userroles -H "Content-type:application/json" -X POST -d'{"name" : "testing"}'</pre>
+	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/userroles -H "Content-type:application/json" -X POST -d'{"name" : "testing"}'</pre>
 </div>
 <h4>Add permissions to testing role</h4>
 <p>GET enables users to view any APIs, including their configuration files, as well as any associated policies, Javascript, XSLT files, and so on. BY adding thispermission to the 'testing' role, we enable quality engineers to view the contents of the APIs that they are testing. Users in this role will not, however, be able&nbsp;&nbsp;to create, modify, import, export, deploy and undeploy API proxies.</p>
 <div id="well">
-	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{myorg}/userroles/testing/permissions -H "Content-type:application/json" -X POST -d'{"path" : "/applications","permissions" : [ "get" ]}'</pre>
+	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/userroles/testing/permissions -H "Content-type:application/json" -X POST -d'{"path" : "/applications","permissions" : [ "get" ]}'</pre>
 </div>
 <h4>Add user to testing role</h4>
 <div id="well">To provision a user with a user role,
 	<div id="well">
-		<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{myorg}/users/justauser@apigee.com/userroles -H "Content-type:application/json" -X POST -d'{"role" : [ {"name" : "testing"} ] }'</pre>
+		<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/users/justauser@apigee.com/userroles -H "Content-type:application/json" -X POST -d'{"role" : [ {"name" : "testing"} ] }'</pre>
 	</div>
 	<h4>View APIs as user</h4>
 	Impersonate the user and make request to the API Platform to view API proxies. The user should be able to view APIs, along with their contents.
 	<div id="well">
-		<pre>$ curl -u justauser@apigee.com:secret https://api.enterprise.apigee.com/v1/o/{myorg}/apis</pre>
-		<pre>$ curl -u justauser@apigee.com:secret https://api.enterprise.apigee.com/v1/o/{myorg}/apis/{someAPI}/policies</pre>
+		<pre>$ curl -u justauser@apigee.com:secret https://api.enterprise.apigee.com/v1/o/{org_name}/apis</pre>
+		<pre>$ curl -u justauser@apigee.com:secret https://api.enterprise.apigee.com/v1/o/{org_name}/apis/{someAPI}/policies</pre>
 	</div>
 	<h4>Create API as user in testing role</h4>
 	Impersonate the user and make request to the API Platform to create an API proxy. The request will be rejected by the API Platform, as the role 'testing' does not permit the user to create APIs.
 	<div id="well">
-		<pre>$ curl -u justauser@apigee.com:secret -H "Content-Type: application/json" https://api.enterprise.apigee.com/v1/o/{myorg}/apis -X POST -d'{"name" : "rbacTestApi"}'</pre>
+		<pre>$ curl -u justauser@apigee.com:secret -H "Content-Type: application/json" https://api.enterprise.apigee.com/v1/o/{org_name}/apis -X POST -d'{"name" : "rbacTestApi"}'</pre>
 	</div>
 	<h4>Add user to development role</h4>
 	Now provision the user with the 'development' role.
 	<div id="well">
-		<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{myorg}/users/justauser@apigee.com/userroles -H "Content-type:application/json" -X POST -d'{"role" : [ {"name" : "development"} ] }'</pre>
+		<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/users/justauser@apigee.com/userroles -H "Content-type:application/json" -X POST -d'{"role" : [ {"name" : "development"} ] }'</pre>
 	</div>
 	<h4>Create API as user in development role</h4>
 	Impersonate the user and repeat the request to the API Platform to create an API proxy. The request will be successful, as the role 'development' does permit the user to create APIs.
 	<div id="well">
-		<pre>$ curl -u justauser@apigee.com:secret -H "Content-Type: application/json" https://api.enterprise.apigee.com/v1/o/{myorg}/apis -X POST -d'{"name" : "rbacTestApi"}'</pre>
+		<pre>$ curl -u justauser@apigee.com:secret -H "Content-Type: application/json" https://api.enterprise.apigee.com/v1/o/{org_name}/apis -X POST -d'{"name" : "rbacTestApi"}'</pre>
 	</div>
 	<h4>Configure fine-grained access over a single API proxy</h4>
 	You can configure role-based access over individual entities by creating them as RBAC resources. For example, the API proxy that the user created above is the <code>rbacTestApi</code>. You can create this API proxy as an RBAC resource with this request:
 	<div id="well">
-		<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{myorg}/resources -H "Content-type:application/json" -X POST -d'{"displayName" : "rbacTestApi", "path" : "/applications/rbacTestApi"}'</pre>
+		<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/resources -H "Content-type:application/json" -X POST -d'{"displayName" : "rbacTestApi", "path" : "/applications/rbacTestApi"}'</pre>
 	</div>
 	<p>In the same way that you created permissions for classes of RBAC ressources, you create permissions for individual resources and provision those permissions to named roles. Permissions set for individual RBAC resources always override permissions for RBAC resource collections. If a user in a role that has GET and PUT permissions for APIs, but only GET permission for a specific API, then the permissions for the individual RBAC resource take precedence, and the user has only GET permissions on the specific API, regardless of permissions set for the RBAC resource colelction.</p>
 	<h4>Get user roles for a user</h4>
 	<p>As an organization admininstrator, you can check the list of user roles for a user at any time:</p>
 	<div id="well">
-		<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{myorg}/users/justauser@apigee.com/userroles</pre>
+		<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/users/justauser@apigee.com/userroles</pre>
 	</div>
 </div>
+
+<p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
+
+<p>Back to <a href="/docs/api/quick-starts-index">API Platform Developer Guide</a>.</p>

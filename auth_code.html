@@ -4,7 +4,7 @@
 <p>This quick start also builds on the API product, developer, and app that you set up in [node:427]. The API product provides quota-limited access to requests sent to the API resource <code>/weather</code>. If you have not done so, you need to first follow the steps in [node:427].</p>
 <p>Apps that use the "authorization code" grant type obtain access tokens indirectly. These apps redirect the app end user's browser to a pre-defined URL that produces an authorization code, which then redirects the app end user's browser to a login Web application for authentication. This grant type is designed for Web apps that communicate directly with the provider API.</p>
 <p>For more background on OAuth, please refer to <a href="http://tools.ietf.org/html/draft-ietf-oauth-v2-26">the OAuth 2.0 Specification</a>, or to <a href="http://apigee.com/about/api-best-practices/security-%26-oauth/all">Apigee's best practices for securing APIs with OAuth.</a></p>
-<h2>Step 1: Create policies</h2>
+<h2>Creating OAuth policies</h2>
 <p>In the <a href="https://github.com/apigee/api-platform-samples">API Platform Samples</a> distribution:</p>
 <div id="well">
 	<pre>$ cd simpleProxy/apiproxy</pre>
@@ -29,7 +29,7 @@ policies &nbsp; proxies&nbsp; targets&nbsp; weatherapi.xml</pre>
 &nbsp; &lt;/AssignVariable&gt;
 &lt;/AssignMessage&gt;</pre>
 </div>
-<h4>Validate OAuth Policy</h4>
+<h4>ValidateOAuth Policy</h4>
 <p>This policy verifies that the request contains a proper OAuth 2.0 bearer token, checks the API product, and authorizes the app.</p>
 <p>Create this policy by creating a file called <code>ValidateOAuth.xml</code> under <code>apiproxy/policies</code> with the following content:</p>
 <div id="well">
@@ -37,7 +37,7 @@ policies &nbsp; proxies&nbsp; targets&nbsp; weatherapi.xml</pre>
   &lt;Operation&gt;VerifyAccessToken&lt;/Operation&gt;
 &lt;/OAuthV2&gt;</pre>
 </div>
-<h4>Check Quota Policy</h4>
+<h4>CheckQuota Policy</h4>
 <p>This policy maintains a separate quota per app, based on the client id (which is the same value of the app's consumer key), and sets the parameters based on the API product.</p>
 <p>Create this policy by creating a file called <code>CheckQuota.xml</code> under <code>apiproxy/policies</code> with the following content:</p>
 <div id="well">
@@ -60,7 +60,7 @@ policies &nbsp; proxies&nbsp; targets&nbsp; weatherapi.xml</pre>
 &lt;/OAuthV2&gt;</pre>
 </div>
 <h4>GenerateAccessToken Policy</h4>
-<p>This is the same policy you configured for client credentials in [node:819], only here you configure this policy to support the authorization code grant type.</p>
+<p>This is the same policy that is configuraed for client credentials in [node:819], only in this case the policy is configured to support the authorization code grant type.</p>
 <p>Create this policy by creating a file called <code>GenerateAccessToken.xml</code> under <code>apiproxy/policies</code> with the following content:</p>
 <div id="well">
 	<pre>&lt;OAuthV2 name="GenerateAccessToken"&gt;
@@ -77,8 +77,8 @@ policies &nbsp; proxies&nbsp; targets&nbsp; weatherapi.xml</pre>
 &lt;RedirectUri&gt;request.queryparam.redirect_uri&lt;/RedirectUri&gt;
 &lt;Scope&gt;request.queryparam.scope&lt;/Scope&gt;
 &lt;/OAuthV2&gt;</pre>
-	<p>Note the main differences: SupportedGrantTypes now lists&nbsp;<span style="font-family: 'courier new', courier, monospace; ">authorization_code</span>. It is possible to list multiple grant types here. You must configure locations for each parameter that the client app includes in the request. For auth code, you must define the location of the code, the client ID, the redirect URI, and the scope. For flexbility, the GenerateAccessToken supports locating each parameter in an HTTP header, a query parameter, or a form&nbsp;parameter.</p>
-	<p>To specify the same set of parameters as HTTP headers, for example,&nbsp;</p>
+	<p>Note the main differences: SupportedGrantTypes now specifies <code>authorization_code</code>. It is possible to list multiple grant types here. You must configure expected locations for each parameter that the client app includes in the request. For auth code, you must specify the location of the auth code, the client ID, the redirect URI, and the scope. For flexibility, the GenerateAccessToken policy supports HTTP headers, query parameters, and form parameters as locations for these parameters.</p>
+	<p>The example below demonstrates the same parameters as HTTP headers:</p>
 	<pre>&lt;GrantType&gt;request.header.grant_type&lt;/GrantType&gt;
 &lt;Code&gt;request.header.code&lt;/Code&gt;
 &lt;ClientId&gt;request.header.client_id&lt;/ClientId&gt;
@@ -92,29 +92,29 @@ policies &nbsp; proxies&nbsp; targets&nbsp; weatherapi.xml</pre>
 &lt;Scope&gt;request.queryparam.scope&lt;/Scope&gt;</pre>
 	<p>Only one location can be configured per parameter.</p>
 </div>
-<h2>Step 2: Attach policies to proxy endpoint</h2>
-<p>To implement 3-legged OAuth you set up three endpoints for your API. For the client to initiate the three-legged protocol, you need to define and publish the following URIs:</p>
+<h2>Attaching OAuth policies to ProxyEndpoint</h2>
+<p>3-legged OAuth requires three endpoints. For the client to initiate the three-legged protocol, you need to define the following endpoints and publish the following URIs:</p>
 <ul>
 	<li>A URI to access your API:
-		<pre>http://{myorg}-test.apigee.net/weather</pre>
+		<pre>http://{org_name}-test.apigee.net/weather</pre>
 	</li>
 	<li>A URI to obtain an authorization code:
-		<pre>http://{myorg}-test.apigee.net/weather/authorize</pre>
+		<pre>http://{org_name}-test.apigee.net/weather/authorize</pre>
 	</li>
 	<li>A URI to obtain an access token:
-		<pre>http://{myorg}-test.apigee.net/weather/access_token</pre>
+		<pre>http://{org_name}-test.apigee.net/weather/access_token</pre>
 	</li>
 </ul>
-<p>(Note that for security in production, you must use HTTPS for these URLs. In this exercise, for simplicity, we use HTTP.) These endpoint URIs are published out-of-band. That is, app developers need to be informed of these URIs so that they know how to obtain authorization codes and access tokens before they can access your API.</p>
-<p>In Apigee, you create the endpoints using a policy configuration. To do so, you define three "named flows" in the proxy endpoint for the weatherapi.</p>
-<p>In this quick start, we call these flows <code>GetAuthCode</code>, <code>GetAccessToken</code>, and <code>default</code>.</p>
-<p>We will assign a different URI to each flow:</p>
+<p>(Note that for security in production, <b>you must use HTTPS for these URLs</b>. In this case, for simplicity, we use HTTP.) These endpoint URIs are published out-of-band. That is, app developers must be informed of these URIs so that they know how to obtain authorization codes and access tokens before they can access an API.</p>
+<p>On the API Platform, these endpoints are created using a ProxyEndpoint configuration that defines three conditional flows..</p>
+<p>In this example, the respective conditional flows are named <code>GetAuthCode</code>, <code>GetAccessToken</code>, and <code>default</code>.</p>
+<p>A different URI must be assigned to each flow:</p>
 <ul>
 	<li>GetAuthCode: <code>/oauth/authorize</code></li>
 	<li>GetAccessToken: <code>/oauth/accesstoken</code></li>
 	<li>default: Any URI other than the two defined above</li>
 </ul>
-<p>The result of this configuration is that an app developer calls, for example, <code>http://myorg-test.apigee.net/weather/oauth/authorize</code> to obtain an auth code.</p>
+<p>With this configuration,to obtain an auth code an app developer calls, for example, <code>http://myorg-test.apigee.net/weather/oauth/authorize</code>.</p>
 <p>After obtaining the authorization code, the app uses the code to obtain an access token from the token endpoint at &nbsp;<code>http://myorg-test.apigee.net/weather/oauth/accesstoken</code>.</p>
 <p>Finally, the app calls&nbsp;<code>http://myorg-test.apigee.net/weather</code> using the access token to retrieve a weather forecast.</p>
 <p>The flow named <code>default</code> is configured with policies that:</p>
@@ -124,7 +124,7 @@ policies &nbsp; proxies&nbsp; targets&nbsp; weatherapi.xml</pre>
 	<li>Retrieve and enforce the quota settings associated with the API product</li>
 </ol>
 <p>Note that this flow structure makes use of <i>conditional flows</i>. The processing pipeline evaluates the conditional statements for each request received. The conditions are evaluated from top to bottom. If the first two conditions do not evaluate to true, then the 'default' flow is executed for the request, since the default flow has no condition and therefore always executes if a message does not meet the first two conditions.</p>
-<p>To configure this flow structure, modify <code>apiproxy/proxies/default.xml</code> as follows:</p>
+<p>The following ProxyEndpoint ( <code>apiproxy/proxies/default.xml</code>) implements this flow structure:</p>
 <div id="well">
 	<pre>&lt;Flows&gt;
   &lt;Flow name="GetAuthCode"&gt;
@@ -151,10 +151,10 @@ policies &nbsp; proxies&nbsp; targets&nbsp; weatherapi.xml</pre>
   &lt;/Flow&gt;
 &lt;/Flows&gt;</pre>
 </div>
-<h2>Step 3: Import and deploy the API proxy</h2>
-<p>Run the deploy tool in the base directory of the API platform samples distribution, substituting your username and password for <code>myname:mypass</code>, and your Apigee organization for <code>myorg</code>.</p>
+<h2>Importing and deploy the API proxy</h2>
+<p>The deploy tool can be used to import the API proxy. Substitute username and password for <code>myname:mypass</code>, and your Apigee organization for <code>myorg</code>.</p>
 <div id="well">
-	<pre>$ python tools/deploy.py -n weatherapi -u myname:mypass -h https://api.enterprise.apigee.com -o {myorg} -e test -p / -d simpleProxy</pre>
+	<pre>$ python tools/deploy.py -n weatherapi -u myname:mypass -o {org_name} -e test -p / -d simpleProxy</pre>
 </div>
 <div id="well">
 	<pre>Writing simpleProxy/.DS_Store to ./.DS_Store
@@ -173,12 +173,12 @@ Environment: test
   State: deployed
 </pre>
 </div>
-<h2>Step 4: Retrieve the access token and make an API request</h2>
-<p>To authenticate the user and get the access token, first redirect the user's web browser to the login page (the <code>callback_url</code> for the app) supported by the API.</p>
+<h2>Retrieving an access token and making an authorized API request</h2>
+<p>To authenticate the user and get the access token, the user's web browser is redirected to the login page (the <code>callback_url</code> for the app) supported by the API.</p>
 <p>In the request below:</p>
 <ul>
-	<li><code>client_id</code> must be the same <code>consumerKey</code> for weatherapp</li>
-	<li><code>redirect_uri</code>must be the same as the <code>callbackUrl</code> for weatherapp (that is, <code>login.weatherapp.com</code>)</li>
+	<li><code>client_id</code> must be the same <code>consumerKey</code> for the requesting</li>
+	<li><code>redirect_uri</code>must be the same as the <code>callbackUrl</code> for requesting (in this example <code>login.weatherapp.com</code>)</li>
 </ul>
 <div id="well">
 	<pre>$ curl  "http://myorg-test.apigee.net/weather/oauth/authorize?response_type=code&amp;client_id={consumerKey}&amp;redirect_uri=login.weatherapp.com&amp;scope=READ&amp;state=foobar"</pre>
@@ -189,21 +189,22 @@ Environment: test
 </div>
 <p>OAuth client apps must support 302 redirect responses. In an actual OAuth app, the URL <code>login.weatherapp.com?scope=READ&amp;state=foobar&amp;code={AuthCode}</code> would be invoked by a Web browser. The Web browser would redirect to the login page at <code>login.weatherapp.com</code>.</p>
 <p><b>Developing this login app is part of the API provider's responsibility.</b></p>
-<p>Note the <code>state</code> parameter. This is to prevent cross-site request forgery attacks and should be unique for every request. While it is not required, it is highly recommended.</p>
-<p>To retrieve the access token, the login page or pages at <code>login.weatherapp.com&nbsp;</code>makes a POST request to the Apigee proxy.&nbsp;</p>
-<p>In the following request, Base64 encode the consumer key and secret for the app, then set that as the value of the HTTP Basic authorization header.&nbsp;</p>
+<p>Note the <code>state</code> parameter. This parameter is designed prevent cross-site request forgery attacks and should be unique for every request. While it is not required, it is strongly recommended.</p>
+<p>To retrieve the access token, the login page or pages at <code>login.weatherapp.com&nbsp;</code>makes a POST request to the API proxy.</p>
+
+<p>To construct the POST request, the login app must Base64-encode the consumer key and secret for the app, and then set that as the value of the HTTP <code>Basic authorization</code> header, as in this example:</p>
 <div id="well">
-	<pre>$ curl -H "Authorization: Basic WExvdEwzUFJ4TmtVR1hoR0FGRFBPcjZmcXR2QWh1WmU6aU5VeUVhT09oOTZLUjNZTA==" "http://{myorg}-test.apigee.net/weather/oauth/accesstoken?grant_type=authorization_code&amp;code=neIu0d8e&amp;redirect_uri=login.weatherapp.com&amp;scope=READ"</pre>
+	<pre>$ curl -H "Authorization: Basic WExvdEwzUFJ4TmtVR1hoR0FGRFBPcjZmcXR2QWh1WmU6aU5VeUVhT09oOTZLUjNZTA==" "http://{org_name}-test.apigee.net/weather/oauth/accesstoken?grant_type=authorization_code&amp;code=neIu0d8e&amp;redirect_uri=login.weatherapp.com&amp;scope=READ"</pre>
 </div>
-<p>Apigee responds with an access token:</p>
+<p>The API Platform responds with an access token:</p>
 <div id="well">
 	<pre>{ "issued_at":1345073930832, "scope":"READ", "application_name":"weatherapp", "status":"approved", "organization_id":0, "expires_in":3599, "api_profile_name":"null", "refresh_token":"SlE9lNYf", "access_token":"I29OwHlGRi1AkbBCIRLLMC5efFgu", "refresh_count":0 }</pre>
 </div>
-<p>The access token returned by Apigee is now used by the client app to make a request to the protected resource (the target API):</p>
+<p>The access token returned by the API Platform is now used by the client app to make a request to the protected resource (the target API):</p>
 <div id="well">
-	<pre>$ curl -H "Authorization: Bearer I29OwHlGRi1AkbBCIRLLMC5efFgu" https://{myorg}-test.apigee.net/weather/forecastrss?w=12797282&amp;</pre>
+	<pre>$ curl -H "Authorization: Bearer I29OwHlGRi1AkbBCIRLLMC5efFgu" https://{org_name}-test.apigee.net/weather/forecastrss?w=12797282&amp;</pre>
 </div>
-<h2>Next Steps</h2>
-<p>If you run into issues or have questions, please post them to the <a href="http://support.apigee.com">Developer Forum</a>.</p>
-<p>Learn how to work with custom JavaScript by [node:3971]</p>
-<p><a href="/docs/api/quick-starts-index">All Quick starts</a></p>
+
+<p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
+
+<p>Back to <a href="/docs/api/quick-starts-index">API Platform Developer Guide</a>.</p>

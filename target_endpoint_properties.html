@@ -1,0 +1,58 @@
+
+
+<h2>TargetEndpoint Properties</h2>
+
+<table class="table">
+<thead><th>Property Name</th><th>Default Value</th><th>Description</th></thead>
+
+<tbody>
+<tr><td><code>keepalive.timeout.millis</code></td></tr>
+<tr><td>60000</td></tr>
+<tr><td>Timeout for the target connection in the connection pool. if the connection is in the pool beyond the specified limit, then the connection is closed.</td></tr>
+
+<tr><td><code>connect.timeout.millis</code></td></tr>
+<tr><td>60000</td></tr> 
+<tr><td>Target connection timeout.</td></tr>
+
+<tr><td><code>supports.http10</code></td></tr>
+<tr><td>true</td></tr>
+<tr><td>If this is true and the client sends a 1.0 request, the target is also sent a 1.0 request. Otherwise 1.1 request is sent to target.
+</td></tr>
+
+<tr><td><code>supports.http11</code></td></tr>
+<tr><td>true</td></tr>
+<tr><td>If this is true and the client sends a 1.1 request, the target is also sent a 1.1 request, otherwise 1.0 request is sent to target. </td></tr>
+
+<tr><td><code>use.proxy</code></td></tr>
+<tr><td>true</td></tr>
+<tr><td>If set to true, and proxy configurations are specified in <code>http.properties</code>, then target connections are set to use the specified proxy.</td></tr>
+
+<tr><td><code>use.proxy.tunneling</code></td></tr>
+<tr><td>true</td></tr>
+<tr><td>If this is set to true, and proxy configurations are specified in <code>http.properties</code>, then target connections are set to use the specified via tunnel. If the target uses SSL, then this property is ignored, and the message is always sent via a tunnel.</td></tr>
+
+<tr><td><code>compression.algorithm</code></td></tr>
+<tr><td>N/A</td></tr>
+<tr><td>By default, the API Platform forwards requests to the target using the same compression type as the client request. If the request is received from client using, for example, gzip compression, then the API Platform forwards the request to target using gzip compression. If the response received from target uses deflate, then the API Platform forwards the response to the response to the client using deflate. Supported values are:
+	<ul><li>gzip: always send message using gzip compression</li>
+	<li>deflate: always send message using deflate compression</li>
+	<li>none: always send message without any compression</li></ul></td></tr>
+	
+	<tr><td><code>request.streaming.enabled</code></td></tr>
+	<tr><td>false</td></tr>
+	<tr><td>When true, HTTP request payloads are not read into buffer.  The request payload streams as-is to the target. The request payload will not be available for policy enforcement.</td></tr>
+	
+	<tr><td><code>response.streaming.enabled</code></td></tr>
+	<tr><td>false</td></tr>
+	<tr><td>When true, HTTP response payloads are not read into buffer.  The response payload streams as-is to the client. The response payload will not be available for policy enforcement.</td></tr>
+	
+	<tr><td><codes>success.codes</codes></td></tr>
+	<tr><td>N/A</td></tr>
+	<tr><td>By default, the API Platform treats HTTP codes 4XX or 5XX as errors, and it treats HTTP codes 1XX, 2XX, 3XX as success. This property enables explicit definition of success codes, for example, <code>2XX, 1XX, 505</code>.</td></tr>
+	
+	<tr><td><codes>*.override.method</codes></td></tr>
+	<tr><td>N/A</td></tr>
+	<tr><td>For the specified HTTP method, sets an <code>X-HTTP-Method-Override</code> header on the outbound request. For example, <code>&lt;Property name=&quot;GET.override.method&quot;&gt;POST&lt;/Property&gt;</code></td></tr>
+	
+</tbody>
+</table>

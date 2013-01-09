@@ -1,14 +1,14 @@
 <p>[toc]</p>
-<p>Now that you have the basic structure of the API, you can begin to add management in the form of policies. One commonly used out-of-the-box policy is a quota policy.&nbsp;A quota policy enables you to limit the number of requests that an app is allowed to submit to your API over a given time interval.</p>
-<p>In this quick start, you will add a quota policy to the Weather API. For documentation of the quota policy itself, please refer to&nbsp;[node:56].</p>
-<h2><a class="jumplink" name="attach_policy"></a>Step 1:&nbsp;Create a quota policy</h2>
-<p>First, you need to create a directory called <span style="font-family: 'courier new', courier, monospace; ">policies</span> in you API proxy.</p>
-<pre>$ cd apiproxy
-$ ls
-policies	proxies		targets		weatherapi.xml</pre>
-<p>If your API does not have a directory, you can create it:</p>
-<pre>$ mkdir policies</pre>
-<p>Next you create a quota policy, which is an XML-formatted configuration file. The quota policy provides settings controlling how often a client application can invoke your API over a given time interval.</p>
+
+<p>This topic demonstrates authoring, storing, and attaching policies in an API proxy.</p>
+
+<h2>Policy creation</h2>
+
+<p>Policies are stored in the <code>/policies</code> directory in an API proxy.</p>
+
+ For documentation of the quota policy itself, please refer to [node:56].
+
+<p>To create a quota policy, which is an XML-formatted configuration file. The quota policy provides settings controlling how often a client application can invoke your API over a given time interval.</p>
 <p>In this example, you configure a policy that limits apps to 1 message per minute. While this is not realistic, it does provide a simple way to see the effects of a policy.</p>
 <p>First,&nbsp;under&nbsp;<span style="font-family: 'courier new', courier, monospace; ">/policies,&nbsp;</span>create a file called&nbsp;<span style="font-family: 'courier new', courier, monospace; ">QuotaPolicy.xml</span></p>
 <p><span style="font-family:arial,helvetica,sans-serif;">Then&nbsp;</span>paste into the file the policy body below:</p>
@@ -18,25 +18,37 @@ async="false" name="QuotaPolicy"&gt;
     &lt;Interval&gt;1&lt;/Interval&gt;
     &lt;TimeUnit&gt;minute&lt;/TimeUnit&gt;
 &lt;/Quota&gt;</pre>
+
 <p>All policies have some settings that are specific to the policy type, and some settings that are generic across all policies.</p>
+
 <p>All policies define the following attributes:</p>
 <ul>
-	<li><span style="font-family:courier new,courier,monospace;">enabled</span>: Indicates whether the policy is turned "on" or "off". Policies can be enabled/disabled at runtime.</li>
-	<li><span style="font-family:courier new,courier,monospace;">continueOnError</span>: Defines whether the pipeline should continue processing the message if the policy fails. In this case, an error would indicate that the quota has been exceeded, and therefore, we need to set this to false.&nbsp;</li>
-	<li><span style="font-family:courier new,courier,monospace;">async</span>: If set to "true" the pipeline will continue processing the subsequent policy step before this step completes.</li>
-	<li><span style="font-family:courier new,courier,monospace;">name</span>: The name that you give to this policy. This name is unique to this policy instance, and it is used to attach the policy to the flow. &nbsp;</li>
+	<li><code>enabled</code>: Indicates whether the policy is turned "on" or "off". Policies can be enabled/disabled at runtime. A policy that has <code>enabled</code> set to <code>false</code> is not enforced. </li>
+	<li><code>continueOnError</code>: Defines whether the pipeline should continue processing the message if the policy fails. When enforcing quota policies, errors likely indicate that the quota has been exceeded, and, therefore, this attribute should be set to false.</li>
+	<li><code>async</code>: If set to <code>true</code> the processing pipeline will continue processing subsequent policy steps before the current step completes. Asynchronous setting is useful when doing callouts to external services as part of a flow.</li>
+	<li><code>name</code>: The name that you give to this policy. This name is unique to this policy instance, and it is used to attach the policy to the flow as a processing step.</li>
 </ul>
-<p>In this case, <span style="font-family:courier new,courier,monospace;">Allow</span>, <span style="font-family:courier new,courier,monospace;">Interval</span>, and <span style="font-family:courier new,courier,monospace;">TimeUnit</span> are specific to the quota policy. These provide quota settings that Apigee enforces on behalf of your API.</p>
-<h2><a class="jumplink" name="attach_policy"></a>Step 2:&nbsp;Attach a policy to the weather API</h2>
-<p>The policy is now available to be executed in the processing pipeline of your API proxy. The next step is to decide where in the flow the policy should execute, and then "attach" the policy in the proper place.</p>
-<p>Before any processing is done on a request, we want to make sure that the developer's quota has not been exceeded. Therefore, we want the quota policy to execute first, before any other actions are taken. To do so, we attach the quota policy to the "Request PreFlow" of the proxy endpoint.</p>
-<p>In concrete terms, attaching a policy means that you include a reference to the policy by name in the <span style="font-family:courier new,courier,monospace;">&lt;Step&gt;</span> element of the desired flow.&nbsp;</p>
-<p>Open the file&nbsp;<span style="font-family: 'courier new', courier, monospace; ">/proxies/default.xml</span></p>
-<p>To attach a policy, you define a processing step the references your policy by name, as follows:&nbsp;</p>
+<p>The elements <code>Allow</code>, <code>Interval</code>, and <code>TimeUnit</code> are specific to the quota policy. These elements provide settings that the API Platform enforces on behalf of an API.</p>
+
+<h2><a class="jumplink" name="attach_policy"></a>Policy attachment</h2>
+<p>Policies in the <code>/policies</code> directory are available to be executed in the processing pipeline of an API proxy. Policies are executed as processing steps in a flow. To specify where a policy executes, it is attached to a ProxyEndpoint or TargetEndpoint flow as a processing step.</p>
+
+The format of a policy attachment is:
+
+<pre>&lt;Step&gt;
+    &lt;Name&gt;{policy_name}&lt;/Name&gt;
+&lt;/Step&gt;</pre>
+
+For example:
+
 <pre>&lt;Step&gt;
     &lt;Name&gt;QuotaPolicy&lt;/Name&gt;
 &lt;/Step&gt;</pre>
-<p>And then you attach that step to the appropriate flow. We know that we want the quota to be enforced as soon as a request is received from the client app. That means that we need it to be enforced during the proxy endpoint execution. The weather API proxy from [node:429] looks like this:</p>
+
+<p>A policy is attached to a flow by adding the step configuration to the appropriate request or response flow in a ProxyEndpoint or TargetEndpoint. For example, a quota must be enforced before any additional processing occurs. Therefore, a quota policy should be attached to the ProxyEndpoint request preflow.</p>
+	
+<p>For example, the following is a basic ProxyEndpoint configuration (without policy attachments):</p>
+
 <pre>&lt;ProxyEndpoint name="default"&gt;
     &lt;HTTPProxyConnection&gt;
         &lt;BasePath&gt;/weather&lt;/BasePath&gt;
@@ -46,7 +58,8 @@ async="false" name="QuotaPolicy"&gt;
      &lt;TargetEndpoint&gt;default&lt;/TargetEndpoint&gt;
   &lt;/RouteRule&gt;
 &lt;/ProxyEndpoint&gt;</pre>
-<p>You need to add a flow definition to your API proxy. Since you want all requests to be evaluated for quota limits, you can use the <em>preflow</em> or the request. A 'preflow' is a failsafe. Before any other flows are executed for this request, policies defined in the preflow are enforced.</p>
+
+<p>A quota policy can be attached as a processing step to the ProxyEndpoint request preflow as follows:</p>
 <pre>&lt;ProxyEndpoint name="default"&gt;
 &nbsp; &lt;PreFlow&gt;
 &nbsp; &nbsp; &lt;Request&gt;
@@ -61,10 +74,13 @@ async="false" name="QuotaPolicy"&gt;
     &lt;TargetEndpoint&gt;default&lt;/TargetEndpoint&gt; 
   &lt;/RouteRule&gt; 
 &lt;/ProxyEndpoint&gt;</pre>
-<p>The Quota policy now executes when the proxy receives a request from a client app.</p>
-<h2><a class="jumplink" name="import_deploy"></a>Step 3:&nbsp;Import and deploy changes</h2>
-<p>Now that you have configured a policy, you need to deploy the API. In this example, you use the deploy tool to deploy the API proxy to the test environment in our organization.</p>
-<p>Use the&nbsp;<span style="font-family: 'courier new', courier, monospace; ">cd</span>&nbsp;command to go to the directory the parent directory for /<span style="font-family: 'courier new', courier, monospace; ">apiproxy. <span style="font-family:arial,helvetica,sans-serif;">In the</span></span><span style="font-family:arial,helvetica,sans-serif;">&nbsp;API Platform samples, this is the base directory, where you see the directory<span style="font-family:courier new,courier,monospace;"> /simpleProxy</span>.</span></p>
+
+<p>In the ProxyEndpoint configuration above, the quota policy executes when the ProxyEndpoint receives a request from a client app, and before any additional processing takes place.</p>
+
+<h2><a class="jumplink" name="import_deploy"></a>Importing and deploying changes</h2>
+<p>Whenever an API proxy is modified, the changes must be imported to an organization on the API platform and then deployed into an environment.</p>
+	In this example, you use the deploy tool to deploy the API proxy to the test environment in our organization.</p>
+
 <p>From the base directory of <span style="font-family:courier new,courier,monospace;">api-platform-samples</span>, run the Python deploy tool, substituting your username and password for <span style="font-family:courier new,courier,monospace;">myname:mypass</span> and your Apigee organization for <span style="font-family:courier new,courier,monospace;">myorg</span>.</p>
 <pre>$ python tools/deploy.py -n weatherapi -u myname:mypass -o myorg -e test -p / -d simpleProxy</pre>
 <p>You should see the following result:</p>
@@ -77,39 +93,27 @@ Undeploying revision 1 in same environment and path:
 Environment: test
   Revision: 2 BasePath = /
   State: deployed</pre>
-<div>Note that the deploy tool deploys a new revision of the API proxy, while undeploying the previous revision. This enables you to revert to the previous revision if necessary.</div>
-<h2><a class="jumplink" name="verify_quota_policy"></a>Step 4:&nbsp;Verify that the quota policy is enforced</h2>
+<div>Note that the deploy tool deploys a new revision of the API proxy, while undeploying the previous revision. If necessary, the revision mechanism can be used to revert to the previous revision of the API proxy, thus rolling back any changes..</div>
+<h2><a class="jumplink" name="verify_quota_policy"></a>Verifying policy enforcement</h2>
+
+
 <p>Submit multiple request to the API, exceeding the quota limit that you set in the quota policy.</p>
-<pre>http://{myorg}-test.apigee.net/weather/forecastrss?w=12797282</pre>
+<pre>http://{org_name}-test.apigee.net/weather/forecastrss?w=12797282</pre>
 <p>After you submit more than 1 request within a minute:</p>
 <pre>{"fault":{"faultstring":"policies.ratelimit.QuotaViolation","detail":{"errorcode":"policies.ratelimit.QuotaViolation"}}}</pre>
 <p>Now that you understand how to create and attach a simple quota policy, you can begin working locally with all of the policies that are provided by Apigee.</p>
-<h2>Step 5: Configure Conditional Policy Enforcement</h2>
-<p>A powerful feature of the Apigee platform is the ability to configure conditional enforcement of policies.</p>
-<p>Conditional statements can be added directly to your policy step configuration. For example, we can add a condition that results in the quota policy being enforced only for XML messages, as follows:</p>
-<pre style="padding: 8.5px; font-size: 12.025px; border-top-left-radius: 4px; border-top-right-radius: 4px; border-bottom-right-radius: 4px; border-bottom-left-radius: 4px; margin-top: 0px; margin-bottom: 9px; line-height: 18px; background-color: rgb(245, 245, 245); border: 1px solid rgba(0, 0, 0, 0.148438); white-space: pre-wrap; word-break: break-all; word-wrap: break-word; "><span style="color: rgb(72, 72, 72); font-family: Menlo, Monaco, 'Courier New', monospace; ">&lt;Step&gt;
-    </span><span style="color: rgb(72, 72, 72); font-family: Menlo, Monaco, 'Courier New', monospace; font-size: 12.025px; ">&lt;Condition&gt;request.header.content-type = "text/xml"&lt;/Condition&gt;</span>
+<h2>Configuring conditional policy enforcement</h2>
+<p>A powerful feature of the API Platform is conditional policy enforcement.</p>
+<p>Conditional statements can be added directly to policy step configurations. For example, to add a conditional statement that enforces a quota policy only for XML messages:</p>
+<pre>&lt;Step&gt;
+    </span><span>&lt;Condition&gt;request.header.content-type = "text/xml"&lt;/Condition&gt;</span>
     &lt;Name&gt;QuotaPolicy&lt;/Name&gt;
 &lt;/Step&gt;</pre>
-<p>Conditions have two components, a variable and a conditional operator.</p>
-<p>The configuration above uses a variable defined by Apigee:&nbsp;<span style="font-family:courier new,courier,monospace;"><span style="color: rgb(72, 72, 72); font-size: 12.025px; background-color: rgb(245, 245, 245); line-height: 18px; white-space: pre-wrap; ">request.header.content-type. </span></span></p>
-<p>It evaluates the <span style="font-family:courier new,courier,monospace;">content-type</span> header in the request message from the client, and checks to see whether that value equals <span style="font-family:courier new,courier,monospace;">text/xml</span>.&nbsp;If the condition evaluates to true, the policy is enforced.</p>
+<p>Conditions have two components, a <i>variable</i> and a <i>conditional operator</i>.</p>
+<p>The configuration above uses a variable defined by Apigee: <code>request.header.content-type</code></p>.
+<p>It evaluates the <span style="font-family:courier new,courier,monospace;">content-type</span> header in the request message from the client, and checks to see whether that value equals <code>text/xml</span>. If the condition evaluates to true, the policy is enforced.</p>
 <p>For more, refer to the the list of [node:243] and [node:231].</p>
-<h2>Step 6: Clean Up</h2>
-<p>To clean up in preparation for the next quick start, delete the Quota policy:</p>
-<pre>$ cd apiproxy/policies
 
-$ rm QuotaPolicy.xml</pre>
-<p>Remove the Quota policy attachment from the proxy endpoint. Delete this entire block of XML from&nbsp;<span style="font-family:courier new,courier,monospace;">apiproxy/proxies/default.xml</span>.</p>
-<pre>&nbsp; &lt;PreFlow&gt;
-	&nbsp; &nbsp; &lt;Request&gt;
-	&nbsp; &nbsp; &nbsp; &lt;Step&gt;&lt;Name&gt;QuotaPolicy&lt;/Name&gt;&lt;/Step&gt;
-	&nbsp; &nbsp; &lt;/Request&gt;
-	&nbsp; &lt;/PreFlow&gt;</pre>
-<p>Deploy changes:</p>
-<p>&nbsp;</p>
-<pre>$ python tools/deploy.py -n weatherapi -u myname:mypass -o myorg -e test -p / -d simpleProxy</pre>
-<p>If you have any issues running the sample or completing the quick start, <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
-<h2>Next steps</h2>
-<p>[node:4583]</p>
-<p><a href="/docs/api/quick-starts-index">All Quick starts</a></p>
+<p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
+
+<p>Back to <a href="/docs/api/quick-starts-index">API Platform Developer Guide</a>.</p>

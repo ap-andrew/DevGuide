@@ -1,21 +1,25 @@
 <p>[toc]</p>
-<p>In this quick start, you will enable developers to create apps that consume your APIs.</p>
-<h2>Step 1: Create an API product</h2>
-<p>Before you create a developer and an app, you need to define an API product.&nbsp;An API product is a list of API resources (URIs) plus rate-limiting (quota) settings.&nbsp;API Products form the basis of access control in Apigee. To use an API managed by Apigee, &nbsp;a developer needs to acquire a consumer key that is approved to use an API product.&nbsp;</p>
-<p>In short, an API product is really just a definition of which URIs can be accessed, and how often, by an app approved to use it.&nbsp;</p>
-<p>(NOTE: API products and associated quotas are enforced by matching OAuth and quota policies. You will set up matching OAuth and quota policies in the subsequent quick starts. <strong>Until those policies are set up, API products and quotas are not enforced by Apigee.</strong>)</p>
-<p>In the request to create an API product, you have the following options:</p>
+<p>This topic covers the definition of API products, which enable developers to create apps that consume your APIs.</p>
+
+<h2>Defining API products</h2>
+<p>An API product is a list of API resources (URIs) and rate-limiting (quota) settings. API Products form the basis of access control in Apigee. To use an API managed by the API Platform, ;a developer must acquire a consumer key that is approved to use an API product. API product configurations are enforced by OAuth and Quota policies.</p>
+
+<p>API products settings are enforced by matching OAuth and quota policies. <strong>Until those policies are set up, API products and quotas are not enforced by Apigee.</strong>)</p>
+
+<p>API products expose the following options:</p>
 <ul>
 	<li>apiResources: A comma separated lists of URIs bundled into the API product. Wildcards are supported. In the API product below, &nbsp;the API resource is<span style="font-family:courier new,courier,monospace;"> "/forecastrss"</span>, which means that only requests to<span style="font-family:courier new,courier,monospace;">/weather/forecastrss</span> are permitted for apps that are approved for this API product. You can define several API products to "bundle" API resources for different business or technical purposes.</li>
-	<li>approvalType: Automatic or Manual approval for consumer keys returned to apps enrolled for this product. If set to manual, the consumer key is returned in the 'pending' state, and must be approved before the app can access the provider resources.</li>
-	<li>attributes: A set of optional attributes used to extend the default API product profile</li>
-	<li>developer.quota.limit: A rate limit setting, enforced at runtime</li>
-	<li>developer.quota.timeunit: A rate limit setting, enforced at runtime</li>
-	<li>name: name of the service plan</li>
-	<li>description: A description of the API product (which will be exposed to developers via a developer poertal, for example)</li>
-	<li>scopes: An optional, comma-separated list of Oauth scopes that are validated at runtime. (Apigee validates that the scopes in any access token presented match the scope set in the API product)</li>
+	<li>approvalType: Automatic or Manual approval for consumer keys returned to apps enrolled for this product. If set to manual, the consumer key is returned in the 'pending' state, and must manually be approved before the app can access the provider resources.</li>
+	<li>attributes: A set of optional, custom attributes that may be to extend the default API product profile</li>
+	<li>developer.quota.limit: A rate limit setting, enforced at runtime by a quota policy</li>
+	<li>developer.quota.timeunit: A rate limit setting, enforced at runtime by a quota policy</li>
+	<li>name: name of the service plan (which will be exposed to developers via a developer portal, for example)</li>
+	<li>description: A description of the API product (which will be exposed to developers via a developer portal, for example)</li>
+	<li>scopes: An optional, comma-separated list of OAuth scopes that are validated at runtime. (The API Platform validates that the scopes in any access token presented match the scope set in the API product)</li>
 </ul>
-<p>As usual, for <span style="font-family:courier new,courier,monospace;">myname:mypass</span> in the following command, substute your username and password for your account on&nbsp;<a href="http://enterprise.apigee.com">enterprise.apigee.com</a>. Substitute your Apigee organization name for <span style="font-family:courier new,courier,monospace;">{myorg}</span>. You can locate your organization name under account settings in&nbsp;<a href="http://enterprise.apigee.com">enterprise.apigee.com</a><a href="http://enterprise.apigee.com/login">m/login</a>.</p>
+
+<p>The API Platform exposes an API that enables API product management. An API product can be created with a POST request, as in this example:</p>
+
 <div id="well">
 	<pre>$ curl -H "Content-Type:application/json" -X POST -d \
    '{"apiResources": [ "/forecastrss" ], 
@@ -30,7 +34,7 @@
      "displayName": "Free API Product",
      "name": "weather_free",
      "scopes": []}' \
--u myname:mypass https://api.enterprise.apigee.com/v1/o/{myorg}/apiproducts</pre>
+-u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/apiproducts</pre>
 </div>
 <p>Sample Response</p>
 <div id="well">
@@ -63,11 +67,12 @@
   "scopes" : [ ]
 }</pre>
 </div>
-<p>You have created an API product that authorizes access to the '/forecastrss' URI. This means that any request with a valid credential made to the URI path following <span style="font-family:courier new,courier,monospace;">/weather/forecastrss</span> will be authorized.</p>
-<p>You have also defined settings for the API product's 'quota'. Developers who sign up for this API product will be able to build apps that consume the API resource<span style="font-family:courier new,courier,monospace;"> /weather </span>under the considtions of the quota settings, that is, 1 request per minute.</p>
-<p>Now you must add a developer to the system, and then add an app for the developer.</p>
-<h2>Step 2: Create a developer profile</h2>
-<p>In this step you register a developer in the organization by creating a profile. Usually this step occurs through a developer portal, and, indeed, this API is the same API that is called by Apigee's Developer portal when a developer signs up for an API provider account. Note that the developer email that is included here is used as the unique key for the developer throughout the system. You can add any arbitrary attributes to the developer profile that you need. The attributes are not interpreted by Apigee, but can be of use in custom analytics, custom policy enforcement, and so on.</p>
+<p>The API product above authorizes access to the '/forecastrss' URI. Once appropriate OAuth policies are configured, any request with a valid credential made to the URI path following <span style="font-family:courier new,courier,monospace;">/weather/forecastrss</span> will be authorized.</p>
+<p>The API product above defines settings for the API product's 'quota'. Developers who sign up for this API product will be able to build apps that consume the API resource<span style="font-family:courier new,courier,monospace;"> /weather </span>under the conditions of the quota settings, that is, 1 request per minute.</p>
+
+
+<h2>Developer profile</h2>
+<p>Developers are registered in an organization by creating a profile. This step typically occurs through a developer portal, and, indeed, this API is the same API that is called by Apigee API Platform Developer portal. Note that the developer email that is included here is used as the unique key for the developer throughout the system. Arbitrary attributes can be added to the developer profile as needed. The attributes are not interpreted by the API Platform, but can be of use in custom analytics, custom policy enforcement, and so on.</p>
 <div id="well">
 	<pre>$ curl -H "Content-type:application/json" -X POST -d \
       '{"email" : "ntesla@theramin.com", 
@@ -75,7 +80,7 @@
         "lastName" : "Tesla", 
         "userName" : "theramin", 
         "attributes" : [ { "name" : "project_type", "value" : "public"} ] }' \
--u myname:mypass https://api.enterprise.apigee.com/v1/o/{myorg}/developers</pre>
+-u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/developers</pre>
 </div>
 <p>Sample Response</p>
 <div id="well">
@@ -84,7 +89,7 @@
 	  "firstName" : "Nikola",
 	  "lastName" : "Tesla",
 	  "userName" : "theramin",
-	  "organizationName" : "{myorg}",
+	  "organizationName" : "{org_name}",
 	  "status" : "active",
 	  "attributes" : [ {
 	    "name" : "project_type",
@@ -96,15 +101,14 @@
 	  "lastModifiedBy" : "admin@apigee.com"
 	}</pre>
 </div>
-<h2>Step 3: Create an app for this developer that consumes the API product</h2>
-<p>Every app that is created in Apigee is associated with a developer and an API product. Now create an app to consume the weather API.</p>
-<p>When the app is registered, Apigee generates a "credential" (a consumer key and secret pair) when an app is created. This credential is 'bound' (in a loose way) to an API product. In other words, a credential is generated for an app that enables it to consume a set of URI paths at a specified rate (the quota).</p>
+<h2>Developer apps</h2>
+<p>Every app that is created in the API Platform is associated with a developer and an API product. When an app is registered on behalf of a developer, the API Platform generates a "credential" (a consumer key and secret pair) that identifies the app. This credential is 'bound' (in a loose way) to at least one API product. The credential generated for an app  enables it to consume a set of URI paths at a specified rate (defined by the quota settings in the API product).</p>
 <div id="well">
 	<pre>$ curl -H "Content-type:application/json" -X POST -d \
       '{"apiProducts": [ "weather_free"], 
         "callbackUrl" : "login.weatherapp.com", 
         "name" : "weatherapp"}' \
--u myname:mypass https://api.enterprise.apigee.com/v1/o/{myorg}/developers/ntesla@theramin.com/apps</pre>
+-u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/developers/ntesla@theramin.com/apps</pre>
 </div>
 <p>Sample Response</p>
 <div id="well">
@@ -128,13 +132,18 @@
   "status" : "approved"
 }</pre>
 </div>
-<h2>Step 4: Manage consumer keys</h2>
+
+Note that for collective ownership. apps may also be associated with company entities. Such apps are referred to as company apps (as opposed to developer apps).
+
+<h2>Managing consumer keys</h2>
 <h4>Get the consumer key (the API Key) for the app</h4>
-<p>As you can see in the response above, the credentials for an app, (API product, consumer key and secret) are returned as part of the app profile. As an administrator of your organization, you can retrieve the consumer key at any time, for developer support, for example.</p>
-<p>Every consumer key has a profile, which as an administrator you can retrieve. The profile shows the status of the consumer key, as well as any API product associations.</p>
+<p>The credentials for an app, (API product, consumer key and secret) are returned as part of the app profile. An administrator of an organization can retrieve the consumer key at any time, for developer support, for example.</p>
+
+
+<p>Every consumer key has a profile, which an administrators in an organization can retrieve. The profile shows the status of the consumer key, as well as any API product associations for the key.</p>
 <div id="well">
 	<pre>$ curl -H "Accept: application/json" \
--u myname:mypass https://api.enterprise.apigee.com/v1/o/{myorg}/developers/ntesla@theramin.com/apps/weatherapp/keys/HQg0nCZ54adKobpqEJaE8FefGkdKFc2J</pre>
+-u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/developers/ntesla@theramin.com/apps/weatherapp/keys/HQg0nCZ54adKobpqEJaE8FefGkdKFc2J</pre>
 </div>
 <p>Sample Response</p>
 <div id="well">
@@ -149,10 +158,10 @@
   "status" : "approved"
 }</pre>
 </div>
-<h4>Approve the consumer key</h4>
-<p>If you need to approve the consumer key explicitly, you can approve it with this method:</p>
+<h4>Approving consumer keys</h4>
+<p>Consumer keys must be explicitly approved when API products have key approval set to <code>manual</code>. Keys can be explicitly approved using this method call:</p>
 <div id="well">
-	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{myorg}/developers/ntesla@theramin.com/apps/weatherapp/keys/HQg0nCZ54adKobpqEJaE8FefGkdKFc2J?action=approve</pre>
+	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/developers/ntesla@theramin.com/apps/weatherapp/keys/HQg0nCZ54adKobpqEJaE8FefGkdKFc2J?action=approve</pre>
 </div>
 <p>Sample Response</p>
 <div id="well">
@@ -167,13 +176,14 @@
 	  "status" : "approved"
 	}</pre>
 </div>
-<h4>Approve API product for the consumer key</h4>
-<p>The <i>association</i> of an API product with a key also has a status. A consumer key can be 'approved' in general, but not approved specifically for an API product. For API access to be successful, the consumer key must be approved, <i>and</i> the consumer key must be approved for the proper API product. You can approve the association of a consumer key with an API product as follows:</p>
+<h4>Approving an API product for a consumer key</h4>
+<p>The <i>association</i> of an API product with a key also has a status. A consumer key can be 'approved' in general, but not approved specifically for an API product. For API access to be successful, the consumer key must be approved, <i>and</i> the consumer key must be approved for the proper API product. The association of a consumer key with an API product can be approved as follows:</p>
 <div id="well">
-	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{myorg}/developers/ntesla@theramin.com/apps/weatherapp/keys/HQg0nCZ54adKobpqEJaE8FefGkdKFc2J/apiproducts/weather_free?action=approve</pre>
+	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/developers/ntesla@theramin.com/apps/weatherapp/keys/HQg0nCZ54adKobpqEJaE8FefGkdKFc2J/apiproducts/weather_free?"action=approve""</pre>
 </div>
-<p>Now you have the pieces in place to enable developers to securely access your API. However, your API is not yet configured to enforce any of these settings. To enforce API product access at runtime, you must configure a set of policies based on the type of authentication and authorization that meets your requirements.</p>
-<h2>Next steps</h2>
-<p>If you have questions or run into issues, please post them to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
-<p>To learn how to configure runtime enforcement of API products, see [node:3972]</p>
-<p><a href="/docs/api/quick-starts-index">All Quick starts</a></p>
+
+<p>To enforce API product access at runtime, OAuth and quota policies must be configured. To learn how to configure runtime enforcement of API products, see [node:3972]</p>
+
+<p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
+
+<p>Back to <a href="/docs/api/quick-starts-index">API Platform Developer Guide</a>.</p>

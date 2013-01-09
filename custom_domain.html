@@ -1,0 +1,40 @@
+<p>On the Apigee API Platform, every organization has at least two environments: 'test' and 'prod'. Each environment has at least one 'virtual host' definition. </p>
+	
+<p>Custom domains for APIs can be enabled on the API Platform  by modifying the virtual host definition for an environment.</p>
+
+<p><b>To set up an SSL-enabled custom domain, contact support@apigee.com.</b></p>
+
+<h2>Fetching the virtual host definition name</h2>
+<div id="well">
+	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/e/{environment_name}/virtualhosts</pre>
+</div>
+<p>Downloading the virtual host definition to a file:</p>
+<div id="well">
+	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/e/{environment_name}/virtualhosts/default &gt; vh.json</pre>
+</div>
+<h2>Adding a host to the virtual host definition</h2>
+<p>Open the file <code>vh.json</code>. In this example, one host is defined for the 'default' virtual host:</p>
+<div id="well">
+	<pre>{ "hostAliases" : [ "{org_name}-{environment}.apigee.net" ], "interfaces" : [ ], "name" : "default", "port" : "80" }</pre>
+</div>
+
+<p>The virtual host configuration file must be edited to add the host alias. In this example the custom domain <code>api.your.name.here.com</code> has been added to the virtual host definition.</p>
+<div id="well">
+	<pre>{ "hostAliases" : [ "{org_name}-{environment}.apigee.net", "api.your.name.here.com" ], "interfaces" : [ ], "name" : "default", "port" : "80" } </pre>
+</div>
+
+<h2>Updating the  virtual host definition for an environment on the API Platform with the new definition</h2>
+The updated virtual host definition is imported to an environment by submitting a PUT request to the virtualhosts API resource.
+<div id="well">
+	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/e/{environment_name}/virtualhosts/default -H "Content-Type: application/json" -X PUT -T vh.json </pre>
+</div>
+
+Once the virtual hosts file has been updated (and assuming that the Cname has been properly configured in DNS), the API can be invoked at the following URLs:
+
+<ul><li><code>http://{org_name}-{environment}.apigee.net</code></li>
+<li><code>http://api.your.name.here.com</code></li></ul>
+
+
+<p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
+
+<p>Back to <a href="/docs/api/quick-starts-index">API Platform Developer Guide</a>.</p>

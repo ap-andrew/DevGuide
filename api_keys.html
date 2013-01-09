@@ -1,46 +1,51 @@
 <p>[toc]</p>
-<p>Apigee enables you to secure your APIs with API Keys using policies, without requiring you to write any code.</p>
-<p>The quick start demonstrates how to setup API Key-based authorization for your APIs. In the following steps, you configure policies on the API proxy that you created in [node:429], using the Simple Proxy in the&nbsp;<a href="https://github.com/apigee/api-platform-samples">API Platform Samples</a>&nbsp;available on Github..</p>
-<p>The API product that you set up in [node:427] provides quota-limited access to requests sent to the API resource <code>/weather</code>. In this quick start, you set up the policies that enforce those API product settings at runtime.</p>
-<p>To configure API Key validation, you will apply three policies to the weather API. You need to create these files in the <code>/policies</code> directory for the API proxy.</p>
+<p>The API Platform enables you to secure your APIs with API Keys using policies, without requiring code to be written.</p>
+
+<p>This topic covers API Key-based authorization for your APIs and references the Simple Proxy in the&nbsp;<a href="https://github.com/apigee/api-platform-samples">API Platform Samples</a>&nbsp;available on Github. A fully configured API Key sample is available </p>
+
+<p>OAuth enforcement requires the configuration of API products, developers and apps, which is covered the in topic [node:427]. <p>The API product  configured in that topic provides quota-limited access to requests sent to the API resource <code>/weather</code>. This topic covers the creation and configuration of policies that enforce  API product settings at runtime.</p>
+
+<p>To configure API Key validation, three policies are required in the <code>/policies</code> directory for the API proxy.</p>
 <p>In the <a href="https://github.com/apigee/api-platform-samples">API Platform Samples</a> distribution:</p>
 <div id="well">
 	<pre>$ cd simpleProxy/apiproxy</pre>
 </div>
-<p>If no directory called policies exists, you can create one:</p>
+<p>To create a policies directory if none exists::</p>
 <div id="well">
 	<pre>$ mkdir policies</pre>
 </div>
-<p>Now you have three directories under /apiproxy</p>
+<p>AT least three directories must be present under <code>/apiproxy</code></p>
 <div id="well">
 	<pre>$ ls
 policies &nbsp; proxies&nbsp; targets&nbsp; weatherapi.xml</pre>
 </div>
-<h2>Step 1: Create policies</h2>
-<p>To enable API key validation you create three policies in the directory <code>apiproxy/policies</code>:</p>
+<h2>OAuth policy configuration</h2>
+
+<p>Three policies are required in the  <code>apiproxy/policies</code> directory to enable API key validation:</p>
 <ul>
 	<li>ClassifyRequest policy: Gets the value of the URI path suffix for the request</li>
-	<li>ValidateAPIKey policy: Validates the API key against the keys stored in Apigee and gets the associated API product</li>
-	<li>CheckQuota policy: Populates and enforces the quota settings defined in the API product</li>
+	<li>ValidateAPIKey policy: Validates the API key against the keys stored on the API Platform and gets the associated API product</li>
+	<li>CheckQuota policy: Populates and enforces the quota settings defined in the relevant API product</li>
 </ul>
-<h4>ClassifyRequest policy of type AssignMessage</h4>
-<p>The first processing step involves extracting a predfined variable. To enforce the API product settings, the policies need to know which which API resource the client is requesting. The proxy determines this by extracting the variable <code>proxy.pathsuffix</code> from the request context. It is this API resource path that maps to the API resource path URI defined in the API product. (Apigee is checking to ensure that the client app is approved to access the specific API resource in the request.)</p>
-<p>In <code>apiproxy/policies</code>, create a file called <code>ClassifyRequest.xml</code> with the following content:</p>
+<h4>ClassifyRequest policy of type <code>AssignMessage</code></h4>
+<p>The first processing step involves extracting a predefined variable. To enforce the API product settings, the policies must check the URI of the API resource requested by the client. The API proxy extracts the variable <code>proxy.pathsuffix</code> from the request context to obtain the value of the request path suffix URI. It is this API resource path that maps to the API resource path URI defined in the API product. (The API Platform checks to ensure that the client app is approved to access the specific API resource URI in the request path.)</p>
+<p>In <code>apiproxy/policies</code>, a policy called <code>ClassifyRequest.xml</code> with the following content:</p>
 <pre>&lt;AssignMessage name="ClassifyRequest"&gt;
 &nbsp; &lt;AssignVariable&gt;
 &nbsp; &nbsp; &lt;Name&gt;flow.resource.name&lt;/Name&gt;
 &nbsp; &nbsp; &lt;Ref&gt;proxy.pathsuffix&lt;/Ref&gt;
 &nbsp; &lt;/AssignVariable&gt;
 &lt;/AssignMessage&gt;</pre>
-<h4>ValidateAPIKey policy of type GetOAuthV1Info</h4>
-<p>The second processing step does the actual validation of the API key against the keys stored in Apigee. The only setting needed is the expected location of the API key in the client request. Here you define that location as a query parameter named "apikey". A successful request must present the apikey as a query parameter appended to the request, for example,<code>?apikey={ValueofAPIKey}</code>. You can of course use this setting to specify adifferent location or name for the parameter that holds the API key.</p>
-<p>In <code>apiproxy/policies</code>, create a file called <code>ValidateAPIKey.xml</code> with the following content:</p>
+
+<h4>ValidateAPIKey policy of type <code>GetOAuthV1Info</code></h4>
+<p>The second processing step validates the API key presented by the client app against the keys stored on the API Platform. The only setting needed is the expected location of the API key in the client request.For exmple, the policy configuration below defines the expected key location as a query parameter named <code>apikey</code>. A successful request must present the apikey as a query parameter appended to the request, for example,<code>?apikey={ValueofAPIKey}</code>. Alternatively the expected location can be configured as an HTTP header or a form parameter.</p>
+<p>The following policy called <code>ValidateAPIKey.xml</code> with the following content is used to validate the API key:</p>
 <div id="well">
 	<pre>&lt;GetOAuthV1Info name="ValidateAPIKey"&gt;
 &lt;AppKey ref="request.queryparam.apikey"/&gt;
 &lt;/GetOAuthV1Info&gt;</pre>
 </div>
-<h4>CheckQuota policy of type quota</h4>
+<h4>CheckQuota policy of type <code>Quota</code></h4>
 <p>The settings for a quota are dynamically populated at runtime, based on the settings stored in the API product.&nbsp;</p>
 <p>In <code>apiproxy/policies</code>, create a file called <code>CheckQuota.xml</code> with the following content:</p>
 <div id="well">
@@ -51,9 +56,12 @@ policies &nbsp; proxies&nbsp; targets&nbsp; weatherapi.xml</pre>
 &nbsp; &lt;Identifier ref="request.queryparam.apikey"/&gt;
 &lt;/Quota&gt;</pre>
 </div>
-<h2>Step 2: Attach policies to proxy endpoint</h2>
-<p>You attach these three policies as processing steps in the proxy endpoint's <em>request preflow</em>. By applying these policies to the request preflow, you ensure that these policies will be enforced on every request received by the API proxy from a client app. Note that the policies are only applied to requests that are routed to this API proxy--in other words, requests to the base path defined for this proxy, which is <span style="font-family:courier new,courier,monospace;">/weather</span>.</p>
-<p>The policies will be enforced in the order you define them in the request preflow. The order in this scenario is critical.</p>
+
+
+<h2>Policy attachment</h2>
+<p>To be enforced, the policies must be attached to an API proxy flow  as processing steps in the ProxyEndpoint's <em>request preflow</em>. By applying these policies to the request preflow, these policies are enforced on every request received by the API proxy from a client app.
+	
+<p>The policies will be enforced in the order defined in the request preflow. Ordering in this scenario is critical, since the policies are executed in the sequence defined in the flow, from top to bottom.</p>
 <div id="well">
 	<pre>&lt;PreFlow&gt;
     &lt;Request&gt;
@@ -63,7 +71,7 @@ policies &nbsp; proxies&nbsp; targets&nbsp; weatherapi.xml</pre>
     &lt;/Request&gt;
   &lt;/PreFlow&gt;</pre>
 </div>
-<p>You proxy endpoint (code&gt;apiproxy/proxies/default.xml) as a whole should now look like this:</p>
+<p>A ProxyEndpoint (for example, <code>apiproxy/proxies/default.xml</code>) configured for OAuth 1.0a API key validation has the following structure :</p>
 <div id="well">
 	<pre>&lt;ProxyEndpoint name="default"&gt;
   &lt;PreFlow&gt;
@@ -85,8 +93,8 @@ policies &nbsp; proxies&nbsp; targets&nbsp; weatherapi.xml</pre>
   &lt;/RouteRule&gt;
 &lt;/ProxyEndpoint&gt;</pre>
 </div>
-<h2>Step 3: Import and deploy API proxy</h2>
-<p>Run the deploy tool in the base directory of the API platform samples distribution, substituting your username and password for <code>myname:mypass</code>, and your Apigee organization for <code>myorg</code>.</p>
+<h2>Importing and deploying the API proxy</h2>
+<p>The deploy tool is available in the base directory of the API platform samples distribution. Substitute a valid username and password for <code>myname:mypass</code> for an organization on the Apigee API Platform, along with the name of the organization as <code>myorg</code>.</p>
 <div id="well">
 	<pre>$ python tools/deploy.py -n weatherapi -u myname:mypass -h https://api.enterprise.apigee.com -o myorg -e test -p / -d simpleProxy</pre>
 </div>
@@ -105,9 +113,9 @@ Environment: test
   State: deployed</pre>
 	<p>&nbsp;</p>
 </div>
-<h2>Step 4: Submit request with valid API key</h2>
+<h2>Submitting a request with a valid API key</h2>
 <div id="well">
-	<pre>$ curl http://{myorg}-test.apigee.net/weather/forecastrss?w=12797282</pre>
+	<pre>$ curl http://{org_name}-test.apigee.net/weather/forecastrss?w=12797282</pre>
 </div>
 <p>The failure message you will see indicates that the policy checked for an API key but did not find a valid key:</p>
 <div id="well">
@@ -115,22 +123,20 @@ Environment: test
 </div>
 <p>Now submit the same request, but with the consumer key for the app as a query parameter:</p>
 <div id="well">
-	<pre>$ curl http://{myorg}-test.apigee.net/weather/forecastrss?w=12797282&amp;"apikey=PulSCqMnXGchW0pC0s5o9ngHVTWMeLqk"</pre>
+	<pre>$ curl http://{org_name}-test.apigee.net/weather/forecastrss?w=12797282&amp;"apikey=PulSCqMnXGchW0pC0s5o9ngHVTWMeLqk"</pre>
 </div>
 <p>The expected result is a successful response from the weather service.</p>
 <p>Try modifying the value of the API key value in the request:</p>
 <div id="well">
-	<pre>$ curl http://{myorg}-test.apigee.net/weather?forecastrss?w=12797282&amp;"apikey=PulSCqMnXGchW0"</pre>
+	<pre>$ curl http://{org_name}-test.apigee.net/weather?forecastrss?w=12797282&amp;"apikey=PulSCqMnXGchW0"</pre>
 </div>
 <p>Results in:</p>
 <div id="well">
 	<pre>OAuth Failure : Consumer Key is Invalid</pre>
 	<p>Remember, as administrator for your organization, you can always get the consumer key for the app:</p>
-	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{myorg}/apps/weatherapp</pre>
+	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/apps/weatherapp</pre>
 </div>
-<h2>Next steps</h2>
-<p>If you run into issues or have questions, please post them to the<a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
-<p>API keys provide a great baseline of enforcement, but for real-world applications, API providers will most likely use OAuth 2.0, the (de facto) industry standard for enforcing authorization on behalf of APIs.</p>
-<p>In the next quick start, you build on the policies created for API key enforcement to enable the OAuth 2.0 client credentials grant type.</p>
-<p>[node:819]</p>
-<p><a href="/docs/api/quick-starts-index">All Quick starts</a></p>
+
+<p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
+
+<p>Back to <a href="/docs/api/quick-starts-index">API Platform Developer Guide</a>.</p>

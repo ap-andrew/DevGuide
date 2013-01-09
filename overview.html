@@ -1,8 +1,36 @@
 <p>[toc]</p>
-<p>This Apigee API Platform API quick start is designed to get you up and and running on the Apigee API Platform in a few minutes. As such, it&nbsp;is a step-by-step, procedural guide. For background, please refer to the <a href="http://apigee.com/docs/enterprise/enterprise_home">API Platform Documentation</a>, which covers the core concepts behind the Apigee API Platform.</p>
+<h2>What's here?</h2>
+<p>The API Platform Developer Guide is designed to get you up and and running with local development of API facades that deploy and scale on the Apigee API Platform. The focus of development on the API Platform is the API facade. An API facade an application that runs on the Aigee API Platform in the Cloud, and which serves as a proxy for one or more backend services or APIs. Using API facades, you can proxy any publicly available API, which makes the API Platform a great solution for developers who need to customize the behavior of APIs--whether the developer controls the API or not. Once you proxy an API with an API facade, all of the enterprise capabilities of Apigee are at your disposal. You can:</p>
+<ul><li>Leverage a policy library to implement common behavior without writing any code</li>
+<li>Innovate on the API Platform by writing and deploying custom code in the Cloud</li>
+<p>Combine policies and custom code to create sophisticated yet easy-to-manage and secure applications</p>
+<li>Provision and manage API keys and OAuth authorization</li>
+<li>Expose the capabilities that you implement as APIs, complete with an API Console, enabling re-use across projects or sharing with other developers</li></ul>
+
+<p>This Developer Guide provides instruction on local development of API facades. As such, it assumes basic knowledge of:</p>
+<ul><li>Representational State Transfer (REST)</li>
+<li>JavaScript Object Notation</li>
+<li>Extensible Markup Language</li>
+<li>XML Schema</li>
+<li>Web Application Definition Language (WADL)</li>
+<li>JavaScript and Python scripting languages </li>
+<li>Java programming language</li></ul>
+
+<p>For those who prefer UI-based API facade configuration, please refer to the the API Platform User Guide.
+</p>
+In this Developer Guide you will learn:
+<ul><li>How to configure a basic API facade</li>
+<li>How to upload, deploy, and test API facades on the API Platform</li>
+<li>How to configure policies and attach them to an API facade</li>
+<li>How to write scripts and code that execute as a component of an API facade</li>
+<li>How to implement common use cases required by API developers</li>
+<li>How to expose and reuse your policy compositions and code as APIs using WADL and API Consoles</li>
+<li>How to configure environment settings for your organization on the API Platform</li></ul>
+
 <h2>Set up</h2>
+
 <h3>An Apigee API platform account</h3>
-<p>Apigee provides free accounts that give you access to all of the features available to enterprise customers. You can sign up for a free account at <a href="http://enterprise.apigee.com/signup">http://enterprise.apigee.com/signup</a>.</p>
+<p>The Apigee API Platform enables any developer to leverage the enterprise-strength capabilities of Apigee Enterprise. Apigee provides free accounts that give you access to all of the features available to enterprise customers. You can sign up for a free account at <a href="http://enterprise.apigee.com/signup">http://enterprise.apigee.com/signup</a>.</p>
 <p>An Apigee API Platform account provides you with:</p>
 <ul>
 	<li>An organization</li>
@@ -21,7 +49,7 @@
 <p>Python is required to run the Apigee deploy tool. Python is present in most Linux environments, on a Mac with XCode installed, on a Windows machine with&nbsp;<a href="http://www.cygwin.com/">Cygwin</a>&nbsp;installed, and in many other places.</p>
 <p>To obtain Python, please refer to the&nbsp;<a href="http://www.python.org/getit/">Python installation instructions</a>.</p>
 <h3>An HTTP Client</h3>
-<p>The quick starts provide sample HTTP requests using cURL. If you need cURL, you can download&nbsp;it from http://curl.haxx.se. You can also refer to the cURL documentation for usage.</p>
+<p>The Developer Guide provides sample HTTP requests using cURL. If you need cURL, you can download&nbsp;it from http://curl.haxx.se. You can also refer to the cURL documentation for usage.</p>
 <p>If you prefer to use a different HTTP client, you can use the curl commands as a basis for creating a request in your HTTP client of choice.</p>
 <p>For example, you can interact with the Apigee API Platform using the <a href="https://apigee.com/enterprise/embed/console/apigee--api?v=2">Apigee API &nbsp;Console</a>.</p>
 <ol>
@@ -82,8 +110,8 @@ Environment: test
 <p>The tool has zipped up your files, imported the package to Apigee, and deployed to the 'test' environment in your Apigee organization.</p>
 <p>Your API is ready to be invoked.</p>
 <h2>Step 3: Invoke the proxied Weather API</h2>
-<p>Substitute your organization name for <code>{myorg}</code> in the request below</p>
-<pre>$ curl http://{myorg}-test.apigee.net/weather/forecastrss?w=12797282</pre>
+<p>Substitute your organization name for <code>{org_name}</code> in the request below</p>
+<pre>$ curl http://{org_name}-test.apigee.net/weather/forecastrss?w=12797282</pre>
 <p>Sample Response</p>
 <div id="well">
 	<pre>&lt;title&gt;Yahoo! Weather - Palo Alto, CA&lt;/title&gt;
@@ -100,16 +128,6 @@ Environment: test
 <h2>Getting help</h2>
 <p>If you have any issues with the quick start, post them to the at&nbsp;<a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
 <p>&nbsp;</p>
-<h3>Some Troubleshooting Tips for cURL</h3>
-<p>All of the following Quick Start example commands use Linux/Unix command line syntax for quoting arguments. A single quote can be used as a wrapper for double-quote characters inside a pair of single quotes.</p>
-<p>If you're using cURL from a Windows command prompt, Windows does not provide such multi-layered quoting. Under Windows, the outermost quotes must be the double-quote character and quotes within that string must doubled, two double-quote characters, where the following examples have one.</p>
-<p>If you encounter SSL Certificate problems in response to your cURL commands, you can:</p>
-<ul>
-	<li>Update your certs file.</li>
-	<li>Use a command line option to specify an alternate certs file.</li>
-	<li>Manually decide that you can trust the api.enterprise.apigee.com site and use either the -k or --insecure options to the curl command to override the SSL certificate requirement</li>
-	<li>Using the -k or --insecure option to the curl command only overrides the security requirements for your system; Apigee uses your supplied credentials to verify your authorization to make changes to your organization's data.</li>
-</ul>
+
 <h2>Next steps</h2>
 <p>Now that you understand API Platform basics, refer to the <a href="/docs/api/quick-starts-index">API platform quick starts</a> to learn how to apply advanced features to your API facade.</p>
-<p>&nbsp;</p>

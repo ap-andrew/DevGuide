@@ -1,6 +1,6 @@
 <p>[toc]</p>
 <p>One way that Apigee enhances the availability of your API is by providing built-in support for load balancing and failover across multiple backend server instances.&nbsp;</p>
-<h2>Step 1: Create target servers in an environment</h2>
+<h2>CReating target servers in an environment</h2>
 <p>To configure load balancing and failover, you create two or more named 'target servers' that you then reference in the HTTP Connection element in a target endpoint configuration.&nbsp;</p>
 <p>A target server definition consists of a name, a host and a port, with an additional element to indicate whether the target server is enabled or disabled.</p>
 <h3>Sample Target Server Configuration:</h3>
@@ -19,7 +19,7 @@
   &lt;port&gt;80&lt;/port&gt;
   &lt;isenabled&gt;true&lt;/isenabled&gt;
  &lt;/targetserver&gt;' \
--u myname:mypass https://api.enterprise.apigee.com/v1/o/{myorg}/environments/test/targetservers</pre>
+-u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/environments/test/targetservers</pre>
 </div>
 <p>Sample Response:</p>
 <div id="well">
@@ -38,7 +38,7 @@
   &lt;port&gt;80&lt;/port&gt;
   &lt;isenabled&gt;true&lt;/isenabled&gt;
 &lt;/targetserver&gt;' \
--u myname:mypass https://api.enterprise.apigee.com/v1/o/{myorg}/environments/test/targetservers</pre>
+-u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/environments/test/targetservers</pre>
 </div>
 <p>Sample Response:</p>
 <div id="well">
@@ -51,7 +51,7 @@
 </div>
 <p>Retrieve a list of target servers in an environment:</p>
 <div id="well">
-	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{myorg}/environments/test/targetservers</pre>
+	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/environments/test/targetservers</pre>
 </div>
 <p>Sample response:</p>
 <div id="well">
@@ -59,7 +59,7 @@
 </div>
 <p>There are now two target servers available for use by APi proxies deployed in the test environment. To load balance traffic across these target servers, you configure the HTTP connection an API proxy's target endpoint to use the target servers.</p>
 <p>There is no limit on the number of target servers that you can set up in an environment or reference from a target endpoint.</p>
-<h2>Step 2: Configure target endpoint to load balance across named target servers</h2>
+<h2>Configuring a TargetEndpoint to load balance across named target Servers</h2>
 <p>Now that you have two target servers available, you can modify the target endpoint HTTP connection setting to reference those two target servers by name.</p>
 <pre>&lt;TargetEndpoint name="default"&gt;
     &lt;HttpTargetConnection&gt;
@@ -72,10 +72,10 @@
 <p>The configuration above is the most basic load balancing configuration possible. The load balancer supports three load balcing algorithms, Round Robin, Weighted, and Least Connection. Round Robin is the default algorithm. Since no algorithm is specified in the configuration above, outbound requests from the API proxy to the backend servers will alternate, one for one, between target1 and target 2.&nbsp;</p>
 <h2>Step 3: Set load balancer options</h2>
 <p>You can tune availability by using options for load balancing and failover at the load balancer and target server level.</p>
-<p>Available options for load balancers are:</p>
+<p>Available options for LoadBalancerss are:</p>
 <p>&nbsp;</p>
 <h3>Algorithm</h3>
-<p>Sets the algorithm used by load balancer</p>
+<p>Sets the algorithm used by LoadBalancer</p>
 <h4>Round Robin</h4>
 <p>The default algorithm, forwards request to each target server in the order in which the servers are listed in the target endpoint HTTP connection.</p>
 <p>For example:</p>
@@ -90,7 +90,7 @@
 &lt;/TargetEndpoint&gt;</pre>
 <p>&nbsp;</p>
 <h4>Weighted</h4>
-<p>The weighted load balancing algorithm enables you to configure proportional traffic loads for your target servers. The weighted load balancer distributes request to your target servers in direct proportion to each target server's weight. Therefore, the weighted algorithm requires you to set a<span style="font-family: 'courier new', courier, monospace;">&lt;weight&gt;</span> attribute for each target server.&nbsp;For example:</p>
+<p>The weighted load balancing algorithm enables you to configure proportional traffic loads for your target servers. The weighted LoadBalancer distributes request to your target servers in direct proportion to each target server's weight. Therefore, the weighted algorithm requires you to set a<span style="font-family: 'courier new', courier, monospace;">&lt;weight&gt;</span> attribute for each target server.&nbsp;For example:</p>
 <pre>&lt;TargetEndpoint name="default"&gt;
   &lt;HttpTargetConnection&gt;
       &lt;LoadBalancer&gt;
@@ -106,7 +106,7 @@
 &lt;/TargetEndpoint&gt;</pre>
 <p>In this example, 2 requests will be routed to target2 for every 1 request routed to target1.</p>
 <h4>Least Connection</h4>
-<p>Load balancers configured to use the least connection algorithm route outbound requests to the target server with fewest open HTTP connections.</p>
+<p>LoadBalancers configured to use the least connection algorithm route outbound requests to the target server with fewest open HTTP connections.</p>
 <pre>&lt;TargetEndpoint name="default"&gt;
   &lt;HttpTargetConnection&gt;
       &lt;LoadBalancer&gt;
@@ -148,5 +148,7 @@
 <h3>IsEnabled</h3>
 <p>A boolean, enables target servers to be turned on and off by changing this setting from true to false. A common usage would be to write an app or script that enables or disables target servers automatically based on expected capacity requirements, maintenance schedules, etc.</p>
 <pre>&lt;IsEnabled&gt;true&lt;/IsEnabled&gt;</pre>
-<h2>Next Steps</h2>
-<p>If you have questions, post to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
+
+<p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
+
+<p>Back to <a href="/docs/api/quick-starts-index">API Platform Developer Guide</a>.</p>

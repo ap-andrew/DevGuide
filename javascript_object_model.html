@@ -1,0 +1,292 @@
+<p>[toc]</p>
+<p>As an API developer you are undoubtedly familiar with JavaScript. The Apigee API Platform enables you to leverage your background with JavaScript to implement custom API behavior without having to change the code of your APIs or backend services.</p>
+<p>Apigee's API Platform can be used as a managed container for executing your custom JavaScript. You write the custom logic, and Apigee provides the container, security, management, monitoring, analytics.</p>
+<p>The benefit of this approach is that it lets you offload common functions like rate limiting, API key provisioning, OAuth authorization, transformations, and such, freeing you to focus on innovation.</p>
+<p>In short, you can combine Apigee's out-of-the-box policies with your own custom JavaScript to implement sophisticated and reliable behavior that meets the needs of your apps and, if you expose APIs, your API developers.</p>
+<h3>Learn more</h3>
+<p>This document is intended to be an overview and a reference.&nbsp;</p>
+<p>For basic samples and &nbsp;instructions on getting JavaScript running on the API Platform refer to the quick start, [node:3971]</p>
+<p>For an example for more advanced JavaScript programming on the API Platform, see [node:3975]</p>
+<h2>The Apigee Object Model</h2>
+<p>If you have a good grasp of JavaScript, you just need to become familiar with Apigee's object model.&nbsp;JavaScript that executes in a browser relies on the "browser object model", or BOM. JavaScript that executes on the Apigee API Platform relies on a message-oriented object model. This object model defines request, response, and context objects with associated properties. This document describes these objects and provides samples to get you started writing your own JavaScript against the Apigee object model.</p>
+<p>Apigee's API Platform relies on <a href="https://developer.mozilla.org/en-US/docs/Rhino">Rhino</a>, which is an open-source implementation of JavaScript written in Java.&nbsp;Apigee also uses <a href="http://en.wikipedia.org/wiki/ECMAScript_for_XML">E4X</a>, which is an extension of JavaScript that adds support for XML.</p>
+<p>When your JavaScript is executed in an Apigee flow, a <i>scope</i> is created for the execution.</p>
+<p>Three object references are created in the scope:</p>
+<ul>	<li><span style="font-family:courier new,courier,monospace;">context</span>: A wrapper for the message processing pipeline context and the request and response flows that are executed by the proxy and target endpoints.</li>
+	<li><span style="font-family:courier new,courier,monospace;">proxyRequest</span>: An object that represents either the inbound proxy request message (from the requesting app to the API Platform)&nbsp;</li>
+	<li><span style="font-family:courier new,courier,monospace;">proxyResponse</span>: An object that represents the outbound proxy response message (from the API Platform to the requesting app)</li>
+	<li><span style="font-family: 'courier new', courier, monospace;">targetRequest</span>: An object that represents &nbsp;the outbound target request message (from the API Platform to &nbsp;the backend service).</li>
+	<li><span style="font-family: 'courier new', courier, monospace;">targetResponse</span>: An object that represents the inbound target response message (from the backend service to the API Platform)</li>
+</ul>
+
+<h2>Context</h2>
+
+<p>A context object is created for each request/response transaction executed by the API Platform processing pipeline. The context object exposes methods to get, set, and remove variables related to each transaction. A set of [node:243] can be accessed by your JavaScript. </p>
+<p><code>getVariable(): <span style="font-family:arial,helvetica,sans-serif;">Gets a variable</span></code></p>
+<p>For example, to populate a variable with the value for the current year:</p>
+<div id="well">
+	<pre>var year = context.getVariable(‘system.time.year’);</pre>
+</div>
+<p><code>setVariable()</code>: Sets a variable</p>
+
+<div id="well"><pre>Need a sample.</pre></div>
+<p><code>removeVariable()</code>: Removes a variable.</p>
+<div id="well"><pre>Need a sample.</pre></div>
+
+<h4>Context Properties</h4>
+
+<p><b><code>flow</code></b>: The name of the current flow</p>
+
+<p>The flow is a string that indicates the current stage of an API Platform processing pipeline. The <code>flow</code> property is used to indicate the flow to which the JavaScript is attached. </p>  
+<p>Possible values of <code>flow</code> are:</p>
+
+<ul><li><code>PROXY_REQ_FLOW</code></li>
+<li><code>PROXY_RESP_FLOW</code></li>
+<li><code>TARGET_REQ_FLOW</code></li>
+<li><code>TARGET_RESP_FLOW</code></li></ul>
+
+<p>Each flow name encompasses the preflow, postflow, and any named flows defined in the ProxyEndpoint or TargetEndpoint.</p>
+
+<p>This property is useful when common JavaScript that executes in more than one flow must vary its behavior depending on the flow in which it executes.
+</p>
+
+<p>For example:</p>
+
+<p>Set a header only on the target request flow:</p>
+<div id="well"><pre>if (context.flow=="TARGET_REQ_FLOW") {
+     request.headers['TARGET-HEADER-X]='foo';
+}</pre></div>
+
+<p>Set the content only on the proxy response flow:</p>
+<div id="well"><pre>if (context.flow=="PROXY_RESP_FLOW") {
+     response.content='bar';
+}</pre></div>
+
+<h3>Proxy and Target Request and Response</h3>
+
+<p>Enables an operation to specify a message object:</p>
+
+<div id="well"><pre>context.proxyRequest
+context.proxyResponse
+context.targetRequest
+context.targetResponse</pre></div>
+
+<p>For example, to get the value of the <code>user-agent</code> header for the proxy request message:</p>
+
+<div id="well"><pre>var user-agent = context.proxyRequest.headers['user-agent'];</pre></div>
+
+<p><b><span style="font-family:courier new,courier,monospace;">session</span>:</b> A map of name/value pairs that can be used to pass objects between two policies executing within the same message context</p>
+<p>Example:</p>
+<div id="well">
+	<pre>context.session[‘key’]  = 123;
+…
+var value = context.session[‘key’];  // 123</pre>
+</div>
+
+
+<h2>proxyRequest and targetRequest</h2>
+
+<p>The API Platform generates two request objects: one for the ProxyEndpoint and one for the TargetEndpoint.</p>
+<h4>Request Object Properties</h4>
+<p><b><span style="font-family:courier new,courier,monospace;">headers</span>:</b> HTTP request headers as a mapping of <code>String =&gt; List</code></p>
+<p>Example:</p>
+<div id="well">
+	<pre>proxyRequest.headers['via'];  
+proxyRequest.headers['via'][1];</pre>
+</div>
+<p><b><span style="font-family:courier new,courier,monospace;">queryParameters</span>:</b> The query parameters as a mapping of <code>String =&gt; List</code></p>
+<p>Example:</p>
+<p>The following query string:</p>
+<div id="well">
+	<pre>"?city=PaloAlto&amp;city=NewYork"</pre>
+</div>
+<p>can be accessed as:</p>
+<div id="well">
+	<pre>proxyRequest.queryParams['city'];             // == 'PaloAlto'
+proxyRequest.queryParams['city'][0]           // == 'PaloAlto'
+proxyRequest.queryParams['city'][1];          // == 'NewYork' 
+proxyRequest.queryParams['city'].length();    // == 2  </pre>
+</div>
+<p><b><span style="font-family:courier new,courier,monospace;">method</span>:</b> The HTTP verb associated with the request</p>
+<div id="well">
+	<pre>"GET" |  "POST" | "PUT" | "DELETE" etc.</pre>
+</div>
+<p><b><span style="font-family:courier new,courier,monospace;">body</span>:</b> The body of an HTTP request</p>
+<p>A request body has the following members:</p>
+<div id="well">
+	<pre>targetRequest.body.asXML;   
+targetRequest.body.asJSON; 
+targetRequest.body.asForm;</pre>
+</div>
+<p>Examples:</p>
+<p>For an XML body:</p>
+<div id="well">
+	<pre>"&lt;customer number='1'&gt;&lt;name&gt;Fred&lt;name/&gt;&lt;customer/&gt;"</pre>
+</div>
+<div id="well">
+	<pre>var number = request.body.asXML.@number;
+var name = request.body.asXML.name;</pre>
+</div>
+<p>For a JSON request body:</p>
+<div id="well">
+	<pre>"{ "a": "1" , "b" : "2" }"</pre>
+</div>
+<div id="well">
+	<pre>var a = proxyRequest.body.asJSON.a;    // == 1
+var b = proxyRequest.body.asJSON.b;    // == 2</pre>
+</div>
+<p>For body parameters:</p>
+<div id="well">
+	<pre>"vehicle=Car&amp;vehicle=Truck"</pre>
+</div>
+<div id="well">
+	<pre>v0 = proxyRequest.body.asForm['vehicle'][0]; 
+v1 = proxyRequest.body.asForm['vehicle'][1];</pre>
+</div>
+<p><b><span style="font-family:courier new,courier,monospace;">url</span>:</b>The complete URL of the request</p>
+<ol>
+	<li>protocol: The protocol of the URL (for example, HTTP, HTTPS)</li>
+	<li>port: The port (for example, :80, :443)</li>
+	<li>host: The host of the URL (for example, www.example.com)</li>
+	<li>path: The path of the URI (for example, /v1/weather)</li>
+</ol>
+<p>The <code>url</code> property is a read/write convenience property that combines scheme, host, port, path and query params for the target request.</p>
+<p>When getting <code>url</code>, applications are given a URL-specific concatenation, in this form:</p>
+<p><code>schema://host:port/path?queryParams</code></p>
+<p>Example:</p>
+<div id="well">
+	<pre>request.url = ‘http://www.example.com/path?q1=1
+request.protocol =’https’;</pre>
+</div>
+<p>results in</p>
+<div id="well">
+	<pre>(request.url == ‘https://www.example.com/path?q1=1)</pre>
+</div>
+<h2>proxyResponse and targetResponse&nbsp;</h2>
+<p>The API Platform generates two response objects: one for the ProxyEndpoint and one for the TargetEndpoint.</p>
+<p>(Before the target request preflow, the response object has a value of <code>undefined</code> .)</p>
+<p><b><span style="font-family:courier new,courier,monospace;">headers</span>:</b> The response headers as a mapping of <code>String =&gt; List</code></p>
+<p>Example:</p>
+<div id="well">
+	<pre>var date = targetResponse.headers['Date'];</pre>
+</div>
+<p><b><span style="font-family:courier new,courier,monospace;">content</span>:</b> The body of the  response message.</p>
+<p>Response content has the following members:</p>
+<div id="well">
+	<pre>targetResponse.content.asXML;  
+targetResponse.content.asJSON;</pre>
+</div>
+<p>Examples:</p>
+<p>For an XML response:</p>
+<div id="well">
+	<pre>"&lt;customer number='1'&gt;&lt;name&gt;Fred&lt;name/&gt;&lt;customer/&gt;"</pre>
+</div>
+<div id="well">
+	<pre>var number = proxyResponse.content.asXML.@number;
+var name = proxyResponse.content.asXML.name;</pre>
+</div>
+<p>For JSON response:</p>
+<div id="well">
+	<pre> "{ "a":1 , "b":2 }"</pre>
+</div>
+<div id="well">
+	<pre>var a = targetResponse.content.asJSON.a;    // == 1
+var b = targetResponse.content.asJSON.b;    // == 2</pre>
+</div>
+<p><b><span style="font-family:courier new,courier,monospace;">status</span>: </b> The status code with status message as a property</p>
+<p>Example:</p>
+<div id="well">
+	<pre>var status = targetResponse.content.status;        // 200
+var msg = targetResponse.content.status.message;   // "OK"</pre>
+</div>
+
+
+<h2>Headers, Query Parameters, and Form Variables</h2>
+<p>Headers, Query Parameters and Form variables all share a common format: a name/value pair that maps one string to another string.</p>
+<p>The format:</p>
+<div id="well">
+	<pre>proxyResponse.headers[‘foo’] = ‘bar’;</pre>
+</div>
+<p>The name in a name/value pair is always a string, but the value may be either a string or a list of strings.</p>
+<p>If the value is a list, then the members of the list can be accessed by the array operator</p>
+<div id="well">
+	<pre>targetResponse.headers[‘foo’][0] = ‘bar’;</pre>
+</div>
+<p>in practice&nbsp;<code>targetResponse.headers[‘foo’]&nbsp;</code>is&nbsp;<code>response.headers[‘foo’][0];</code></p>
+<p>For example if the following headers are set in an HTTP response:</p>
+<div id="well">
+	<pre>Content-Type: application/json
+Via: 1.0 fred
+Via: 1.1 example.com</pre>
+</div>
+<div id="well">
+	<pre>targetResponse.headers[‘Content-Type’]      // “application/json”
+targetResponse.headers[‘Content-Type’][0]   // “application/json”
+targetResponse.headers[‘Content-Type’][1]   // undefined</pre>
+</div>
+<div id="well">
+	<pre>targetResponse.headers[‘Via’]        // “1.0 fred”
+targetResponse.headers[‘Via’][0]     // “1.0 fred”
+targetResponse.headers[‘Via’][1]     // “1.1 example.com”</pre>
+</div>
+
+<h2>HTTP Client</h2>
+<p>The JavaScript HTTP Client can be used to make multiple parallel, asynchronous HTTP requests to any URL. This makes it useful for developing composite services, as well as for consolidating multiple API calls into a single method.&nbsp;You can use the HTTP client as an alternative to the Service Callout policy.</p>
+<p>For a detailed walkthrough of a composite service built with the HTTP Client, see [node:3975]</p>
+<p>The HTTP Client exposes two methods: <code>get()</code> and <code>send()</code>.</p>
+<p><b><code>get()</code></b></p>
+<p>A convenience method for simple HTTP GETs, with no support for HTTP headers.</p>
+<p>Example:</p>
+<pre>var exchange = httpClient.get(“http://www.example.com”);</pre>
+<p><b><code>send()</code></b></p>
+<p>Enables full configuration of the request message using the&nbsp;<span style="font-family:courier new,courier,monospace;">request</span> object to contain the properties of the HTTP request.</p>
+<p>The <span style="font-family:courier new,courier,monospace;">request</span> object is identical in type to the <span style="font-family:courier new,courier,monospace;">request</span> object generated by a standard flow.</p>
+<div id="well">
+	<pre>var myRequest = new Request();
+      myRequest.url = “http://www.example.com”;
+      var exchange = httpClient.send(myRequest);</pre>
+</div>
+<p>Alternatively:</p>
+<div id="well">
+	<pre>var headers = {‘X-SOME-HEADER’ : ‘some value’ };
+	var myRequest = new Request(“http://www.example.com”,”GET”,headers);
+        var exchange = httpClient.send(myRequest); </pre>
+</div>
+<p>or</p>
+<div id="well">
+	<pre>var headers = {‘Content-Type : ‘application/xml’ };
+	var myRequest = new Request(“http://www.example.com”,”POST”,headers,”<foo>”);
+        var exchange = httpClient.send(myRequest);</foo></pre>
+</div>
+<p>The calls to <code>get()</code> and <code>send()</code> immediately return an object that can used later to get the actual HTTP response, or to check whether the response has timed out.</p>
+<p>The object&nbsp;returned by a call to <span style="font-family:courier new,courier,monospace;">httpClient</span> exposes the following methods:</p>
+<ul>
+	<li><code>isError()</code></li>
+	<li><code>isSuccess()</code></li>
+	<li><code>isComplete()</code></li>
+	<li><code>waitForComplete()</code></li>
+	<li><code>getResponse()</code></li>
+	<li><code>getError()</code></li>
+</ul>
+<p>Example:</p>
+<div id="well">
+	<pre>var ex1 = httpClient.get(“http://www.example.com?api1”); 
+var ex2 = httpClient.get(“http://www.example.com?api2”);</pre>
+</div>
+<p>The returned object can be accessed later during flow processing, for example by another JavaScript policy:</p>
+<div id="well">
+	<pre>ex1.waitForComplete();      // Thread is paused until the response is returned or error or step time limit has been reached.
+ex2.waitForComplete(100);   // Thread is paused for a maximum of 100 ms.
+
+if (ex1.isSuccess() &amp;&amp; ex2.isSuccess() {
+ response.content = ex1.getResponse().content +
+             ex2.getResponse().content
+}</pre>
+</div>
+
+
+<h2>Learn more:</h2>
+<p>This document is intended to be an overview and a reference.</p>
+<p>For basic samples and instructions, refer to the Developer Guide topic, [node:3971]</p>
+<p>For an example of more advanced JavaScript programming on the API Platform, refer to the Developer Guide topic [node:3975]</p>
+<p>For assistance, post to the <a href="http://support.apigee.com">Developer Forum</a>.</p>
