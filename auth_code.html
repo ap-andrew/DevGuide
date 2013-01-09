@@ -1,7 +1,7 @@
 <p>[toc]</p>
-<p>This quick start demonstrates how to setup authorization for your APIs using the OAuth 2.0 authorization code grant type for the Simple Proxy in the <a href="https://github.com/apigee/api-platform-samples">API Platform Samples</a> available on Github.</p>
-<p>In [node:819], you configured the Simple Proxy to support OAuth 2.0 client credentials. In this quick start, you configure an OAuth proxy that builds on the policies configured in [node:819], but instead of the client credential grant type, it supports OAuth 2.0 'authorization code' strategy.</p>
-<p>This quick start also builds on the API product, developer, and app that you set up in [node:427]. The API product provides quota-limited access to requests sent to the API resource <code>/weather</code>. If you have not done so, you need to first follow the steps in [node:427].</p>
+<p>This topic demonstrates how to setup authorization for your APIs using the OAuth 2.0 authorization code grant type for the Simple Proxy in the <a href="https://github.com/apigee/api-platform-samples">API Platform Samples</a> available on Github.</p>
+<p>In [node:819], you configured the Simple Proxy to support OAuth 2.0 client credentials. In this topic, you configure an OAuth proxy that builds on the policies configured in [node:819], but instead of the client credential grant type, it supports OAuth 2.0 'authorization code' strategy.</p>
+<p>This topic also builds on the API product, developer, and app that you set up in [node:427]. The API product provides quota-limited access to requests sent to the API resource <code>/weather</code>. If you have not done so, you need to first follow the steps in [node:427].</p>
 <p>Apps that use the "authorization code" grant type obtain access tokens indirectly. These apps redirect the app end user's browser to a pre-defined URL that produces an authorization code, which then redirects the app end user's browser to a login Web application for authentication. This grant type is designed for Web apps that communicate directly with the provider API.</p>
 <p>For more background on OAuth, please refer to <a href="http://tools.ietf.org/html/draft-ietf-oauth-v2-26">the OAuth 2.0 Specification</a>, or to <a href="http://apigee.com/about/api-best-practices/security-%26-oauth/all">Apigee's best practices for securing APIs with OAuth.</a></p>
 <h2>Creating OAuth policies</h2>
@@ -187,7 +187,7 @@ Environment: test
 <div id="well">
 	<pre>HTTP/1.1 302 Found Location:login.weatherapp.com?scope=READ&amp;state=foobar&amp;code={AuthCode}</pre>
 </div>
-<p>OAuth client apps must support 302 redirect responses. In an actual OAuth app, the URL <code>login.weatherapp.com?scope=READ&amp;state=foobar&amp;code={AuthCode}</code> would be invoked by a Web browser. The Web browser would redirect to the login page at <code>login.weatherapp.com</code>.</p>
+<p>OAuth client apps must support HTTP <code>302</code> redirect responses. In an actual OAuth app, the URL <code>login.weatherapp.com?scope=READ&amp;state=foobar&amp;code={AuthCode}</code> would be invoked by a Web browser. The Web browser would redirect to the login page at <code>login.weatherapp.com</code>.</p>
 <p><b>Developing this login app is part of the API provider's responsibility.</b></p>
 <p>Note the <code>state</code> parameter. This parameter is designed prevent cross-site request forgery attacks and should be unique for every request. While it is not required, it is strongly recommended.</p>
 <p>To retrieve the access token, the login page or pages at <code>login.weatherapp.com&nbsp;</code>makes a POST request to the API proxy.</p>
