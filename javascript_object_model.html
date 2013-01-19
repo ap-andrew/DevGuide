@@ -1,11 +1,10 @@
 <p>[toc]</p>
-<p>As an API developer you are undoubtedly familiar with JavaScript. The Apigee API Platform enables you to leverage your background with JavaScript to implement custom API behavior without having to change the code of your APIs or backend services.</p>
-<p>Apigee's API Platform can be used as a managed container for executing your custom JavaScript. You write the custom logic, and Apigee provides the container, security, management, monitoring, analytics.</p>
-<p>The benefit of this approach is that it lets you offload common functions like rate limiting, API key provisioning, OAuth authorization, transformations, and such, freeing you to focus on innovation.</p>
-<p>In short, you can combine Apigee's out-of-the-box policies with your own custom JavaScript to implement sophisticated and reliable behavior that meets the needs of your apps and, if you expose APIs, your API developers.</p>
+<p>The Apigee API Platform enables developers to leverage background with JavaScript to implement custom API behavior without having to change the code of backend services. The API Platform can be used as a managed container for executing custom JavaScript written JavaScript Object Model defined by Apigee. developers write custom logic, and Apigee provides the container, security, monitoring, and analytics to manage and scale custom code.</p>
+<p>The benefit of this approach is that it enables developers to offload common functions such as rate limiting, API key provisioning, OAuth authorization, transformations, and such, freeing you to focus on coding innovative aspects of an API.</p>
+<p>In short, developers can combine Apigee's out-of-the-box policies with custom JavaScript to implement sophisticated and reliable behavior that meets the needs of apps and API developers.</p>
 <h3>Learn more</h3>
-<p>This document is intended to be an overview and a reference.&nbsp;</p>
-<p>For basic samples and &nbsp;instructions on getting JavaScript running on the API Platform refer to the quick start, [node:3971]</p>
+<p>This document is intended to be an overview and a reference.</p>
+<p>For basic samples and &nbsp;instructions on getting JavaScript running on the API Platform refer to the Developer Guide topic, [node:3971]</p>
 <p>For an example for more advanced JavaScript programming on the API Platform, see [node:3975]</p>
 <h2>The Apigee Object Model</h2>
 <p>If you have a good grasp of JavaScript, you just need to become familiar with Apigee's object model.&nbsp;JavaScript that executes in a browser relies on the "browser object model", or BOM. JavaScript that executes on the Apigee API Platform relies on a message-oriented object model. This object model defines request, response, and context objects with associated properties. This document describes these objects and provides samples to get you started writing your own JavaScript against the Apigee object model.</p>
@@ -188,7 +187,7 @@ var msg = targetResponse.content.status.message;   // "OK"</pre>
 </div>
 <p>Set the content only on the proxy response flow:</p>
 <div id="class">
-	<pre>if (context.flow=="PROXY_RESP_FLOW") {
+	<pre>if (i.flow=="PROXY_RESP_FLOW") {
      response.content='bar';
 }</pre>
 </div>
