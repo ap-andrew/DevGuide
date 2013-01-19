@@ -181,13 +181,13 @@ Environment: test
 	<li><code>redirect_uri</code>must be the same as the <code>callbackUrl</code> for requesting (in this example <code>login.weatherapp.com</code>)</li>
 </ul>
 <div id="well">
-	<pre>$ curl  "http://myorg-test.apigee.net/weather/oauth/authorize?response_type=code&amp;client_id={consumerKey}&amp;redirect_uri=login.weatherapp.com&amp;scope=READ&amp;state=foobar"</pre>
+	<pre>$ curl  "http://myorg-test.apigee.net/weather/oauth/authorize?response_type=code&amp;client_id={consumer_key}&amp;redirect_uri=login.weatherapp.com&amp;scope=READ&amp;state=foobar"</pre>
 </div>
 <p>This command returns a redirect response:</p>
 <div id="well">
-	<pre>HTTP/1.1 302 Found Location:login.weatherapp.com?scope=READ&amp;state=foobar&amp;code={AuthCode}</pre>
+	<pre>HTTP/1.1 302 Found Location:login.weatherapp.com?scope=READ&amp;state=foobar&amp;code={auth_code}</pre>
 </div>
-<p>OAuth client apps must support HTTP <code>302</code> redirect responses. In an actual OAuth app, the URL <code>login.weatherapp.com?scope=READ&amp;state=foobar&amp;code={AuthCode}</code> would be invoked by a Web browser. The Web browser would redirect to the login page at <code>login.weatherapp.com</code>.</p>
+<p>OAuth client apps must support HTTP <code>302</code> redirect responses. In an actual OAuth app, the URL <code>login.weatherapp.com?scope=READ&amp;state=foobar&amp;code={auth_code}</code> would be invoked by a Web browser. The Web browser would redirect to the login page at <code>login.weatherapp.com</code>.</p>
 <p><b>Developing this login app is part of the API provider's responsibility.</b></p>
 <p>Note the <code>state</code> parameter. This parameter is designed prevent cross-site request forgery attacks and should be unique for every request. While it is not required, it is strongly recommended.</p>
 <p>To retrieve the access token, the login page or pages at <code>login.weatherapp.com&nbsp;</code>makes a POST request to the API proxy.</p>
@@ -207,4 +207,4 @@ Environment: test
 
 <p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
 
-<p>Back to <a href="/docs/api/quick-starts-index">API Platform Developer Guide</a>.</p>
+<p>Back to <a href="/docs/enterprise/content/developer_guide">API Platform Developer Guide</a>.</p>

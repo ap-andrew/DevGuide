@@ -1,24 +1,23 @@
 <p>[toc]</p>
 
 
-<p>Apigee API facades are implemented in API proxies. AN API Proxy is a bundle of configuration files (including policies) and (optionally) code. 
-	
-Apigee enables you develop API proxies locally and host them remotely on the Apigee API Platform, providing the flexibility to do advanced configuration and programming locally, using code editors and development tools. Over time, you can optimize your workflow locally and in the Management UI.</p>
+<p>Apigee API facades are implemented in API proxies. An API Proxy is a bundle of configuration files (including policies) and (optionally) code. Apigee enables you develop API proxies locally and host them remotely on the Apigee API Platform, providing the flexibility to do advanced configuration and programming locally, using code editors and development tools. Over time, you can optimize your workflow locally and in the Management UI.</p>
 
-<p>To support local development of API facades, Apigee provides an open-source tool written in Python to help you simplify and manage the process of packaging and deploying APIs from your local machine to Apigee. (The [node:2047]&nbsp;provides information on complete set up information.)</p>
+<h2>Working with the Apigee python deploy tool</h2>
 
-<h2><a class="jumplink" name="deploy_tool"></a>Importing and deploying an API using the deploy tool</h2>
+<p>To support local development of API facades, Apigee provides an open-source tool written in Python to help you simplify and manage the process of packaging and deploying APIs from your local machine to Apigee. (The [node:2047] provides information on complete set up information.)</p>
+
 <p>Now you use Apigee’s Python tool to import (upload) and deploy your API in one simple process.</p>
-<p>In the <span style="font-family:courier new,courier,monospace;">api-platform-samples package</span>, the deploy&nbsp;tool, <code>deploy.py</code>, is available under <code>/tools</code></p>
+<p>In the api-platform-samples package, the deploy tool, <code>deploy.py</code>, is available under <code>/tools</code></p>
 
-<p>The command below imports an API proxy called 'weatherapi' to the 'test' environment in an organization specify in <code>myorg</code>.</p>
-<p>Substitute your username, password, and Apigee API Platform organization for <code>myname:mypass</code> and <code>myorg</code>. (These are the credentials used to login in to your account on <a href="http://enterprise.apigee.com">enterprise.apigee.com</a>.)</p>
+<p>The command below imports an API proxy called 'weatherapi' to the 'test' environment in an organization specified in <code>myorg</code>.</p>
+<p>Substitute a valid username, password, and Apigee API Platform organization for <code>myname:mypass</code> and <code>myorg</code>. (These are the credentials used to login in to your account on <a href="http://enterprise.apigee.com">enterprise.apigee.com</a>.)</p>
 
-<p>The deploy tool must be run from the base directory in the distribution. You provide a pointer to the directory that contains the <code>/apiproxy</code> directory, in this case <code>simpleProxy</code></p>
-<p>For example, from the base directory of <code>api-platform-samples</code>, run:</p>
+<p>A pointer must be provided to the directory that contains the <code>/apiproxy</code> directory, in this case <code>simpleProxy</code></p>
+<p>For example, run:</p>
 <pre>$ python tools/deploy.py -n weatherapi -u myname:mypass -o myorg -e test -p / -d simpleProxy</pre>
 
-<p>This single action zips the API proxy configuration files, pushes them to to the specified organization on the API Platform, and deploy the API proxy  to the specified environment, in the following example, 'test'.</p>
+<p>This single action zips the API proxy configuration files, pushes them to to the specified organization on the API Platform, and deploys the API proxy  to the specified environment, in the following example, 'test'.</p>
 
 <p>On success the result is:</p>
 <pre>Writing ./simpleProxy/apiproxy/weatherapi.xml to apiproxy/weatherapi.xml
@@ -30,6 +29,7 @@ Environment: test
   State: deployed</pre>
 
 <p>The tool has zipped up the API proxy configuration, imported the package to the API Platform, and deployed to the test environment.</p>
+
 <p>At this point, the API facade can be invoked by client apps.</p>
 
 <h2><a class="jumplink" name="submit"></a>Invoke an API facade</h2>
@@ -41,6 +41,7 @@ Environment: test
 	<li>The Apigee facade base URL (<code>apigee.net</code>, NOT <code>api.enterprise.apigee.com</code>)</li>
 	<li>The base path URI fragment you configure for the API proxy (in the example above, <code>/weather</code>)</li>
 </ul>
+
 <p>The URL for the API facade in this example is:</p>
 
 <pre>http://{org_name}-test.apigee.net/weather</pre>
@@ -49,28 +50,17 @@ Environment: test
 
 <pre>http://apifactory-test.apigee.net/weather</pre>
 
-<p>To invoke an API facade, submit requests to:</p>
+<p>To invoke an API facade, clients submit requests to:</p>
 
 <pre>$ curl http://{org_name}-{env_name}.apigee.net/weather/forecastrss?w=12797282</pre>
 
-The API Platform takes the URI path following the base path (as defined in the ProxyEndpoint) and appends the value to the URL defined in the HTTPConnection for the TargetEndpoint. The result would be an outbound call to:
+<p>The API Platform takes the URI path following the base path (as defined in the ProxyEndpoint) and appends the value to the URL defined in the HTTPConnection for the TargetEndpoint. The result would be an outbound call to:</p>
 
 <div id="well"><pre>http://weather.yahooapis.com/forecastrss?w=12797282</pre></div>
 
 <p>The API Platform receives the response and returns the response to the client app.</p>
 
-<h2>Revisions</h2>
 
-<p>The API Platform tracks updates to an API facade by creating a new revision each time an API facade is modified and deployed. (Note that this is the default behavior enabled by the deploy tool. The Management UI provides additional control over the creation of new revisions during editing.)</p>
+<p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
 
-The API Platform API is useful for working with revisions:
-
-<h2>Deployments</h2>
-
-<p>A deployment is a deployed revision of an API proxy. Only one revision of an API proxy can be deployed in an environment at a time.</p>
-
-<p>If you do not receive a response from Yahoo weather, see [node:4536].</p>
-
-<p>If you have other issues or questions, please post them to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
-<h2>Next steps</h2>
-<p>[node:4133]</p>
+<p>Back to <a href="/docs/enterprise/content/developer_guide">API Platform Developer Guide</a>.</p>

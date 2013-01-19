@@ -1,75 +1,52 @@
 <p>[toc]</p>
-<h2>API Facade Structure</h2>
-
+<p>The Apigee API platform exposes API management capabilities through two interfaces: a Management UI and a RESTful API. This API Platform Developer Guide demonstrates usage of the API Platform API for local development of API management capabilities.</p>
+<p>As a developer working with the Apigee API Platform, your primary development activities involve configuring API facades that function as proxies for APIs or backend services. For this reason, it's useful to begin with a complete understanding of the structure of an API facade.</p>
+<h2>API facade structure</h2>
 <p>An API facade has the following basic components:</p>
-<ul><li>Base Configuration: Primary configuration settings for an API facade</li>
-<li>ProxyEndpoint Configuration: Settings for the inbound HTTP connection (from requesting apps to the API platform), request and response flows, and policy attachments</li>
-<li>TargetEndpoint Configuration: Settings for the outbound HTTP connection (from the API platform to the backend service), request and response flows, and policy attachments</li>
-<li>Flows: ProxyEndpoint and TargetEndpoint request and response pipelines to which polices can be attached.</li>
-<li>Policies: XML-formatted configuration files that conform to the API Platform policy schemas</li>
-<li>Resources: Scripts, JAR files, and XSLT files referenced by policies to execute custom logic</li></ul>
+<ul>
+	<li>Base Configuration: Primary configuration settings for an API facade</li>
+	<li>ProxyEndpoint Configuration: Settings for the inbound HTTP connection (from requesting apps to the API platform), request and response flows, and policy attachments</li>
+	<li>TargetEndpoint Configuration: Settings for the outbound HTTP connection (from the API platform to the backend service), request and response flows, and policy attachments</li>
+	<li>Flows: ProxyEndpoint and TargetEndpoint request and response pipelines to which polices can be attached.</li>
+	<li>Policies: XML-formatted configuration files that conform to the API Platform policy schemas</li>
+	<li>Resources: Scripts, JAR files, and XSLT files referenced by policies to execute custom logic</li>
+</ul>
+<h3>API facade directory structure and contents</h3>
+<p>The components are reflected in the directory structure of a typical API facade:</p>
+<p>[[{"type":"media","view_mode":"media_large","fid":"1084","attributes":{"alt":"","class":"media-image","height":"176","typeof":"foaf:Image","width":"200"}}]]</p>
+<h2>Creating an API facade</h2>
+<p>API facades can be created in three way: By using the Management UI, by invoking the RESTful API Platform API, or by manually creating configuration files on your local machine. (For instructions on using the Management UI, refer to the API Platform User Guide.)</p>
 
-<h2>API proxy directory structure:</h2>
+<h3>Using the API Platform API</h3>
+<p>The APi Platform API can be used to generate API facades. The API Platform API is RESTful, and it exposes an API resource <code>/apis</code>. API facades are represented as <code>/apis</code> by the API Platform API.  The API Platform API returns JSON representations of resources by default, but XML representations can be requested as well.</p>
 
-<p>The components are reflected in the directory structure for an API facade:</p>
+<p>A list of all API facades available in your organization can be retrieved using an HTTP GET call against the URI:</p>
 
-<div id="well"><pre>/apiproxy
-base_configuration.xml
-/proxies
-- proxy_endpoint.xml
-/targets
-- target_endpoint.xml
-/policies
-- policy1.xml
-- policy2.xml
-. . .
-/resources
-  /jsc
-    javascript1.js
-  /xsl
-    xslt1.xsl
-  /py
-    python_script1.py</pre></div>
+<div id="class"><pre>/organizations/{org_name}/apis</pre></div>
+	
+<p>The base path for the cloud version of the API Platform API is:</p> 
+<div id="class"><pre>https://api.enterprise.apigee.com/v1</pre></div>
 
-<h3>Required settings</h3>
-<p>Most API facade contents are optional. The minimal functional API facade requires:</p>
+<p>To get a list of all APIs in an organization, the complete URL is: </p>
+<div id="class"><pre>https://api.enterprise.apigee.com/v1/organizations/{org_name}/apis </pre></div>
 
-<div id="well"><pre>base_configuration.xml
-/proxies
-- proxy_endpoint.xml</pre></div>
+<p>Since the API Platform API relies on HTTP Basic Authentication, a complete request in curl would be, for example:</p> 
 
-<p>The most common API facade configuration is:</p>
+<div id="class"><pre>$ curl -X GET https://api.enterprise.apigee.com/v1/organizations/{org_name}/apis \
+-u myname:mypass </pre></div>
 
-<div id="well"><pre>base_configuration.xml
-/proxies
-- proxy_endpoint.xml
-/targets
-- target_endpoint.xml
-/policies</pre></div>
+<p>where <code>myname:mypass</code> are the username and password for an account in an Apigee organization.</p> 
 
-
-<h3>Base Configuration</h3>
-<h3>weatherapi.xml</span></h3>
-
-<p>API facades can be manually created locally or they can generated by the API Platform. API facades are generated by providing a name for the API facade that is unique within an organization on the API Platform.</p>
-<p>For example, to generate an API facade called <code>weatherapi</code>, create the following file:</p>
-
-<pre>&lt;APIProxy name="weatherapi"&gt;
-&lt;/APIProxy&gt;</pre>
-
-<p>This file defines the most basic API proxy possible:</p>
-<p><strong>APIProxy Name:</strong> The name you give this API proxy, which displays in the Management UI and which uniquely identifies this API proxy in your Apigee organization.</p>
-
-<p>An API facade can be generated on the API Platform with the following API call:</p>
-
-$ curl https://api.enterprise.apigee.com/v1/o/{org_name}/apis -X POST -d \
-  '{ "name" : "weatherapi" }' \
--H "Content-type:application/json" \
--u myname:mypass
-
-<p>When you create an API facade, a profile for the API proxy is generated on the API Platform. As you can see below, the default representation of an API proxy is JavaScript object notation (JSON).</p>
-
-<div id="well"><pre>{
+<p>An API facade can be generated on the API Platform by making a POST request (JSON or XML) to the same <code>/apis</code> resource, along with a payload that defines a unique name:</p>
+<div id="class">
+	<pre>$ curl -H "Content-type:application/json" -X POST -d \
+  '{ "name" : "weatherapi" }'
+https://api.enterprise.apigee.com/v1/o/{org_name}/apis \
+-u myname:mypass</pre>
+</div>
+<p>When you create an API facade, a profile for the API proxy is generated on the API Platform. The default representation of an API proxy is JavaScript object notation (JSON).</p>
+<div id="well">
+	<pre>{
   "configurationVersion" : {
     "majorVersion" : 4,
     "minorVersion" : 0
@@ -88,18 +65,20 @@ $ curl https://api.enterprise.apigee.com/v1/o/{org_name}/apis -X POST -d \
   "targetEndpoints" : [ ],
   "targetServers" : [ ],
   "type" : "Application"
-}</pre></div>
-
-<p>The profile can also be retrieved as XML:</p>
-
-<div id="well"><pre>$ curl https://api.enterprise.apigee.com/v1/o/{org_name}/apis -X POST -d \
-'<APIProxy name="weatherapi"></APIProxy>' \
+}</pre>
+</div>
+<p>A JSON representation may be confusing, since API facade configuration files (and policies, for that matter) are defined by XML schema definitions (<code>.xsd</code>). Therefore, it may be easier to specify XML when working with the API Platform API. Keep in mind that the response payload merely contains a representation of an API resource--you can create an API facade using JSON or XML, but you can also retrieve representations of the API facade (or any other entity on the API Platform) as XML or JSON, depending on your needs.</p>
+<div id="well">
+	<pre>$ curl https://api.enterprise.apigee.com/v1/o/{org_name}/apis -X POST -d \
+'&lt;APIProxy name="weatherapi"&gt;&lt;/APIProxy&gt;' \
 -H "Content-type:application/xml" \
 -u myname:mypass</pre>
 </div>
-<div id="well"><pre>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;yes&quot;?&gt;
-&lt;APIProxy revision=&quot;1&quot; name=&quot;weatherapi&quot;&gt;
-    &lt;ConfigurationVersion minorVersion=&quot;0&quot; majorVersion=&quot;4&quot;/&gt;
+<p>An XML representation of an API facade:</p>
+<div id="well">
+	<pre>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;
+&lt;APIProxy revision="1" name="weatherapi"&gt;
+    &lt;ConfigurationVersion minorVersion="0" majorVersion="4"/&gt;
     &lt;CreatedAt&gt;1357176743399&lt;/CreatedAt&gt;
     &lt;CreatedBy&gt;you@yourcompany.com&lt;/CreatedBy&gt;
     &lt;DisplayName&gt;weatherapi&lt;/DisplayName&gt;
@@ -110,31 +89,58 @@ $ curl https://api.enterprise.apigee.com/v1/o/{org_name}/apis -X POST -d \
     &lt;Resources/&gt;
     &lt;TargetServers/&gt;
     &lt;TargetEndpoints/&gt;
-&lt;/APIProxy&gt;</pre></div>
-
-
+&lt;/APIProxy&gt;</pre>
+</div>
 <p>The API proxy profile that is generated demonstrates the complete structure of an API proxy:</p>
+<ul>
+	<li>APIProxy revision: The sequentially numbered iteration of the API proxy configuration, as maintained by the API Platform</li>
+	<li>APIProxy name: The unique name of the API proxy</li>
+	<li>ConfigurationVersion: API Platform version to which the API proxy configuration conforms</li>
+	<li>CreatedAt: Time when the API proxy was generated on the API platform, formatted in UNIX time</li>
+	<li>CreatedBy: Email address of the Apigee user who created the API proxy</li>
+	<li>DisplayName: A user-friendly name for the API proxy</li>
+	<li>LastModifiedAt: Time when the API proxy was generated on the API platform, formatted in UNIX time</li>
+	<li>LastModifiedBy: Email address of the Apigee user who created the API proxy o the API platform</li>
+	<li>Policies: A list of policies that are available for enforcement</li>
+	<li>ProxyEndpoints: A list of named ProxyEndpoints</li>
+	<li>Resources: A list of resources (JavaScript, Python, Java, XSLT) available for use by this API proxy</li>
+	<li>TargetServers: A list of named target servers that may be used for load balancing</li>
+	<li>TargetEndpoints: A list of named TargetEndpoints</li>
+</ul>
+<p>Any API facade on the API Platform can be exported to your local machine in two ways: By using the Management UI or by calling the RESTful API Platform API. To export an API facade using the API Platform API as a ZIP file called <code>apiproxy.zip</code>:</p>
+<div id="class">
+	<pre>$ curl https://api.enterprise.apigee.com/v1/o/{org_name}/apis/{api_name}/revisions/{revision_number}?format=bundle &gt; apiproxy.zip \
+-u myname:mypass</pre>
+</div>
+<p>Note that when working with API facades, revisions are important. A revision is a sequentially numbered iteration of your API facade configuration, which is tracked by the API Platform. To view a list of revisions, perform a GET on your API facade. For example:</p>
+<div id="class">
+	<pre>$ curl https://api.enterprise.apigee.com/v1/o/{org_name}/apis/weatherapi \
+-u myname:mypass</pre>
+</div>
+<div id="class">
+	<pre>{
+  "name" : "weatherapi",
+  "revision" : [ "1", "2" ]
+}
+</pre>
+</div>
+<p>Once an API facade is exported to your local machine, unzip the package. The API facade configuration can be imported into a code or text editor, and checked in to revision control.</p>
+<h3>Manually Creating Configuration Files</h3>
+<p>API facades can be created from scratch by generating the necessary configuration files using a text editor or by using an XML-aware integrated development environment to generate the files from the XML schemas provided in the <a href="https://github.com/apigee/api-platform-samples">API Platform samples</a> on Github.</p>
+<p>To create an API facade on your local machine, create a directory called <code>apiproxy</code> containing the following files and directory structure:</p>
+<p>[[{"type":"media","view_mode":"media_large","fid":"1084","attributes":{"alt":"","class":"media-image","height":"176","typeof":"foaf:Image","width":"200"}}]]</p>
+<p>Inside the <code>apiproxy</code> directory, create a file called <code>{myfacade}.xml</code>, where the variable <code>{myfacade}</code> is a name you create. For example to create an API facade called weatherapi, create a file called <code>weatherapi.xml</code> with the following contents:</p>
+<pre>&lt;APIProxy name="weatherapi"&gt;
+&lt;/APIProxy&gt;</pre>
+<p>This file defines the most basic API proxy possible:</p>
+<p><strong>APIProxy Name:</strong> The name you give this API proxy, which displays in the Management UI and which uniquely identifies this API proxy in your Apigee organization.</p>
+<p>Once local configuration file have been created, the local API facade configuration must be imported to an organization. Three options are provided for importing API facade configurations: By using the Management API, by calling the RESTful API Platform API, or by using the open-source deployment tool provided by Apigee in the <a apigee="" github.com="" https:="">API Platform samples</a> on Github.</p>
+<h2>Base Configuration</h2>
+<h3>weatherapi.xml</h3>
+<p>The base configuration for an API facade minimally defines the name of the API facade. The name must be unique within an organization.</p>
+<h2>ProxyEndpoint</h2>
+<p>The ProxyEndpoint configuration defines the inbound interface for an API facade. The following sample ProxyEndpoint configuration, which would be stored under <code>/apiproxy//proxies</code>:</p>
 
-<ul><li>APIProxy revision: The sequentially numbered iteration of the API proxy configuration, as maintained by the API Platform</li>
-<li>APIProxy name: The unique name of the API proxy</li>
-<li>ConfigurationVersion: API Platform version to which the API proxy configuration conforms</li>
-<li>CreatedAt: Time when the API proxy was generated on the API platform, formatted in UNIX time</li>
-<li>CreatedBy: Email address of the Apigee user who created the API proxy</li>
-<li>DisplayName: A user-friendly name for the API proxy</li>
-<li>LastModifiedAt: Time when the API proxy was generated on the API platform, formatted in UNIX time</li>
-<li>LastModifiedBy: Email address of the Apigee user who created the API proxy o the API platform</li>
-<li>Policies: A list of policies that are available for enforcement</li>
-<li>ProxyEndpoints: A list of named ProxyEndpoints</li>
-<li>Resources: A list of resources (JavaScript, Python, Java, XSLT) available for use by this API proxy</li>
-<li>TargetServers: A list of named target servers that may be used for load balancing</li>
-<li>TargetEndpoints: A list of named TargetEndpoints</li></ul>
-
-<h3>Proxy Endpoint Configuration</h3>
-<h3>/proxies/default.xml</span></h3>
-<p>The ProxyEndpoint configuration defines the inbound interface for your API facade. The required configuration elements in a basic facade are:</p>
-<p><strong>Base path: </strong>Used to route requests to this API proxy endpoint, based on the URL of the inbound request. The base path defines the URL that needs to invoked to call this API proxy. Messages with this base path appended to the URL defined in the virtual host are routed to this API facade.</p>
-<p><strong>Virtual Host: </strong>A setting that defines URL connections for an environment. A virtual host named 'default' is available in all Apigee trial organizations. Your organization may also have a virtual host named 'secure', which provides SSL configuration.</p>
-<p><font face="arial, helvetica, sans-serif"><strong>RouteRule</strong>: A pointer to one or more named target definitions (in this example, <code>default</code>) to which requests are passed.</font></p>
 <pre>&lt;ProxyEndpoint name="default"&gt;
 &nbsp; &nbsp; &lt;HTTPProxyConnection&gt;
 &nbsp; &nbsp; &nbsp; &nbsp; &lt;BasePath&gt;/weather&lt;/BasePath&gt;
@@ -145,209 +151,176 @@ $ curl https://api.enterprise.apigee.com/v1/o/{org_name}/apis -X POST -d \
 &nbsp; &lt;/RouteRule&gt;
 &lt;/ProxyEndpoint&gt;</pre>
 
-
-<h2>ProxyEndpoint</h2>
-
+<p>The required configuration elements in a basic facade are:</p>
 <h3>HTTPProxyConnection</h3>
- 
 <ul>
-<li>BasePath: A required string that uniquely identifies the path to an API facade, and which is used by the API Platform to route incoming messages to the proper API facade. The BasePath is a URI fragment (for example <code>/weather</code>) appended to the base URL for an environment (for example, <code>http://apifactory-test.apigee.net</code>) by a requesting client. BasePath must be unique within an environment. Uniqueness is validated by the API Platform when an API facade is imported.</li>
-<li>VirtualHost: An optional string that enables an API facade to be associated with specific base URLs for an environment. A VirtualHost is named configuration for a specific domain associated with an environment. Usually, two named VirtualHosts are defined for an environment: <code>default</code> and <code>secure</code>. To ensure that an API facade is available only over HTTPs, for example, set the VirtualHost in the HTTPProxyConnection to <code>secure</code>.</li>
-<li>Properties: A set of optional HTTP configuration settings are defined as properties of a ProxyEndpoint</li></ul>
-
+	<li>BasePath: A required string that uniquely identifies the URI path used by the API Platform to route incoming messages to the proper API facade. The BasePath is a URI fragment (for example <code>/weather</code>) appended to the base URL for an environment (for example, <code>http://apifactory-test.apigee.net</code>) by a requesting client. BasePath must be unique within an environment. Uniqueness is validated by the API Platform when an API facade is generated or imported.</li>
+	<li>VirtualHost: An optional string that enables an API facade to be associated with specific base URLs for an environment. A VirtualHost is named configuration for a specific domain associated with an environment. The named VirtualHosts defined for a ProxyEndpoint determine the domains and ports on which an API facade is exposed. Usually, two named VirtualHosts are defined for an environment: <code>default</code> and <code>secure</code>. An organization may also have defined custom domains. To ensure that an API facade is available only over HTTPs, for example, set the VirtualHost in the HTTPProxyConnection to <code>secure</code>.</li>
+	<li>Properties: A set of optional HTTP configuration settings are defined as properties of a ProxyEndpoint</li>
+</ul>
 <h3>RouteRule</h3>
-
 <p>A ProxyEndpoint must define at least one RouteRule. A RouteRule defines where an inbound request message is directed after it has been processed by the ProxyEndpoint request pipeline. Usually, the RouteRule points to a named TargetEndpoint configuration.</p>
-
 <p>A RouteRule can contain:</p>
-<ul><li>Name: Required attribute, which provides a name for the ProxyEndpoint definition. The default ProxyEndpoint name is <code>default</code> (that is, API facades generated by the Apigee Enterprise UI have one ProxyEndpoint named <code>default</code>. For UI compatibility, it is recommended that ProxyEndpoints be named <code>default</code>).</li>
-<li>Condition: An optional conditional statement used for dynamic runtime routing, and which may be based on any variable values. Conditional RouteRules are useful, for example, to enable content-based routing to support backend versioning.</li>
-<li>Named TargetEndpoint: String, Not required</li>
-<li>URL: String, Not required</li></ul>
-
-<h3>Named TargetEndpoint</h3>
-
-<p>Named TargetEndpoint refers to a TargetEndpoint configuration under <code>/apiproxy/targets</code>.</p>
-
-<p>For example, the following RouteRule refers to the configuration <code>/apiproxy/targets/myTarget.xml</code></p>.
-
-<div id="well"><pre>&lt;RouteRule name=&quot;default&quot;&gt;
+<ul>
+	<li>Name: Required attribute, which provides a name for the ProxyEndpoint definition. The default ProxyEndpoint name is <code>default</code> (that is, API facades generated by the Apigee Enterprise UI have one ProxyEndpoint named <code>default</code>. For UI compatibility, it is recommended that ProxyEndpoints be named <code>default</code>).</li>
+	<li>Condition: An optional conditional statement used for dynamic runtime routing, and which may be based on any variable values. Conditional RouteRules are useful, for example, to enable content-based routing to support backend versioning.</li>
+	<li>Named TargetEndpoint: An optional string that identifies a named TargetEndpoint configuration (in the same API facade under <code>/targets</code>) to which request messages are forwarded after processing by the ProxyEndpoint request pipeline. Note that this is an optional setting, since a ProxyEndpoint may call a URL directly, or a script or Java application that functions as an HTTP client may execute in the ProxyEndpoint the request pipeline.</li>
+	<li>URL: An optional string that defines an outbound network address called by the ProxyEndpoint, bypassing any TargetEndpoint configurations in under <code>/targets</code>.</li>
+</ul>
+<h3>TargetEndpoint</h3>
+<p>A named TargetEndpoint refers to a TargetEndpoint configuration under <code>/apiproxy/targets</code> to which .</p>
+<p>For example, the following RouteRule refers to the configuration <code>/apiproxy/targets/myTarget.xml</code></p>
+<p>.</p>
+<div id="well">
+	<pre>&lt;RouteRule name="default"&gt;
 	&lt;TargetEndpoint&gt;myTarget&lt;/TargetEndpoint&gt;
-&lt;/RouteRule&gt;</pre></div>
-
+&lt;/RouteRule&gt;</pre>
+</div>
 <h3>Direct URL Invocation</h3>
-
 <p>A ProxyEndpoint can also directly invoke a backend service. Direct URL invocation bypasses any named TargetEndpoints configuration under <code>/apiproxy/targets</code>). For this reason, TargetEndpoint is an optional API facade configuration, although, in practice, direct invocation from the ProxyEndpoint is not recommended.</p>
-
 <p>For example, the following RouteRule makes an HTTP call to <code>http://api.mycompany.com/v2</code>.</p>
-
-<RouteRule name="default">
-	<URL>http://api.mycompany.com/v2</URL>
-</RouteRule>
-	
+<div id="class"><pre>&lt;routerule name=&quot;default&quot;&gt;
+	&lt;url&gt;http://api.mycompany.com/v2&lt;/url&gt; 
+&lt;/routerule&gt;</pre></div>
 <h3>Conditional Routes</h3>
-
 <p>RouteRules can be chained to support dynamic routing at runtime. Inbound requests can be routed to named TargetEndpoint configurations, directly to URLs, or to a combination of the two, based on HTTP headers, message content, query parameters, or contextual information such time of day, locale, etc.</p>
-
 <p>Conditional RouteRules work like other conditional statements on the API Platform. See [node:231] and [node:243].</p>
-
 <p>For example, the following RouteRule combination first evaluates the inbound request to verify the value of an HTTP header. If the HTTP header <code>routeTo</code> has the value <code>TargetEndpoint1</code>, then the request is forwarded to the TargetEndpoint named <code>TargetEndpoint1</code>. If not, then the inbound request is forwarded to <code>http://api.mycompany.com/v2</code>.</p>
-
-<div id="well"><pre>&lt;RouteRule name=&quot;MyRoute&quot;&gt;
-     &lt;Condition&gt;request.header.routeTo = &quot;TargetEndpoint1&quot;&lt;/Condition&gt;
+<div id="well">
+	<pre>&lt;RouteRule name="MyRoute"&gt;
+     &lt;Condition&gt;request.header.routeTo = "TargetEndpoint1"&lt;/Condition&gt;
      &lt;TargetEndpoint&gt;TargetEndpoint1&lt;/TargetEndpoint&gt;
 &lt;/RouteRule&gt;
-&lt;RouteRule name=&quot;default&quot;&gt;
+&lt;RouteRule name="default"&gt;
      &lt;URL&gt;http://api.mycompany.com/v2&lt;/TargetEndpoint&gt;
-&lt;/RouteRule&gt;</pre></div>
-	
+&lt;/RouteRule&gt;</pre>
+</div>
 <h2>TargetEndpoint</h2>
-<p>TargetEndpoint is the outbound equivalent of the ProxyEndpoint, and as such functions as HTTP client to an external service or API. An API facade can contain zero or more TargetEndpoints. (ProxyEndpoints can be configured to call URLs directly when required.)
-</p>
+<p>TargetEndpoint is the outbound equivalent of the ProxyEndpoint, and as such functions as HTTP client to an external service or API. An API facade can contain zero or more TargetEndpoints. (ProxyEndpoints can be configured to call URLs directly when required.)</p>
 <h3>TargetEndpoint Configuration</h3>
-<h3<code>/targets/default.xml</code></h3>
-<p>The TargetEndpoint defines the outbound connection from the  API Platform to the backend service.</span></p>
-<p><span style="font-family: arial, helvetica, sans-serif; ">The most important configuration element in a basic facade is:</span></p>
-<p><span style="font-family: arial, helvetica, sans-serif; "><strong>URL:</strong> The URL defined in the HTTP connection for the TargetEndpoint defines the network address of the service to which requests are forwarded. Most TargetEndpoint configurations provide only a URL.</p>
+<p><h3<code>/targets/default.xml</h3></code></p>
+<p>The TargetEndpoint defines the outbound connection from the API Platform to a backend service.</p>
+<p>The most important configuration element in a basic facade is:</p>
+<p>URL: The URL defined in the HTTPConnection for the TargetEndpoint defines the network address of the service to which requests are forwarded. Most TargetEndpoint configurations provide only a URL.</p>
 <p>For example:</p>
 <pre>&lt;TargetEndpoint name="default"&gt;
 &nbsp; &nbsp; &lt;HTTPTargetConnection&gt;
 &nbsp; &nbsp; &nbsp; &nbsp; &lt;URL&gt;http://weather.yahooapis.com&lt;/URL&gt;
 &nbsp; &nbsp; &lt;/HTTPTargetConnection&gt;
 &lt;/TargetEndpoint&gt;</pre>
-
 <h2>Advanced TargetEndpoint Configuration</h2>
-
 <p>TargetEndpoints must manage HTTP connections with heterogenous backend infrastructure. For this reason, a number of advanced configuration settings are supported.</p>
-
 <h3>TargetEndpoint SSL Options</h3>
-
-<code>&lt;SSLInfo&gt;</code>
-<ul><li>TrustStore</li>
-<li>ClientAuthEnabled</li>
-<li>KeyStore</li>
-<li>KeyAlias</li>
-<li>Ciphers</li>
-<li>Protocols</li></ul>
-
-<h3>TargetEndpoint with outbound client authentication</h3>
-
-<div id="well"><pre>&lt;TargetEndpoint name=&quot;default&quot;&gt;
+<p><code>&lt;SSLInfo&gt;</code></p>
+<ul>
+	<li>TrustStore: A keystore containing trusted server certificates.</li>
+	<li>ClientAuthEnabled: A setting that turns on outbound client authentication (2-way SSL)</li>
+	<li>KeyStore: A keystore containing private keys used for outbound client authentication</li>
+	<li>KeyAlias: The key alias of the private key used for outbound client authentication</li>
+	<li>Ciphers: Supported ciphers for outbound SSL</li>
+	<li>Protocols: Supported protocols for outbound SSL </li>
+</ul>
+<h3>Sample TargetEndpoint with outbound client authentication enabled</h3>
+<div id="well">
+	<pre>&lt;TargetEndpoint name="default"&gt;
   &lt;HttpTargetConnection&gt;
 	&lt;URL&gt;https ://myservice.com&lt;/URL&gt;
     &lt;SSLInfo&gt;
+      &lt;Enabled&gt;true&lt;/Enabled&gt;
       &lt;ClientAuthEnabled&gt;true&lt;/ClientAuthEnabled&gt;
       &lt;KeyStore&gt;myKeystore&lt;/KeyStore&gt;
       &lt;KeyAlias&gt;myKey&lt;/KeyAlias&gt;
       &lt;TrustStore&gt;myTruststore&lt;/TrustStore&gt;
     &lt;/SSLInfo&gt;
   &lt;/HttpTargetConnection&gt;
-&lt;/TargetEndpoint&gt;</pre></div>
-
+&lt;/TargetEndpoint&gt;</pre>
+</div>
 <p>For detailed instructions, refer to [node:4572]</p>
-
-<h3>TargetEndpoint with Target Load Balancing</h3>
-
+<h3>TargetEndpoint with target load balancing</h3>
 <p>TargetEndpoints support load balancing across multiple named TargetServers using three load balancing algorithms.</p>
-
-For detailed instructions, refer to [node:4562]
-
+<p>For detailed instructions, refer to [node:4562]</p>
 <h2>Policies</h2>
-
 <p>The <code>/policies</code> directory in an API proxy contains all policies available to be attached to flows in the API facade. (Policies cannot be shared across API facades. Each API facade requires its own instance of a policy.)</p>
-
-<p>Policies are attached as processing steps to <i>flows</i>. The policy's name is used to reference the policy to be enforced as a processing step. The format of a policy attachment is the following:</p> 
-
-<div id="well"><pre>&lt;Step&gt;&lt;Name&gt;MyPolicy&lt;/Name&gt;&lt;/Step&gt;</pre></div>
-
+<p>Policies are attached as processing steps to <i>flows</i>. The policy's name is used to reference the policy to be enforced as a processing step. The format of a policy attachment is the following:</p>
+<div id="well">
+	<pre>&lt;Step&gt;&lt;Name&gt;MyPolicy&lt;/Name&gt;&lt;/Step&gt;</pre>
+</div>
 <p>Policies are enforced in the order in which they are attached to a flow. For example:</p>
-
-<div id="well"><pre>&lt;Step&gt;&lt;Name&gt;FirstPolicy&lt;/Name&gt;&lt;/Step&gt;</pre></div>
-<div id="well"><pre>&lt;Step&gt;&lt;Name&gt;SecondPolicy&lt;/Name&gt;&lt;/Step&gt;</pre></div>
-
+<div id="well">
+	<pre>&lt;Step&gt;&lt;Name&gt;FirstPolicy&lt;/Name&gt;&lt;/Step&gt;
+&lt;Step&gt;&lt;Name&gt;SecondPolicy&lt;/Name&gt;&lt;/Step&gt;</pre>
+</div>
 <h2>Flows</h2>
-
 <p>ProxyEndpoint and TargetEndpoint define a pipeline for request and response message processing. A processing pipeline consists of a request flow and a response flow. Each request flow and response flow is subdivided into a PreFlow, one or more optional 'conditional' or 'named' flows, and a PostFlow.</p>
-
-<ul><li>PreFlow: Always executes. Executes before any conditional flows.</li>
-<li>PostFlow: Always executes. Executes after any conditional flows.</li></ul>
-
+<ul>
+	<li>PreFlow: Always executes. Executes before any conditional flows.</li>
+	<li>PostFlow: Always executes. Executes after any conditional flows.</li>
+</ul>
 <p>The API facade processing pipeline executes flows in the following sequence:</p>
-
 <p>Request Pipeline:</p>
-<ol><li>Proxy Request PreFlow</li>
-<li>Proxy Request Conditional Flows (Optional)</li>
-<li>Proxy Request PostFlow</li>
-<li>Target Request PreFlow</li>
-<li>Target Request Conditional Flows (Optional)</li>
-<li>Target Request PostFlow</li></ol>
+<ol>
+	<li>Proxy Request PreFlow</li>
+	<li>Proxy Request Conditional Flows (Optional)</li>
+	<li>Proxy Request PostFlow</li>
+	<li>Target Request PreFlow</li>
+	<li>Target Request Conditional Flows (Optional)</li>
+	<li>Target Request PostFlow</li>
+</ol>
 <p>Response Pipeline:</p>
-<ol><li>Target Response PreFlow</li>
-<li>Target Response Conditional Flows (Optional)</li>
-<li>Target Response PostFlow</li>
-<li>Proxy Response PreFlow</li>
-<li>Proxy Response Conditional Flows (Optional)</li>
-<li>Proxy Response PostFlow</li></ol>
-
-<p> Only those flows with policy attachments need to be configured in ProxyEndpoint or TargetEndpoint configurations. Although they always execute, PreFlow and PostFlow need only be specified in a ProxyEndpoint or TargetEndpoint configuration when a policy needs to be enforced during PreFlow or PostFlow processing.</p>
-
-<p>In contrast to conditional flows, the ordering of PreFlow and PostFlows is not important--the API facade will always execute them at the appropriate point in the pipeline.
-</p>
-
+<ol>
+	<li>Target Response PreFlow</li>
+	<li>Target Response Conditional Flows (Optional)</li>
+	<li>Target Response PostFlow</li>
+	<li>Proxy Response PreFlow</li>
+	<li>Proxy Response Conditional Flows (Optional)</li>
+	<li>Proxy Response PostFlow</li>
+</ol>
+<p>Only those flows with policy attachments need to be configured in ProxyEndpoint or TargetEndpoint configurations. PreFlow and PostFlow need only be specified in a ProxyEndpoint or TargetEndpoint configuration when a policy needs to be enforced during PreFlow or PostFlow processing.</p>
+<p>In contrast to conditional flows, the ordering of PreFlow and PostFlows is not important--the API facade will always execute them at the appropriate point in the pipeline, regardless of where they appear in the Endpoint configuration.</p>
 <h3>Conditional Flows</h3>
-
 <p>ProxyEndpoints and TargetEndpoints support an unlimited number of conditional flows (also known as 'named flows').</p>
-
-<p>A common usage of conditional flows is the definition of API resources, as defined by the WADL specification. When an API resource is created in the Management UI, a conditional flow for the associated URI is configured in the API facade.</p>
-
-<p>For example, the following conditional statement defines an API resource <code>/accesstoken</code>. Any inbound request with the URI path suffix <code>/accesstoken</code> will cause this flow to be executed, along with any policies that are attached to the flow. Thus, this API resource functions as an OAuth token endpoint. If the inbound request URI does not include the path suffix <code>/accesstoken</code>, then the flow does not execute (although another conditional flow might). </p>
-
-<div id="well"><pre>&lt;Flows&gt;
-&lt;Flow name=&quot;TokenEndpoint&quot;&gt;
-  &lt;Condition&gt;proxy.pathsuffix MatchesPath &quot;/accesstoken&quot;&lt;/Condition&gt;
+<p>A common usage of conditional flows is the definition of 'API resources', as defined by the WADL specification. When an API resource is created in the Management UI, a conditional flow for the URI is configured in the API facade. In other words, any API resource that you configure in the Management UI results in the creation of a conditional flow that executes for request to that URI. Similarly, any conditional flow configured for a URI is interpreted by the Management UI and the Policy Editor as an API resource.</p>
+<p>For example, the following conditional statement defines an API resource <code>/accesstoken</code>. Any inbound request with the URI path suffix <code>/accesstoken</code> will cause this flow to be executed, along with any policies that are attached to the flow. Thus, this API resource functions as an OAuth token endpoint. If the inbound request URI does not include the path suffix <code>/accesstoken</code>, then the flow does not execute (although another conditional flow might).</p>
+<div id="well">
+	<pre>&lt;Flows&gt;
+&lt;Flow name="TokenEndpoint"&gt;
+  &lt;Condition&gt;proxy.pathsuffix MatchesPath "/accesstoken"&lt;/Condition&gt;
   &lt;Request&gt;
     &lt;Step&gt;&lt;Name&gt;GenerateAccessToken&lt;/Name&gt;&lt;/Step&gt;
   &lt;/Request&gt;
-&lt;/Flows&gt;</pre></div>
-
-<p>The sequential ordering of conditional flows is enforced by the API Platform. Conditional flows execute from top to bottom, and the first conditional flow whose condition evaluates to true is executed. For example, in the following flow configuration, any inbound request that does not include the path suffix <code>/first</code> or <code>/second</code> will cause the <code >ThirdFlow</code> to execute, enforcing the policy called <code>Return404</code>.</p>
-
-<div id="well"><pre>
-&lt;Flows&gt;
-  &lt;Flow name=&quot;FirstFlow&quot;&gt;
-    &lt;Condition&gt;proxy.pathsuffix MatchesPath &quot;/first&quot;&lt;/Condition&gt;
+&lt;/Flows&gt;</pre>
+</div>
+<p>The sequential ordering of conditional flows is enforced by the API Platform. Conditional flows execute from top to bottom, and the first conditional flow whose condition evaluates to true is executed. For example, in the following flow configuration, any inbound request that does not include the path suffix <code>/first</code> or <code>/second</code> will cause the <code>ThirdFlow</code> to execute, enforcing the policy called <code>Return404</code>.</p>
+<div id="well">
+	<pre>&lt;Flows&gt;
+  &lt;Flow name="FirstFlow"&gt;
+    &lt;Condition&gt;proxy.pathsuffix MatchesPath "/first"&lt;/Condition&gt;
     &lt;Request&gt;
       &lt;Step&gt;&lt;Name&gt;FirstPolicy&lt;/Name&gt;&lt;/Step&gt;
     &lt;/Request&gt;
   &lt;/Flow&gt;
-  &lt;Flow name=&quot;SecondFlow&quot;&gt;
-    &lt;Condition&gt;proxy.pathsuffix MatchesPath &quot;/second&quot;&lt;/Condition&gt;
+  &lt;Flow name="SecondFlow"&gt;
+    &lt;Condition&gt;proxy.pathsuffix MatchesPath "/second"&lt;/Condition&gt;
     &lt;Request&gt;
       &lt;Step&gt;&lt;Name&gt;FirstPolicy&lt;/Name&gt;&lt;/Step&gt;
       &lt;Step&gt;&lt;Name&gt;SecondPolicy&lt;/Name&gt;&lt;/Step&gt;
     &lt;/Request&gt;
   &lt;/Flow&gt;
-  &lt;Flow name=&quot;ThirdFlow&quot;&gt;
+  &lt;Flow name="ThirdFlow"&gt;
     &lt;Request&gt;
       &lt;Step&gt;&lt;Name&gt;Return404&lt;/Name&gt;&lt;/Step&gt;
     &lt;/Request&gt;
   &lt;/Flow&gt;
-&lt;/Flows&gt;</pre></div>
-
+&lt;/Flows&gt;</pre>
+</div>
 <h2>Resources</h2>
-
 <p>The resources directory in an API proxy contains scripts, code, and transformations that can be attached to flows using policies.</p>
-
-Four resource types are supported, each of which has its own directory under <code>/resources</code>:
-<ul><li>JavaScript: <code>jsc</code></li>
-<li>Python scripts: <code>py</code></li>
-<li>Java classes (packaged as JAR files): <code>java</code></li>
-<li>XSL transformations: <code>xsl</code></li>
+<p>Four resource types are supported, each of which has its own directory under <code>/resources</code>:</p>
+<ul>
+	<li>JavaScript: <code>jsc</code></li>
+	<li>Python scripts: <code>py</code></li>
+	<li>Java classes (packaged as JAR files): <code>java</code></li>
+	<li>XSL transformations: <code>xsl</code></li>
 </ul>
-
 <p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
-
-<p>Back to <a href="/docs/api/quick-starts-index">API Platform Developer Guide</a>.</p>
-
-
-
+<p>Back to <a href="/docs/enterprise/content/developer_guide">API Platform Developer Guide</a>.</p>

@@ -70,8 +70,7 @@
 <p>The API product above authorizes access to the '/forecastrss' URI. Once appropriate OAuth policies are configured, any request with a valid credential made to the URI path following <span style="font-family:courier new,courier,monospace;">/weather/forecastrss</span> will be authorized.</p>
 <p>The API product above defines settings for the API product's 'quota'. Developers who sign up for this API product will be able to build apps that consume the API resource<span style="font-family:courier new,courier,monospace;"> /weather </span>under the conditions of the quota settings, that is, 1 request per minute.</p>
 
-
-<h2>Developer profile</h2>
+<h2>Creating developer profiles</h2>
 <p>Developers are registered in an organization by creating a profile. This step typically occurs through a developer portal, and, indeed, this API is the same API that is called by Apigee API Platform Developer portal. Note that the developer email that is included here is used as the unique key for the developer throughout the system. Arbitrary attributes can be added to the developer profile as needed. The attributes are not interpreted by the API Platform, but can be of use in custom analytics, custom policy enforcement, and so on.</p>
 <div id="well">
 	<pre>$ curl -H "Content-type:application/json" -X POST -d \
@@ -101,8 +100,8 @@
 	  "lastModifiedBy" : "admin@apigee.com"
 	}</pre>
 </div>
-<h2>Developer apps</h2>
-<p>Every app that is created in the API Platform is associated with a developer and an API product. When an app is registered on behalf of a developer, the API Platform generates a "credential" (a consumer key and secret pair) that identifies the app. This credential is 'bound' (in a loose way) to at least one API product. The credential generated for an app  enables it to consume a set of URI paths at a specified rate (defined by the quota settings in the API product).</p>
+<h2>Registering developer apps</h2>
+<p>Every app that is created on the API Platform is associated with a developer and an API product. When an app is registered on behalf of a developer, the API Platform generates a "credential" (a consumer key and secret pair) that identifies the app. This credential is 'bound' (in a loose way) to at least one API product. The credential generated for an app  enables it to consume a set of URI paths at a specified rate (defined by the quota settings in the API product).</p>
 <div id="well">
 	<pre>$ curl -H "Content-type:application/json" -X POST -d \
       '{"apiProducts": [ "weather_free"], 
@@ -133,9 +132,9 @@
 }</pre>
 </div>
 
-Note that for collective ownership. apps may also be associated with company entities. Such apps are referred to as company apps (as opposed to developer apps).
+<p>Note that for collective ownership. apps may also be associated with company entities. Such apps are referred to as company apps (as opposed to developer apps).</p>
 
-<h2>Managing consumer keys</h2>
+<h2>Managing consumer keys for apps</h2>
 <h4>Get the consumer key (the API Key) for the app</h4>
 <p>The credentials for an app, (API product, consumer key and secret) are returned as part of the app profile. An administrator of an organization can retrieve the consumer key at any time, for developer support, for example.</p>
 
@@ -158,13 +157,13 @@ Note that for collective ownership. apps may also be associated with company ent
   "status" : "approved"
 }</pre>
 </div>
-<h4>Approving consumer keys</h4>
+<h2>Approving consumer keys</h2>
 <p>Consumer keys must be explicitly approved when API products have key approval set to <code>manual</code>. Keys can be explicitly approved using this method call:</p>
 <div id="well">
 	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/developers/ntesla@theramin.com/apps/weatherapp/keys/HQg0nCZ54adKobpqEJaE8FefGkdKFc2J?action=approve</pre>
 </div>
 <p>Sample Response</p>
-<div id="well">
+<div id="well">	
 	<pre>{
 	  "apiProducts" : [ {
 	    "apiproduct" : "weather_free",
@@ -176,7 +175,7 @@ Note that for collective ownership. apps may also be associated with company ent
 	  "status" : "approved"
 	}</pre>
 </div>
-<h4>Approving an API product for a consumer key</h4>
+<h2>Approving API products for consumer keys</h2>
 <p>The <i>association</i> of an API product with a key also has a status. A consumer key can be 'approved' in general, but not approved specifically for an API product. For API access to be successful, the consumer key must be approved, <i>and</i> the consumer key must be approved for the proper API product. The association of a consumer key with an API product can be approved as follows:</p>
 <div id="well">
 	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/developers/ntesla@theramin.com/apps/weatherapp/keys/HQg0nCZ54adKobpqEJaE8FefGkdKFc2J/apiproducts/weather_free?"action=approve""</pre>
@@ -186,4 +185,4 @@ Note that for collective ownership. apps may also be associated with company ent
 
 <p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
 
-<p>Back to <a href="/docs/api/quick-starts-index">API Platform Developer Guide</a>.</p>
+<p>Back to <a href="/docs/enterprise/content/developer_guide">API Platform Developer Guide</a>.</p>

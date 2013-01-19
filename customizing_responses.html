@@ -5,7 +5,7 @@
 <p>In this topic, you configure an API proxy to evaluate a conditional expression for each request that it receives. The expression identifies mobile devices by evaluating the value of the User-Agent header. If the User-Agent header identifies the client device as an iOS client, then the API facade &nbsp;returns a JSON-formatted weather report.&nbsp;</p>
 <h2>Working with variables and conditions</h2>
 <p>Conditional behavior is implemented using a combination of variables, conditional operators, and <a href="http://en.wikipedia.org/wiki/Regular_expression">regular expressions</a>.</p>
-<p>Two documents provide a reference on variables and conditions supported by Apigee:</p>
+<p>Two documents provide a reference on variables and conditions supported by the API Platform:</p>
 <ul>
 	<li>[node:243]</li>
 	<li>[node:231]</li>
@@ -40,7 +40,8 @@
 	&lt;/Flow&gt;
 &lt;/Flows&gt;</pre>
 </div>
-<p>For each request received from an app, the API Platform stores the value of all HTTP headers present as variables. If the request contains an HTTP header called User-Agent, that header and its value are stored as a variable called <code>request.header.User-Agent</code>. Given the ProxyEndpoint configuration above, the API Platform checks the value of the <code>request.header.User-Agent</code> variable to see whether the condition evaluates to true. If the condition does evaluate to true, that is, the value of the variable <code>request.header.User-Agent</code> equals <code>Mozilla</code>, then the conditional flows executes and the XMLtoJSON policy called <code>ConvertToJSON</code> is enforced. If not, the flow is not executed, and the XML response is returned unmodified (in XML format) to the requesting app.</p>
+<p>For each request received from an app, the API Platform stores the value of all HTTP headers present as variables. If the request contains an HTTP header called User-Agent, that header and its value are stored as a variable called <code>request.header.User-Agent</code>. Given the ProxyEndpoint configuration above, the API Platform checks the value of the <code>request.header.User-Agent</code> variable to see whether the condition evaluates to true. </p>
+<p>If the condition does evaluate to true, that is, the value of the variable <code>request.header.User-Agent</code> equals <code>Mozilla</code>, then the conditional flows executes and the XMLtoJSON policy called <code>ConvertToJSON</code> is enforced. If not, the flow is not executed, and the XML response is returned unmodified (in XML format) to the requesting app.</p>
 <h2>Importing and deploying changes</h2>
 <div id="well">
 	<pre>$ tools/deploy.py -u myname:mypass -o myorg -e test -n weatherapi -d simpleProxy</pre>
@@ -58,7 +59,7 @@ Environment: test
 </div>
 <h2>Testing the conditional flow</h2>
 
-In this sample request, the HTTP User-Agent header is set to <code>Mozilla</code>, cauing the conditional statement to evaluate to true and the conditional flow <code >Convert-for-devices</code> to execute.
+In this sample request, the HTTP User-Agent header is set to <code>Mozilla</code>, causing the conditional statement to evaluate to true and the conditional flow <code >Convert-for-devices</code> to execute.
 <div id="well">
 	<pre>$ curl -H "User-Agent:Mozilla" http://{org_name}-test.apigee.net/weather/forecastrss?w=12797282
 
@@ -104,5 +105,5 @@ $ curl -H "User-Agent:Mozilla" http://{org_name}-test.apigee.net/weather/forecas
 
 <p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
 
-<p>Back to <a href="/docs/api/quick-starts-index">API Platform Developer Guide</a>.</p>
+<p>Back to <a href="/docs/enterprise/content/developer_guide">API Platform Developer Guide</a>.</p>
 

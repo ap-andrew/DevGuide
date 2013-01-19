@@ -111,32 +111,32 @@ Undeploying revision 2 in same environment and path:
 Environment: test
   Revision: 3 BasePath = /
   State: deployed</pre>
-	<p>&nbsp;</p>
 </div>
 <h2>Submitting a request with a valid API key</h2>
+A request that does not include an API key results in an authorization failure.
 <div id="well">
 	<pre>$ curl http://{org_name}-test.apigee.net/weather/forecastrss?w=12797282</pre>
 </div>
-<p>The failure message you will see indicates that the policy checked for an API key but did not find a valid key:</p>
+<p>The failure message indicates that the policy checked for an API key but did not find a valid key:</p>
 <div id="well">
 	<pre>OAuth Failure : Could not resolve the app key with variable request.queryparam.apikey</pre>
 </div>
-<p>Now submit the same request, but with the consumer key for the app as a query parameter:</p>
+<p>When the consumer key for the app is included as a query parameter, the expected result is successful authorization:</p>
 <div id="well">
 	<pre>$ curl http://{org_name}-test.apigee.net/weather/forecastrss?w=12797282&amp;"apikey=PulSCqMnXGchW0pC0s5o9ngHVTWMeLqk"</pre>
 </div>
 <p>The expected result is a successful response from the weather service.</p>
-<p>Try modifying the value of the API key value in the request:</p>
+<p>Modifying the value of the API key value in the request results in an authorization failure:</p>
 <div id="well">
 	<pre>$ curl http://{org_name}-test.apigee.net/weather?forecastrss?w=12797282&amp;"apikey=PulSCqMnXGchW0"</pre>
 </div>
 <p>Results in:</p>
 <div id="well">
 	<pre>OAuth Failure : Consumer Key is Invalid</pre>
-	<p>Remember, as administrator for your organization, you can always get the consumer key for the app:</p>
-	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/apps/weatherapp</pre>
+	<p>As an admin for your organization, you can retrieve the consumer key for an app:</p>
+	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{myorg}/developers/{developer_email}/apps/{app_name}</pre>
 </div>
 
 <p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
 
-<p>Back to <a href="/docs/api/quick-starts-index">API Platform Developer Guide</a>.</p>
+<p>Back to <a href="/docs/enterprise/content/developer_guide">API Platform Developer Guide</a>.</p>
