@@ -1,0 +1,165 @@
+
+
+Fault handling enables the explicit management of exceptional events in a message flow. 
+
+Introduction
+
+Any error in the system can be broadly classified into the following categories:
+
+Messaging: Failures arising while driving the message flow (not including the policy failures)
+Policy: Failures arising while enforcing any policies configured in the application.
+Transport: Failures occurring in the transport layer like HTTP due to some protocol level failures (syntactic, semantic, etc).
+System: These are failures which cannot be anticipated by the application developer but which may arise due to various reasons.
+On further analysis the failures in each of these categories can be sub-categorized as:
+Messaging:
+Custom Fault: Any fault deliberately raised by the application using a Raise Fault policy
+Response Codes: Application would like to treat certain response status codes as failures (ex: 500, 404, etc)
+Routing Failures: Any failures in selecting a target for a particular message
+Classification Failures: Any failures in determining which proxy endpoint a particular message belongs to
+Policy:
+Policy Failures: Any faults arising out while enforcing policies in the message flow like RateLimitingFailure, ScriptEvaluationFailure, etc
+Transport:
+Connectivity: Any issues occurring while establishing network or transport level connections
+Request Validation: Some semantics checks done on every request
+Response Validation: Some semantics checks done on every response
+IO Errors: Read or Write errors at client or target endpoints, timeouts, SSL errors and chunked errors
+System:
+Memory: Memory related failures like Out of memory, etc
+Thread: Termination of run-away tasks, etc
+
+Fault Definition
+
+Although these sub-categories narrow down to "areas" of fault origin, it is highly desirable to handle specific faults. Every fault arising in the system is classified with the following characteristics:
+
+Category
+Sub Category
+Name
+Apart from these a fault is almost always accompanied with a reason which explains the reason for the particular failure and is usually a full sentence. When faults are raised in the system, a number of attributes will also be made available to help in trouble shooting. Hence in addition to the above characteristics, a fault will also have the following information:
+Reason
+Attributes (free form)
+The messaging framework is responsible for setting the category since it is capable of classifying a fault into application, transport or system. The Sub Category is also taken care of by the framework, but when a policy is added it declares all the sub-categories of errors 
+Fault Handling
+
+Fault Rule (name to be revised)
+
+Fault handling is done by defining a fault rule and attaching policies in it. The fault rule is characterized by:
+
+An optional condition which usually classifies the fault that it is intended to be handled based on category, sub category, name or any of the attributes
+A list of policy attachments which express the necessary processing
+The logistics of a Fault rule are:
+Any number of fault rules can be defined at either the proxy or the target
+When a fault occurs, only the first fault rule whose condition evaluates to true will be enforced
+The following is the order in which fault rules are evaluated and enforced are:
+Request Path:
+Fault in Proxy Request: Fault rules defined at proxy
+Fault in Routing: Fault rules defined at proxy
+Fault in Target Request: Fault rules defined at target
+Fault in Sending Request to target: Fault rules defined at target
+Response Path:
+Fault in Target Response: Fault rules defined at target
+Fault in Proxy Response: Fault rules defined at proxy
+Fault in Sending Response to proxy: Fault rules defined at proxy
+The policy attachments in the fault rule are enforced in the order of their attachment
+Default Fault Handling
+
+With consideration to some use cases, it was found that a "default" fault handling would be good to have. The default fault handling can be specified at proxy and target. The logistics of the default fault handling are:
+It is unnamed and a first class object
+It has no conditions - always evaluates to true
+By default, it is evaluated only if there was no other fault handling defined
+A flag called "enforceAlways" can be set to true in which case, the policy attachments in it will be enforced even if fault handling was already done. This flag is provided to address use cases where at a proxy endpoint we want to do some processing (add header, etc) to all error responses irrespective of whether the fault was already handled or not
+If there are other fault rules defined, the default fault rule is enforced only after those are evaluated and enforced and if the "enforceAlways" flag is true
+Customizing Fault Responses
+
+Response Content
+
+The most likely or common use case for fault handling is customization of the response message. Normally it would be accomplished by attaching policies to generate the desired error message. In the process of making this simpler, the following is the proposal (not yet implemented):
+
+Customization of error responses can be done by placing templates in specific locations in the application bundle (say, application/resources/messages/)
+The following would be the structure under "messages"
+{fault_category}/{fault_sub_category}/{fault_name}/text_xml_en.template
+{fault_category}/{fault_sub_category}/{fault_name}/application_json_fr.template
+{fault_category}/{fault_sub_category}/{fault_name}/text_html_de.template
+Whenever the fault occurs, the system will have a default mechanism of generating error messages based on the fault
+It would be possible to define templates at category, sub-category or fault name level (make it easy for generic handling of a category of faults)
+{fault_category}/text_xml_en.template
+{fault_category}/{fault_sub_category}/text_xml_fr.template
+Content Type is set based on the HTTP request's "Accept" header. The media type is converted into an identifier as:
+text/xml => text_xml
+application/json => application_json
+Internalization is achieved by suffixing the language suffix to the file name. The language is picked based on the request's "Locale" header. If locale could not be determined, the default locale is picked
+text_xml_en.template
+text_xml.template (default locale)
+The contents of the file can be customized by specifying variables in the form {variable_name}. The framework will do the necessary substitution before sending the response
+The framework tries to first find the most specific error message (based on fault name). In the absence of such a template, the sub-category level messages are looked up and in the absence of which the category level messages are looked up.
+Note:
+
+So far, we only have support for looking up default templates (default) for a fault or subcategory or category or just the default fault. We do not currently lookup for the template based on client's Accept and Accept-Language Headers. This will be taken up later.
+
+Response Status and Headers
+
+A file named "fault-responses.properties" is provided in the "gateway-1.0.0/conf" directory. This file can be used to globally customize the fault responses. Specifically the status code, reason phrase and response headers based on the fault. The file has the following format:
+
+# Fault category level customizations:
+<Category>.status.code=500                                                            # the default status code for all faults of this category
+<Category>.reason.phrase=Internal Server Error                               # the default reason phrase for all faults in this category
+<Category>.header.my-header=An Example                                      # All faults in this category will have the header my-header: An Example
+
+# Fault sub-category level customizations:
+<Category>.<SubCategory>.status.code=500                                      # the default status code for all faults of this sub-category
+<Category>.<SubCategory>.reason.phrase=Internal Server Error         # the default reason phrase for all faults in this sub-category
+<Category>.<SubCategory>.header.my-header=An Example                # All faults in this sub-category will have the header my-header: An Example
+
+# Fault name level customizations:
+<Category>.<SubCategory>.<Name>.status.code=401                          # the default status code for all faults with this name
+<Category>.<SubCategory>.<Name>.reason.phrase=UnAuthorized       # the default reason phrase for all faults with this name
+<Category>.<SubCategory>.<Name>.header.<header-name>=An Example   # All faults with this name will have the header my-header: An Example
+
+
+
+Note:
+
+Fault Category, SubCategory and Names are case insensitive.
+The headers specified will be used in the case specified.
+The customizations are cumulative i.e. headers specified for the category or subcategory or name will be combined if it is applicable for a fault.
+Table of common faults
+
+This is NOT an exhaustive list, but a table of common faults to give an idea of how the fields are.
+
+ Category
+ Sub Category 
+ Name
+ System	 	 
+ 	 Memory	 OutOfMemory
+ GCOverLimit
+ 	 Thread	 RogueTaskTerminated
+ Transport	 	
+ 	 Connection	 ConnectionRefused
+ ConnectionReset
+ ConnectionTimeout
+ 	 Validation	 ContentLengthMissing
+ HostHeaderMissing
+ 	 IOError	 SSLHandshakeError
+ ReadTimeout
+ ReadError
+ WriteTimeout
+ WriteError
+ ChunkError
+ Step	 	 
+ 	 RateLimitFailure	 QuotaLimitExceeded
+ MessageWeightUnresolved
+ 	 ScriptEvaluationFailure	 ScriptEngineFailure
+ Messaging	 
+ 
+ 	 CustomFault	 {specific name}
+ 	 ServerResponse	 InternalServerError
+ NotFound
+ 	 RouteFailure	 NoRoutesMatched
+Use cases
+
+In most of the use cases, faults in the "System" category are almost never handled. It will be left to the framework to prevent, avoid or handle them.
+
+The faults in the "Transport" category may not be specifically handled (different handling for different faults in the category). The handling would most likely include generation of an error response for any faults in the category.
+
+The "Messaging" faults are framework related and need not be specifically handled.
+
+All "Policy" faults are most likely handled specifically (ex: If fault name is quota limit exceeded, then ...). The handling varies from use case to use case but this comprises the bulk of the fault handling.

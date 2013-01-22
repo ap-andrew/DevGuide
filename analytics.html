@@ -1,6 +1,6 @@
 <p>[toc]</p>
-
-<p>This topic covers the Analytics API exposed by the APi Platform. The examples are based on the <a href="http://itunes.apple.com/us/app/apigee-api-dashboard-app/id548752481">Apigee API Dashboard App</a>. The Analytics API provides RESTful resources for creating reports from the data collected by the API Platform, enabling developers to explore how an API performs, and how, and by whom, it is consumed.</p></p>
+<p>This topic covers the Analytics API exposed by the APi Platform. The examples are based on the <a href="http://itunes.apple.com/us/app/apigee-api-dashboard-app/id548752481">Apigee API Dashboard App</a>. The Analytics API provides RESTful resources for creating reports from the data collected by the API Platform, enabling developers to explore how an API performs, and how, and by whom, it is consumed.</p>
+<p>&nbsp;</p>
 <h2>Building a Report: Dimensions, Functions, and Metrics</h2>
 <p>A report is constructed from three components:</p>
 <ul>
@@ -9,59 +9,59 @@
 	<li>Metrics: The metric for the chosen dimension.</li>
 	<li>TimeRange: The time interval over which data should be analyzed.</li>
 </ul>
-<p>A "dimension" is the entity for which the API Platform collects metrics. 	The <em>dimension </em>that is set for this report is <em>apis</em>. The API Platform defines the following dimensions that can be used in to build reports:</p>
-
+<p>A "dimension" is the entity for which the API Platform collects metrics. The <em>dimension </em>that is set for this report is <em>apis</em>. The API Platform defines the following dimensions that can be used in to build reports:</p>
 <p>API consumer dimensions:</p>
-<ul><li>access_token: The app end user's OAuth access token</li>
-<li>apiproduct: The name of an API product.</li>	
-<li>client_id: The consumer key (API key) used to make OAuth requests</li>
-<li>client_ip: The IP address of the app making the request to an API</li>
-<li>developer: The developer of the app making the request to an API</li>
-<li>developer_app: The name of the app making the request to an API</li>
-<li>developer_email: The email address of the developer</li></ul>
-
+<ul>
+	<li>access_token: The app end user's OAuth access token</li>
+	<li>apiproduct: The name of an API product.</li>
+	<li>client_id: The consumer key (API key) used to make OAuth requests</li>
+	<li>client_ip: The IP address of the app making the request to an API</li>
+	<li>developer: The developer of the app making the request to an API</li>
+	<li>developer_app: The name of the app making the request to an API</li>
+	<li>developer_email: The email address of the developer</li>
+</ul>
 <p>API configuration dimensions:</p>
 <ul>
-	<li>apiproxy</li>
-	<li>apiproxy_revision</li>
-	<li>client_host</li>
-	<li>condition</li>
-	<li>environment</li>
-	<li>flow_resource</li>
-	<li>gateway_flow_id</li>
-	<li>organization</li>
-	<li>proxy</li>
-	<li>proxy_basepath</li>
-	<li>proxy_client_ip</li>
-	<li>proxy_pathsuffix</li>
-	<li>request_path</li>
-	<li>request_verb</li>
-	<li>request_uri</li>
-	<li>target</li>
-	<li>target_basepath</li>
-	<li>target_host</li>
-	<li>target_url</li>
+	<li>apiproxy: API proxy name</li>
+	<li>apiproxy_revision: APi proxy revision number</li>
+	<li>client_host: Host name of the client</li>
+	<li>condition: The name of a condition</li>
+	<li>environment: The environment where the API proxy is deployed</li>
+	<li>flow_resource: FLow resource name</li>
+	<li>organization: The organization where the API proxy is deployed</li>
+	<li>proxy: The name of the ProxyEndpoint</li>
+	<li>proxy_basepath: The base path configured in the ProxyEndpoint</li>
+	<li>proxy_client_ip: The IP address of the ProxyEndpoint</li>
+	<li>proxy_pathsuffix: The URI path suffix of the request</li>
+	<li>request_path: The URI path of the request message</li>
+	<li>request_verb: The HTTP verb associated with the request</li>
+	<li>request_uri: The full URI of the request</li>
+	<li>target: The name of the TargetEndpoint</li>
+	<li>target_host: The host name of the target service</li>
+	<li>target_url: The full target URL</li>
 </ul>
-
 <p>Custom variables can also be used to create dimensions specific to your message content.</p>
-
-<p>The dimension that defines a report is represented in the request by a URI parameter. </p>
-	
+<p>The dimension that defines a report is represented in the request by a URI parameter.</p>
 <p>For example, to build a report based on API metrics:</p>
-<div id="well"><pre>https://api.enterprise.apigee.com/v1/o/{org_name}/environments/{env_name}/stats/apis</pre></div>
+<div id="well">
+	<pre>https://api.enterprise.apigee.com/v1/o/{org_name}/environments/{env_name}/stats/apis</pre>
+</div>
 <p>To build a report based on developer metrics:</p>
-<div id="well"><pre>https://api.enterprise.apigee.com/v1/o/{org_name}/environments/{env_name}/stats/developers</pre></div>
-<p>To build a report based on developer metrics:</p>
-<div id="well"><pre>https://api.enterprise.apigee.com/v1/o/{org_name}/environments/{env_name}/stats/developer_apps</pre></div>
-
-For example, to build a report based on API metrics across all environments:
-<div id="well"><pre>https://api.enterprise.apigee.com/v1/o/{org_name}/environments/*/stats/apis</pre></div>
-	
+<div id="well">
+	<pre>https://api.enterprise.apigee.com/v1/o/{org_name}/environments/{env_name}/stats/developers</pre>
+</div>
+<p>To build a report based on developer app metrics:</p>
+<div id="well">
+	<pre>https://api.enterprise.apigee.com/v1/o/{org_name}/environments/{env_name}/stats/developer_apps</pre>
+</div>
+<p>For example, to build a report based on API metrics across all environments, a wildcard URI pattern is supported:</p>
+<div id="well">
+	<pre>https://api.enterprise.apigee.com/v1/o/{org_name}/environments/*/stats/apis</pre>
+</div>
 <p>The functions available are <code>sum</code>, <code>average</code>, <code>min</code>, and <code>max</code>.</p>
-
 <p>The following metrics are available:</p>
 <ul>
-	<li>message_count: </li>
+	<li>message_count:</li>
 	<li>target_response_time: Round-trip time from the TargetEndpoint to the backend service</li>
 	<li>response_status_code: The status code of the response, which is good for measuring specific errors</li>
 	<li>message_count: Total number of messages</li>
@@ -208,7 +208,7 @@ For example, to build a report based on API metrics across all environments:
     "samplingRate" : "100"
   }</pre>
 </div>
-<h2>Get the Top Target URL by Error Rate for the Week</h2>
+<h2>Get the top target URL by error rate for the week</h2>
 <p>The 'topk' (meaning 'top k' entities) enables reporting on the top entities for a given metric. For example, to find which target URLs was the most error prone over the last week, the <code>topk</code> parameter is appended to the request, with a value of <code>1</code>.</p>
 <p>For example you may be interested to know who your top developer are, measured by throughput, what your worst (i.e., 'top slowest') target APIs are by latency:</p>
 <div id="well">
@@ -238,7 +238,7 @@ For example, to build a report based on API metrics across all environments:
 }</pre>
 </div>
 <p>The result of this request is a report that shows that the buggiest target URL is <code>http://api.company.com</code>.</p>
-<h2>Get Statistics for top APIs</h2>
+<h2>Get statistics for top APIs</h2>
 <p>The following example generates a report on the top ranked API, defined by highest throughput in the last week:</p>
 <div id="well">
 	<pre>$ curl -u myname:mypass 'https://api.enterprise.apigee.com/v1/o/{org_name}/environments/test/stats/apis?select=message_count&amp;timeRange=7/24/2012%2000:00~8/25/2012%2000:00&amp;timeUnit=week&amp;sortby=message_count&amp;sort=DESC&amp;topk=1'</pre>
@@ -272,7 +272,7 @@ For example, to build a report based on API metrics across all environments:
   }
 }</pre>
 </div>
-<h2>Summary: Analytics Calls Made by the Apigee API Dashboard App</h2>
+<h2>Summary: analytics calls made by the Apigee API dashboard app</h2>
 <h4>All API Traffic</h4>
 <div id="well">
 	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/environments/test/stats/?select=message_count&amp;timeRange=7/14/2012%2013:00~8/13/2012%2013:00&amp;sort=ASC&amp;sortby=message_count&amp;timeUnit=hour</pre>
@@ -293,7 +293,5 @@ For example, to build a report based on API metrics across all environments:
 <div id="well">
 	<pre>$ curl -u myname:mypass 'https://api.enterprise.apigee.com/v1/o/{org_name}/environments/test/stats/devs?select=message_count,error_count,user_count&amp;timeRange=7/14/2012%2013:00~8/13/2012%2013:00&amp;sort=ASC&amp;topk=5&amp;sortby=user_count&amp;timeUnit=hour'</pre>
 </div>
-
 <p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
-
 <p>Back to <a href="/docs/enterprise/content/developer_guide">API Platform Developer Guide</a>.</p>
