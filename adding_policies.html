@@ -11,10 +11,10 @@
 
 <h2>Creating a policy</h2>
 	
-<p>In this topic, the quota policy is used as an example. Quota policies are very commonThe quota policy provides settings controlling how often a client application can invoke your API over a given time interval. In the example below, a quota policy is configured limits apps to 1 message per minute. (While this may not be realistic, it does provide a simple way to see the effects of a policy.)</p>
-<p>Policy files are stored as XML files in the <code>/apiproxy/policies</code> directory.</p>
-QuotaPolicy.xml
-<p><span style="font-family:arial,helvetica,sans-serif;">Then&nbsp;</span>paste into the file the policy body below:</p>
+<p>This topic uses the Quota policy type as an example. Quota policies are very common, as they provide settings that control how often a client app is permitted to invoke an API over a given time interval. In the example below, a quota policy is configured to limit apps to 1 request per minute. (While this may not be realistic, it does provide a simple way to see the effects of a policy.)</p>
+<p>Policy files are stored as XML files under <code>/apiproxy/policies</code> directory.</p>
+<p>For example, a policy of type Quota called "QuotaPolicy" could be created as a file called <code>QuotaPolicy.xml</code> with the following content:</p>
+
 <pre>&lt;Quota enabled="true" continueOnError="false"
 async="false" name="QuotaPolicy"&gt;
     &lt;Allow count="1"/&gt;
