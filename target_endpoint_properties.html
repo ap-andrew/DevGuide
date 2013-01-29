@@ -1,8 +1,23 @@
+<h2>TargetEndpoint Transport Properties</h2>
 
+<p>TargetEndpoint HTTPTargetConnection elements define a set of HTTP transport properties. These properties can be used to set transport-level configurations.</p>
 
-<h2>TargetEndpoint Properties</h2>
+<p>Properties are set on TargetEndpoint HTTPTargetConnection elements as follows:</p>
 
-<table class="table">
+<pre>&lt;TargetEndpoint name="default"&gt;
+  &lt;HTTPTargetConnection&gt;
+    &lt;URL&gt;http://weather.yahooapis.com&lt;/URL&gt;
+    &lt;Properties&gt;
+      &lt;Property name=&quot;supports.http10&quot;&gt;true&lt;/Property&gt;
+      &lt;Property name=&quot;request.retain.headers&quot;&gt;User-Agent,Referer,Accept-Language&lt;/Property&gt;
+      &lt;Property name=&quot;retain.queryparams&quot;&gt;apikey&lt;/Property&gt;
+    &lt;/Properties&gt;
+  &lt;/HTTPTargetConnection&gt;
+&lt;/TargetEndpoint&gt;</pre>
+
+<h2>TargetEndpoint Transport Property Specification</h2>
+
+<table class="table" style="width: 690px;" width="690">
 <thead><th>Property Name</th><th>Default Value</th><th>Description</th></thead>
 
 <tbody>
@@ -31,28 +46,51 @@
 <tr><td>true</td></tr>
 <tr><td>If this is set to true, and proxy configurations are specified in <code>http.properties</code>, then target connections are set to use the specified via tunnel. If the target uses SSL, then this property is ignored, and the message is always sent via a tunnel.</td></tr>
 
-<tr><td><code>compression.algorithm</code></td></tr>
+<tr><td><code>enable.method.override</code></td></tr>
+<tr><td>false</td></tr>
+<tr><td>For the specified HTTP method, sets an <code>X-HTTP-Method-Override</code> header on the outbound request to the target service. For example, <code>&lt;Property name=&quot;GET.override.method&quot;&gt;POST&lt;/Property&gt;</code></td></tr>
+
+<tr><td><code>*.override.method</code></td></tr>
 <tr><td>N/A</td></tr>
-<tr><td>By default, the API Platform forwards requests to the target using the same compression type as the client request. If the request is received from client using, for example, gzip compression, then the API Platform forwards the request to target using gzip compression. If the response received from target uses deflate, then the API Platform forwards the response to the response to the client using deflate. Supported values are:
-	<ul><li>gzip: always send message using gzip compression</li>
-	<li>deflate: always send message using deflate compression</li>
-	<li>none: always send message without any compression</li></ul></td></tr>
-	
-	<tr><td><code>request.streaming.enabled</code></td></tr>
-	<tr><td>false</td></tr>
-	<tr><td>When true, HTTP request payloads are not read into buffer.  The request payload streams as-is to the target. The request payload will not be available for policy enforcement.</td></tr>
+<tr><td>For the specified HTTP method, sets an <code>X-HTTP-Method-Override</code> header on the outbound request. For example, <code>&lt;Property name=&quot;GET.override.method&quot;&gt;POST&lt;/Property&gt;</code></td></tr>
 	
 	<tr><td><code>response.streaming.enabled</code></td></tr>
 	<tr><td>false</td></tr>
 	<tr><td>When true, HTTP response payloads are not read into buffer.  The response payload streams as-is to the client. The response payload will not be available for policy enforcement.</td></tr>
 	
-	<tr><td><codes>success.codes</codes></td></tr>
+	<tr><td><code>additional.success.code</code></td></tr>
 	<tr><td>N/A</td></tr>
-	<tr><td>By default, the API Platform treats HTTP codes 4XX or 5XX as errors, and it treats HTTP codes 1XX, 2XX, 3XX as success. This property enables explicit definition of success codes, for example, <code>2XX, 1XX, 505</code>.</td></tr>
+	<tr><td>By default, the API Platform treats HTTP code 4XX or 5XX as errors, and it treats HTTP code 1XX, 2XX, 3XX as success. This property enables explicit definition of success code, for example, <code>2XX, 1XX, 505</code>.</td></tr>
 	
-	<tr><td><codes>*.override.method</codes></td></tr>
+	<tr><td><code>compression.algorithm</code></td></tr>
 	<tr><td>N/A</td></tr>
-	<tr><td>For the specified HTTP method, sets an <code>X-HTTP-Method-Override</code> header on the outbound request. For example, <code>&lt;Property name=&quot;GET.override.method&quot;&gt;POST&lt;/Property&gt;</code></td></tr>
+	<tr><td>By default, the API Platform forwards requests to the target using the same compression type as the client request. If the request is received from client using, for example, gzip compression, then the API Platform forwards the request to target using gzip compression. If the response received from target uses deflate, then the API Platform forwards the response to the response to the client using deflate. Supported values are:
+		<ul><li>gzip: always send message using gzip compression</li>
+		<li>deflate: always send message using deflate compression</li>
+		<li>none: always send message without any compression</li></ul></td></tr>
 	
+		<tr><td><code>request.retain.headers.enabled</code></td></tr>
+		<tr><td>true</td></tr>
+		<tr><td>By default, the API Platform always retains all HTTP headers on outbound messages. When set to <code>true</code>, all HTTP headers present on the inbound request are set on the outbound request.</td></tr>
+		
+		<tr><td><code>request.retain.headers</code></td></tr>
+		<tr><td>N/A</td></tr>
+		<tr><td>Defines specific HTTP headers from the request that should be set on the outbound request to the target service. For example, to 'passthrough' the <code>User-Agent</code> header, set the value of <code>request.retain.headers</code> to <code>User-Agent</code>. Multiple HTTP headers are specified as a comma-separated list, for example, <code>User-Agent,Referer,Accept-Language</code>. This property overrides <code>request.retain.headers.enabled</code>. If <code>request.retain.headers.enabled</code> is set to <code>false</code>, any headers specified in the <code>request.retain.headers</code> property are still set on the outbound message.</td></tr>
+		
+		<tr><td><code>response.retain.headers.enabled</code></td></tr>
+		<tr><td>true</td></tr>
+		<tr><td>By default, the API Platform always retains all HTTP headers on outbound messages. When set to <code>true</code>, all HTTP headers present on the inbound response from the target service are set on the outbound response before it is passed to the ProxyEndpoint</code>.</td></tr>
+		
+		<tr><td><code>response.retain.headers</code></td></tr>
+		<tr><td>N/A</td></tr>
+		<tr><td>Defines specific HTTP headers from the response that should be set on the outbound response before it is passed to the ProxyEndpoint. For example, to 'passthrough' the <code>Expires</code> header, set the value of <code>response.retain.headers</code> to <code>Expires</code>. Multiple HTTP headers are specified as a comma-separated list, for example, <code>Expires,Set-Cookie</code>. This property overrides <code>response.retain.headers.enabled</code>. If <code>response.retain.headers.enabled</code> is set to <code>false</code>, any headers specified in the <code>response.retain.headers</code> property are still set on the outbound message.</td></tr>
+		
+		<tr><td><code>retain.queryparams.enabled</code></td></tr>
+		<tr><td>true</td></tr>
+		<tr><td>By default, the API Platform always retains all query parameters on outbound requests. When set to <code>true</code>, all query parameters present on the inbound request are set on the outbound request to the target service.</td></tr>
+		
+		<tr><td><code>retain.queryparams</code></td></tr>
+		<tr><td>N/A</td></tr>
+		<tr><td>Defines specific query parameters to set on the outbound request. For example, to include the query parameter <code>apikey</code> from the request message, set <code>retain.queryparams</code> to <code>apikey</code>. Multiple query parameters are specified as a comma-separated list, for example, <code>apikey,environment</code>. This property overrides <code>retain.queryparams.enabled</code>.</td></tr>
 </tbody>
 </table>
