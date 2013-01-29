@@ -151,7 +151,7 @@ https://api.enterprise.apigee.com/v1/o/{org_name}/apis \
 &nbsp; &lt;/RouteRule&gt;
 &lt;/ProxyEndpoint&gt;</pre>
 
-<p>The configuration elements pesent in a basic ProxyEndpoint are:</p>
+<p>The configuration elements present in a basic ProxyEndpoint are:</p>
 <h3>HTTPProxyConnection</h3>
 <ul>
 	<li>BasePath: A required string that uniquely identifies the URI path used by the API Platform to route incoming messages to the proper API facade. The BasePath is a URI fragment (for example <code>/weather</code>) appended to the base URL for an environment (for example, <code>http://apifactory-test.apigee.net</code>) by a requesting client. BasePath must be unique within an environment. Uniqueness is validated by the API Platform when an API facade is generated or imported.</li>
@@ -222,7 +222,7 @@ https://api.enterprise.apigee.com/v1/o/{org_name}/apis \
 <h3>Sample TargetEndpoint with outbound client authentication enabled</h3>
 <div id="well">
 	<pre>&lt;TargetEndpoint name="default"&gt;
-  &lt;HttpTargetConnection&gt;
+  &lt;HTTPTargetConnection&gt;
 	&lt;URL&gt;https ://myservice.com&lt;/URL&gt;
     &lt;SSLInfo&gt;
       &lt;Enabled&gt;true&lt;/Enabled&gt;
@@ -231,7 +231,7 @@ https://api.enterprise.apigee.com/v1/o/{org_name}/apis \
       &lt;KeyAlias&gt;myKey&lt;/KeyAlias&gt;
       &lt;TrustStore&gt;myTruststore&lt;/TrustStore&gt;
     &lt;/SSLInfo&gt;
-  &lt;/HttpTargetConnection&gt;
+  &lt;/HTTPTargetConnection&gt;
 &lt;/TargetEndpoint&gt;</pre>
 </div>
 <p>For detailed instructions, refer to [node:4572]</p>
