@@ -2,7 +2,7 @@
 
 <p>This topic demonstrates authoring, storing, and attaching policies to modify the behavior of an API facade.</p>
 
-<p>The Apigee API Platform defines a set of out-of-the-box policies. A policy is a configuration file that encapsulates an atomic unit of common management functionality. The purpose of policies is to provide advanced management capabilities, without requiring any code to be written or maintained. Policies are designed to be easily understood and reusable. Policies can be combined into policy compositions to enable sophisticated, yet easily managed and maintained, API behavior. Policies also can be combined with custom scripts and code, enabling developers to delegate mundane tasks to policies, while focusing creative development effort on implementing custom logic, in turn using the API platform as a cloud deployment environment in which to expose, manage, and scale custom behavior.</p>
+<p>The Apigee API Platform defines a set of out-of-the-box policies. A policy is a configuration file that encapsulates an atomic unit of common management functionality. The purpose of policies is to provide advanced management capabilities without requiring developers to write and maintain code. Policies are designed to be easily understood and reusable. Policies can be combined into policy compositions to enable sophisticated, yet easily managed and maintained, API behavior. Policies and compositions can also be augmented with custom scripts and code, enabling developers to delegate mundane tasks to policies, while focusing creative development effort on implementing custom logic, in turn using the API platform as a cloud deployment environment in which to expose, manage, and scale custom API behavior.</p>
 
 <p>Concretely, a policy is an XML-formatted configuration file that conforms to the API Platform XML schema. Each policy type has an associated XML schema that specifies the necessary configuration. Policy schemas are available in the <a href="https://github.com/apigee/api-platform-samples/">API Platform samples</a> on Github.</p>
 
@@ -11,7 +11,7 @@
 
 <h2>Creating a policy</h2>
 	
-<p>This topic uses the Quota policy type as an example. Quota policies are very common, as they provide settings that control how often a client app is permitted to invoke an API over a given time interval. In the example below, a quota policy is configured to limit apps to 1 request per minute. (While this may not be realistic, it does provide a simple way to see the effects of a policy.)</p>
+<p>This topic uses the Quota policy type as an example of how to create, configure, attach, and deploy policies. Quota policies are very common, as they provide settings that control how often a client app is permitted to invoke an API over a given time interval. In the example below, a quota policy is configured to limit apps to 1 request per minute. (While this may not be realistic, it does provide a simple way to see the effects of a policy.)</p>
 <p>Policy files are stored as XML files under <code>/apiproxy/policies</code> directory.</p>
 <p>For example, a policy of type Quota called "QuotaPolicy" could be created as a file called <code>QuotaPolicy.xml</code> with the following content:</p>
 
@@ -26,15 +26,15 @@ async="false" name="QuotaPolicy"&gt;
 
 <p>All policies define the following attributes:</p>
 <ul>
-	<li><code>enabled</code>: Indicates whether the policy is turned "on" or "off". Policies can be enabled/disabled at runtime. A policy that has <code>enabled</code> set to <code>false</code> is not enforced. </li>
+	<li><code>enabled</code>: Indicates whether the policy is turned "on" or "off". Policies can be enabled/disabled at runtime by changing this setting. A policy that has <code>enabled</code> set to <code>false</code> is not enforced. </li>
 	<li><code>continueOnError</code>: Defines whether the pipeline should continue processing the message if the policy fails. When enforcing quota policies, errors likely indicate that the quota has been exceeded, and, therefore, this attribute should be set to false.</li>
-	<li><code>async</code>: If set to <code>true</code> the processing pipeline will continue processing subsequent policy steps before the current step completes. Asynchronous setting is useful when doing callouts to external services as part of a flow.</li>
+	<li><code>async</code>: If set to <code>true</code> the processing pipeline will continue processing subsequent policy steps before the current step completes. Asynchronous setting is useful, for example, when using policies to call out to external APIs or services as part of a flow.</li>
 	<li><code>name</code>: The name that you give to this policy. This name is unique to this policy instance, and it is used to attach the policy to the flow as a processing step.</li>
 </ul>
-<p>The elements <code>Allow</code>, <code>Interval</code>, and <code>TimeUnit</code> are specific to the quota policy. These elements provide settings that the API Platform enforces on behalf of an API.</p>
+<p>The elements <code>Allow</code>, <code>Interval</code>, and <code>TimeUnit</code> are specific to the quota policy. These elements provide settings that the API Platform enforces on behalf of an API. Other policy types define their own settings.</p>
 
-<h2>Attaching a policy</h2>
-<p>Policies in the <code>/policies</code> directory are available to be executed in the processing pipeline of a ProxyEndpoint or a TargetEndpoint. Policies are executed as processing steps in a request or response flow. To specify the point in the flow at which a policy executes, the policy is attached to a ProxyEndpoint or TargetEndpoint flow as a processing step.</p>
+<h2>Attaching a policy to a ProxyEndpoint or TargetEndpoint flow</h2>
+<p>Policies in the <code>/policies</code> directory are available to be executed in the processing pipeline of a ProxyEndpoint or a TargetEndpoint. Policies are executed as processing steps in a request flow or response flow. To specify the point in the flow at which a policy executes, the policy is attached to a ProxyEndpoint or TargetEndpoint flow as a processing step.</p>
 
 <p>The format of a policy attachment is:</p>
 
