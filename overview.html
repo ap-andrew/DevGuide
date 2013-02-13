@@ -1,34 +1,40 @@
 <p>[toc]</p>
 <h2>What's here?</h2>
-<p>The API Platform Developer Guide is designed to get you up and and running with local development of API facades that deploy and scale on the Apigee API Platform. The focus of development on the API Platform is the API facade. An API facade an application that runs on the Aigee API Platform in the Cloud, and which serves as a proxy for one or more backend services or APIs. Using API facades, you can proxy any publicly available API, which makes the API Platform a great solution for developers who need to customize the behavior of APIs--whether the developer controls the API or not. Once you proxy an API with an API facade, all of the enterprise capabilities of Apigee are at your disposal. You can:</p>
-<ul><li>Leverage a policy library to implement common behavior without writing any code</li>
-<li>Innovate on the API Platform by writing and deploying custom code in the Cloud</li>
-<p>Combine policies and custom code to create sophisticated yet easy-to-manage and secure applications</p>
-<li>Provision and manage API keys and OAuth authorization</li>
-<li>Expose the capabilities that you implement as APIs, complete with an API Console, enabling re-use across projects or sharing with other developers</li></ul>
-
+<p>The API Platform Developer Guide is designed to get you up and and running with local development of API facades that deploy and scale on the Apigee API Platform. The focus of development on the API Platform is the API facade. An API facade is an application that runs on the Apigee API Platform and which serves as a proxy for one or more backend services or APIs. Using API facades, you can proxy any publicly available API, which makes the API Platform a great solution for developers who need to customize the behavior of APIs--whether the developer controls the API or not. Once you proxy an API with an API facade, all of the enterprise capabilities of Apigee are at your disposal. You can:</p>
+<ul>
+	<li>Leverage a policy library to implement common behavior without writing any code</li>
+	<li>Innovate on the API Platform by writing and deploying custom code in the Cloud</li>
+	<li>Combine policies and custom code to create sophisticated yet easy-to-manage and secure applications</li>
+	<li>Provision and manage API keys and OAuth authorization</li>
+	<li>Monitor the operational performance of APIs</li>
+	<li>Track and analyze consumption patterns by developers and apps</li>
+	<li>Expose the capabilities that you implement as APIs, complete with an API Console, enabling re-use across projects or sharing with other developers</li>
+</ul>
 <p>This Developer Guide provides instruction on local development of API facades. As such, it assumes basic knowledge of:</p>
-<ul><li>Representational State Transfer (REST)</li>
-<li>JavaScript Object Notation</li>
-<li>Extensible Markup Language</li>
-<li>XML Schema</li>
-<li>Web Application Definition Language (WADL)</li>
-<li>JavaScript and Python scripting languages </li>
-<li>Java programming language</li></ul>
-
-<p>For those who prefer UI-based API facade configuration, please refer to the the API Platform User Guide.
-</p>
-In this Developer Guide you will learn:
-<ul><li>How to configure a basic API facade</li>
-<li>How to upload, deploy, and test API facades on the API Platform</li>
-<li>How to configure policies and attach them to an API facade</li>
-<li>How to write scripts and code that execute as a component of an API facade</li>
-<li>How to implement common use cases required by API developers</li>
-<li>How to expose and reuse your policy compositions and code as APIs using WADL and API Consoles</li>
-<li>How to configure environment settings for your organization on the API Platform</li></ul>
-
+<ul>
+	<li>Representational State Transfer (REST)</li>
+	<li>JavaScript Object Notation</li>
+	<li>Extensible Markup Language</li>
+	<li>XML Schema</li>
+	<li>Web Application Definition Language (WADL)</li>
+</ul>
+<p>Optionally:</p>
+<ul>
+	<li>JavaScript and Python scripting languages</li>
+	<li>Java programming language</li>
+</ul>
+<p>For those who prefer UI-based API facade configuration, please refer to the the <a href="/docs/enterprise/content/user_guide">API Platform User Guide</a>.</p>
+<p>In this Developer Guide you will learn:</p>
+<ul>
+	<li>How to configure a basic API facade</li>
+	<li>How to upload, deploy, and test API facades on the API Platform</li>
+	<li>How to configure policies and attach them to an API facade</li>
+	<li>How to write scripts and code that execute as components of an API facade</li>
+	<li>How to implement common use cases required by API developers</li>
+	<li>How to expose and reuse your policy compositions and code as APIs using WADL and API Consoles</li>
+	<li>How to configure environment settings for your organization on the API Platform</li>
+</ul>
 <h2>Set up</h2>
-
 <h3>An Apigee API platform account</h3>
 <p>The Apigee API Platform enables any developer to leverage the enterprise-strength capabilities of Apigee Enterprise. Apigee provides free accounts that give you access to all of the features available to enterprise customers. You can sign up for a free account at <a href="http://enterprise.apigee.com/signup">http://enterprise.apigee.com/signup</a>.</p>
 <p>An Apigee API Platform account provides you with:</p>
@@ -90,7 +96,7 @@ In this Developer Guide you will learn:
 	<pre>$ git clone https://github.com/apigee/api-platform-samples.git</pre>
 </div>
 <div id="well">
-	<pre>cd api-platform-samples</pre>
+	<pre>$ cd api-platform-samples</pre>
 </div>
 <p>Note the directory called <code>simpleProxy</code>. That directory contains the configuration that constitute your API proxy.</p>
 <p>Use Apigee’s Python tool to import (upload) and deploy your API in one simple process.</p>
@@ -127,7 +133,5 @@ Environment: test
 </div>
 <h2>Getting help</h2>
 <p>If you have any issues with the topic, post them to the at&nbsp;<a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
-<p>&nbsp;</p>
-
 <h2>Next steps</h2>
 <p>Now that you understand API Platform basics, refer to the <a href="/docs/enterprise/content/developer_guide">API platform topics</a> to learn how to apply advanced features to your API facade.</p>

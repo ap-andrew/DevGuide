@@ -18,25 +18,8 @@
 	<li><span style="font-family: 'courier new', courier, monospace;">targetResponse</span>: An object that represents the inbound target response message (from the backend service to the API Platform)</li>
 	<li><span style="font-family: 'courier new', courier, monospace;">context</span>: A wrapper for the message processing pipeline context and the request and response flows that are executed by the proxy and target endpoints.</li>
 </ul>
-<h3>Proxy and Target Request and Response</h3>
-<p>Enables JavaScript to specify which message object within the entire context should be the target of an operation:</p>
-<div id="class">
-	<pre>context.proxyRequest
-context.proxyResponse
-context.targetRequest
-context.targetResponse</pre>
-</div>
-<p>For example, to get the value of the <code>user-agent</code> header for the proxy request message:</p>
-<div id="class">
-	<pre>var user-agent = context.proxyRequest.headers['user-agent'];</pre>
-</div>
-<p><b><span style="font-family:courier new,courier,monospace;">session</span>:</b> A map of name/value pairs that can be used to pass objects between two policies executing within the same message context</p>
-<p>Example:</p>
-<div id="well">
-	<pre>context.session[‘key’]  = 123;
-…
-var value = context.session[‘key’];  // 123</pre>
-</div>
+
+
 <h2>proxyRequest and targetRequest</h2>
 <p>The API Platform generates two request objects: one for the ProxyEndpoint and one for the TargetEndpoint.</p>
 <h4>Request Object Properties</h4>
@@ -167,7 +150,19 @@ var msg = targetResponse.content.status.message;   // "OK"</pre>
 <div id="well">
 	<pre>context.removeVariable(‘organization.name’,'{org_name}');</pre>
 </div>
-<h4>Context Properties</h4>
+<h3>Context Properties</h3>
+<h4>Proxy and Target Request and Response</h4>
+<p>Enables JavaScript to specify which message object within the entire context should be the target of an operation:</p>
+<div id="class">
+<ul><li><code>context.proxyRequest</code></li>
+<li><code>context.proxyResponse</code></li>
+<li><code>context.targetRequest</code></li>
+<li><code>context.targetResponse</code></li></ul>
+</div>
+<p>For example, to get the value of the <code>user-agent</code> header for the ProxyRequest message:</p>
+<div id="class">
+	<pre>var user-agent = context.proxyRequest.headers['user-agent'];</pre>
+</div>
 <p><b><code>flow</code></b>: The name of the current flow</p>
 <p>The flow is a string that indicates the current flow. This property is used to indicate the flow to which the JavaScript is attached. Possible values are:</p>
 <ul>
@@ -176,7 +171,7 @@ var msg = targetResponse.content.status.message;   // "OK"</pre>
 	<li><code>TARGET_REQ_FLOW</code></li>
 	<li><code>TARGET_RESP_FLOW</code></li>
 </ul>
-<p>Each flow name encompasses the preflow, postflow, and conditional flows defined in the endpoint.</p>
+<p>Each flow name encompasses the PreFlow, PostFlow, and conditional Flows defined in the ProxyEndpoint or TargetEndpoint.</p>
 <p>This property is useful when common JavaScript is executed in more than one flow, but might vary its behavior depending on the flow in which it executes.</p>
 <p>For example:</p>
 <p>Set a header only on the target request flow:</p>
@@ -191,7 +186,13 @@ var msg = targetResponse.content.status.message;   // "OK"</pre>
      response.content='bar';
 }</pre>
 </div>
-<p>&nbsp;</p>
+<p><b><span style="font-family:courier new,courier,monospace;">session</span>:</b> A map of name/value pairs that can be used to pass objects between two policies executing within the same message context</p>
+<p>Example:</p>
+<div id="well">
+	<pre>context.session[‘key’]  = 123;
+…
+var value = context.session[‘key’];  // 123</pre>
+</div>
 <h2>Headers, Query Parameters, and Form Variables</h2>
 <p>Headers, Query Parameters and Form variables all share a common format: a name/value pair that maps one string to another string.</p>
 <p>The format:</p>
