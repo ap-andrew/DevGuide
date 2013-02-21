@@ -21,76 +21,42 @@
 <thead><th>Property Name</th><th>Default Value</th><th>Description</th></thead>
 
 <tbody>
-<tr><td><code>keepalive.timeout.millis</code></td></tr>
-<tr><td>60000</td></tr>
-<tr><td>Timeout for the target connection in the connection pool. if the connection is in the pool beyond the specified limit, then the connection is closed.</td></tr>
+<tr><td><code>keepalive.timeout.millis</code></td><td>60000</td><td>Timeout for the target connection in the connection pool. if the connection is in the pool beyond the specified limit, then the connection is closed.</td></tr>
 
-<tr><td><code>connect.timeout.millis</code></td></tr>
-<tr><td>60000</td></tr> 
-<tr><td>Target connection timeout.</td></tr>
+<tr><td><code>connect.timeout.millis</code></td><td>60000</td><td>Target connection timeout.</td></tr>
 
-<tr><td><code>supports.http10</code></td></tr>
-<tr><td>true</td></tr>
-<tr><td>If this is true and the client sends a 1.0 request, the target is also sent a 1.0 request. Otherwise 1.1 request is sent to target.
+<tr><td><code>supports.http10</code></td><td>true</td><td>If this is true and the client sends a 1.0 request, the target is also sent a 1.0 request. Otherwise 1.1 request is sent to target.
 </td></tr>
 
-<tr><td><code>supports.http11</code></td></tr>
-<tr><td>true</td></tr>
-<tr><td>If this is true and the client sends a 1.1 request, the target is also sent a 1.1 request, otherwise 1.0 request is sent to target. </td></tr>
+<tr><td><code>supports.http11</code></td><td>true</td><td>If this is true and the client sends a 1.1 request, the target is also sent a 1.1 request, otherwise 1.0 request is sent to target. </td></tr>
 
-<tr><td><code>use.proxy</code></td></tr>
-<tr><td>true</td></tr>
-<tr><td>If set to true, and proxy configurations are specified in <code>http.properties</code>, then target connections are set to use the specified proxy.</td></tr>
+<tr><td><code>use.proxy</code></td><td>true</td><td>If set to true, and proxy configurations are specified in <code>http.properties</code>, then target connections are set to use the specified proxy.</td></tr>
 
-<tr><td><code>use.proxy.tunneling</code></td></tr>
-<tr><td>true</td></tr>
-<tr><td>If this is set to true, and proxy configurations are specified in <code>http.properties</code>, then target connections are set to use the specified via tunnel. If the target uses SSL, then this property is ignored, and the message is always sent via a tunnel.</td></tr>
+<tr><td><code>use.proxy.tunneling</code></td><td>true</td><td>If this is set to true, and proxy configurations are specified in <code>http.properties</code>, then target connections are set to use the specified via tunnel. If the target uses SSL, then this property is ignored, and the message is always sent via a tunnel.</td></tr>
 
-<tr><td><code>enable.method.override</code></td></tr>
-<tr><td>false</td></tr>
-<tr><td>For the specified HTTP method, sets an <code>X-HTTP-Method-Override</code> header on the outbound request to the target service. For example, <code>&lt;Property name=&quot;GET.override.method&quot;&gt;POST&lt;/Property&gt;</code></td></tr>
+<tr><td><code>enable.method.override</code></td><td>false</td><td>For the specified HTTP method, sets an <code>X-HTTP-Method-Override</code> header on the outbound request to the target service. For example, <code>&lt;Property name=&quot;GET.override.method&quot;&gt;POST&lt;/Property&gt;</code></td></tr>
 
-<tr><td><code>*.override.method</code></td></tr>
-<tr><td>N/A</td></tr>
-<tr><td>For the specified HTTP method, sets an <code>X-HTTP-Method-Override</code> header on the outbound request. For example, <code>&lt;Property name=&quot;GET.override.method&quot;&gt;POST&lt;/Property&gt;</code></td></tr>
+<tr><td><code>*.override.method</code></td><td>N/A</td><td>For the specified HTTP method, sets an <code>X-HTTP-Method-Override</code> header on the outbound request. For example, <code>&lt;Property name=&quot;GET.override.method&quot;&gt;POST&lt;/Property&gt;</code></td></tr>
 	
-	<tr><td><code>response.streaming.enabled</code></td></tr>
-	<tr><td>false</td></tr>
-	<tr><td>When true, HTTP response payloads are not read into buffer.  The response payload streams as-is to the client. The response payload will not be available for policy enforcement.</td></tr>
+	<tr><td><code>response.streaming.enabled</code></td><td>false</td><td>When true, HTTP response payloads are not read into buffer.  The response payload streams as-is to the client. The response payload will not be available for policy enforcement.</td></tr>
 	
-	<tr><td><code>additional.success.code</code></td></tr>
-	<tr><td>N/A</td></tr>
-	<tr><td>By default, the API Platform treats HTTP code 4XX or 5XX as errors, and it treats HTTP code 1XX, 2XX, 3XX as success. This property enables explicit definition of success code, for example, <code>2XX, 1XX, 505</code>.</td></tr>
+	<tr><td><code>additional.success.code</code></td><td>N/A</td><td>By default, the API Platform treats HTTP code 4XX or 5XX as errors, and it treats HTTP code 1XX, 2XX, 3XX as success. This property enables explicit definition of success codes, for example, <code>2XX, 1XX, 505</code> treats any 100, 200 and 505 HTTP response codes as success.</td></tr>
 	
-	<tr><td><code>compression.algorithm</code></td></tr>
-	<tr><td>N/A</td></tr>
-	<tr><td>By default, the API Platform forwards requests to the target using the same compression type as the client request. If the request is received from client using, for example, gzip compression, then the API Platform forwards the request to target using gzip compression. If the response received from target uses deflate, then the API Platform forwards the response to the response to the client using deflate. Supported values are:
+	<tr><td><code>compression.algorithm</code></td><td>N/A</td><td>By default, the API Platform forwards requests to the target using the same compression type as the client request. If the request is received from client using, for example, gzip compression, then the API Platform forwards the request to target using gzip compression. If the response received from target uses deflate, then the API Platform forwards the response to the response to the client using deflate. Supported values are:
 		<ul><li>gzip: always send message using gzip compression</li>
 		<li>deflate: always send message using deflate compression</li>
 		<li>none: always send message without any compression</li></ul></td></tr>
 	
-		<tr><td><code>request.retain.headers.enabled</code></td></tr>
-		<tr><td>true</td></tr>
-		<tr><td>By default, the API Platform always retains all HTTP headers on outbound messages. When set to <code>true</code>, all HTTP headers present on the inbound request are set on the outbound request.</td></tr>
+		<tr><td><code>request.retain.headers.enabled</code></td><td>true</td><td>By default, the API Platform always retains all HTTP headers on outbound messages. When set to <code>true</code>, all HTTP headers present on the inbound request are set on the outbound request.</td></tr>
 		
-		<tr><td><code>request.retain.headers</code></td></tr>
-		<tr><td>N/A</td></tr>
-		<tr><td>Defines specific HTTP headers from the request that should be set on the outbound request to the target service. For example, to 'passthrough' the <code>User-Agent</code> header, set the value of <code>request.retain.headers</code> to <code>User-Agent</code>. Multiple HTTP headers are specified as a comma-separated list, for example, <code>User-Agent,Referer,Accept-Language</code>. This property overrides <code>request.retain.headers.enabled</code>. If <code>request.retain.headers.enabled</code> is set to <code>false</code>, any headers specified in the <code>request.retain.headers</code> property are still set on the outbound message.</td></tr>
+		<tr><td><code>request.retain.headers</code></td><td>N/A</td><td>Defines specific HTTP headers from the request that should be set on the outbound request to the target service. For example, to 'passthrough' the <code>User-Agent</code> header, set the value of <code>request.retain.headers</code> to <code>User-Agent</code>. Multiple HTTP headers are specified as a comma-separated list, for example, <code>User-Agent,Referer,Accept-Language</code>. This property overrides <code>request.retain.headers.enabled</code>. If <code>request.retain.headers.enabled</code> is set to <code>false</code>, any headers specified in the <code>request.retain.headers</code> property are still set on the outbound message.</td></tr>
 		
-		<tr><td><code>response.retain.headers.enabled</code></td></tr>
-		<tr><td>true</td></tr>
-		<tr><td>By default, the API Platform always retains all HTTP headers on outbound messages. When set to <code>true</code>, all HTTP headers present on the inbound response from the target service are set on the outbound response before it is passed to the ProxyEndpoint</code>.</td></tr>
+		<tr><td><code>response.retain.headers.enabled</code></td><td>true</td><td>By default, the API Platform always retains all HTTP headers on outbound messages. When set to <code>true</code>, all HTTP headers present on the inbound response from the target service are set on the outbound response before it is passed to the ProxyEndpoint</code>.</td></tr>
 		
-		<tr><td><code>response.retain.headers</code></td></tr>
-		<tr><td>N/A</td></tr>
-		<tr><td>Defines specific HTTP headers from the response that should be set on the outbound response before it is passed to the ProxyEndpoint. For example, to 'passthrough' the <code>Expires</code> header, set the value of <code>response.retain.headers</code> to <code>Expires</code>. Multiple HTTP headers are specified as a comma-separated list, for example, <code>Expires,Set-Cookie</code>. This property overrides <code>response.retain.headers.enabled</code>. If <code>response.retain.headers.enabled</code> is set to <code>false</code>, any headers specified in the <code>response.retain.headers</code> property are still set on the outbound message.</td></tr>
+		<tr><td><code>response.retain.headers</code></td><td>N/A</td><td>Defines specific HTTP headers from the response that should be set on the outbound response before it is passed to the ProxyEndpoint. For example, to 'passthrough' the <code>Expires</code> header, set the value of <code>response.retain.headers</code> to <code>Expires</code>. Multiple HTTP headers are specified as a comma-separated list, for example, <code>Expires,Set-Cookie</code>. This property overrides <code>response.retain.headers.enabled</code>. If <code>response.retain.headers.enabled</code> is set to <code>false</code>, any headers specified in the <code>response.retain.headers</code> property are still set on the outbound message.</td></tr>
 		
-		<tr><td><code>retain.queryparams.enabled</code></td></tr>
-		<tr><td>true</td></tr>
-		<tr><td>By default, the API Platform always retains all query parameters on outbound requests. When set to <code>true</code>, all query parameters present on the inbound request are set on the outbound request to the target service.</td></tr>
+		<tr><td><code>retain.queryparams.enabled</code></td><td>true</td><td>By default, the API Platform always retains all query parameters on outbound requests. When set to <code>true</code>, all query parameters present on the inbound request are set on the outbound request to the target service.</td></tr>
 		
-		<tr><td><code>retain.queryparams</code></td></tr>
-		<tr><td>N/A</td></tr>
-		<tr><td>Defines specific query parameters to set on the outbound request. For example, to include the query parameter <code>apikey</code> from the request message, set <code>retain.queryparams</code> to <code>apikey</code>. Multiple query parameters are specified as a comma-separated list, for example, <code>apikey,environment</code>. This property overrides <code>retain.queryparams.enabled</code>.</td></tr>
+		<tr><td><code>retain.queryparams</code></td><td>N/A</td><td>Defines specific query parameters to set on the outbound request. For example, to include the query parameter <code>apikey</code> from the request message, set <code>retain.queryparams</code> to <code>apikey</code>. Multiple query parameters are specified as a comma-separated list, for example, <code>apikey,environment</code>. This property overrides <code>retain.queryparams.enabled</code>.</td></tr>
 </tbody>
 </table>
