@@ -160,15 +160,7 @@ var msg = targetResponse.content.status.message;   // "OK"</pre>
 <li><code>context.targetResponse</code></li></ul>
 </div>
 <p>For example, to get the value of the <code>user-agent</code> header for the ProxyRequest message:</p>
-<div id="class">
-	<pre>var user-agent = context.proxyRequest.headers['user-agent'];</pre>
-</div>
-<p><b><code>flow</code></b>: The name of the current flow</p>
-<p>The flow is a string that indicates the current flow. This property is used to indicate the flow to which the JavaScript is attached. Possible values are:</p>
-<ul>
-	<li><code>PROXY_REQ_FLOW</code></li>
-	<li><code>PROXY_RESP_FLOW</code></li>
-	<li><code>TARGET_REQ_FLOW</code></li>
+<div id="class"	
 	<li><code>TARGET_RESP_FLOW</code></li>
 </ul>
 <p>Each flow name encompasses the PreFlow, PostFlow, and conditional Flows defined in the ProxyEndpoint or TargetEndpoint.</p>
