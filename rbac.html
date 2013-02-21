@@ -80,7 +80,7 @@
 <h4>Create a role: development</h4>
 <p>Create a 'development' role to enable developers to view, create, and update API proxies.</p>
 <div id="well">
-	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/userroles -H "Content-type:application/json" -X POST -d'{"name" : "development"}'</pre>
+	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/userroles -H "Content-type:application/json" -X POST -d'{ "role" : [ { "name" : "development" } ] }'</pre>
 </div>
 <h4>Add permissions to development role</h4>
 <p>The permissions that can be set on collections are GET and PUT. The permissions that can be set on individual members of a collection are GET, PUT, and DELETE. For the 'development' role, we add GET and PUT permissions on APIs. GET enables users to view any APIs, including API proxy configuration files, associated policies, Javascript, XSLT files, and so on. The PUT permission on APIs enables developers to create, modify, import, export, deploy and undeploy API proxies.</p>

@@ -1,0 +1,127 @@
+[toc]
+
+<p>To get a list of roles in an organization:</p>
+
+<pre>$ curl https://api.enterprise.apigee.com/v1/o/{org_name}/userroles -u myname:mypass</pre>
+
+<p>To view permissions for default <code>orgadmin</code> role:</p>
+
+<pre>$ curl https://api.enterprise.apigee.com/v1/o/{org_name}/userroles/orgadmin/permissions -u myname:mypass</pre>
+
+<p>To view permissions for default <code>user</code> role:</p>
+
+<pre>$ curl https://api.enterprise.apigee.com/v1/o/{org_name}/userroles/user/permissions -u myname:mypass</pre>
+
+<p>To view permissions for default <code>businessuser</code> role:</p>
+
+<pre>$ curl https://api.enterprise.apigee.com/v1/o/{org_name}/userroles/businessuser/permissions -u myname:mypass</pre>
+
+<p>To view permissions for default <code>opsadmin</code> role:</p>
+
+<pre>$ curl https://api.enterprise.apigee.com/v1/o/{org_name}/userroles/opsadmin/permissions -u myname:mypass</pre>
+
+<h2><code>orgadmin</code></h2>
+<table class="table" style="width: 690px;" width="690">
+  <thead><th>Resource Path</th><th>Permissions</th><th>Description</th></thead>
+<tbody>
+    <tr><td><code>/devConnectUser</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+    <tr><td><code>/environments/*/applications/*/revisions/*/debugsessions</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+    <tr><td><code>/companies</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+    <tr><td><code>/userroles</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+    <tr><td><code>/apps</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+    <tr><td><code>/environments/test/applications/*/revisions/*/debugsessions</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+    <tr><td><code>/users</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+    <tr><td><code>/appKeys</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+    <tr><td><code>/applications</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+    <tr><td><code>/axCustomReports</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+    <tr><td><code>/applications/*/revisions/*/deployments</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+    <tr><td><code>/apiproducts</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+    <tr><td><code>/environments/*/applications/*/revisions/*/deployments</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+    <tr><td><code>/environments/test/applications/*/revisions/*/deployments</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+    <tr><td><code>/environments/*/analytics/admin</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+    <tr><td><code>/developers</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+    <tr><td><code>/devPortalButton</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+    <tr><td><code>/userroles/*/permissions</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+    <tr><td><code>/</code></td><td>PUT | GET</td><td>{description}</td></tr>
+    <tr><td><code>/environments</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+    <tr><td><code>/environments/*/stats</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+    <tr><td><code>/systemLevelUser</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+    <tr><td><code>/*</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+    <tr><td><code>/deployments</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+</tbody>
+</table>
+
+<h2><code>user</code></h2>
+<table class="table" style="width: 690px;" width="690">
+  <thead><th>Resource Path</th><th>Permissions</th><th>Description</th></thead>
+<tbody>
+    <tr><td><code>/environments/*/applications/*/revisions/*/debugsessions</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+    <tr><td><code>/companies</code></td><td>GET</td><td>{description}</td></tr>
+    <tr><td><code>/apps</code></td><td>GET</td><td>{description}</td></tr>
+    <tr><td><code>/environments/test/applications/*/revisions/*/debugsessions</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+    <tr><td><code>/applications</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+    <tr><td><code>/axCustomReports</code></td><td>GET</td><td>{description}</td></tr>
+    <tr><td><code>/applications/*/revisions/*/deployments</code></td><td>GET</td><td>{description}</td></tr>
+    <tr><td><code>/apiproducts</code></td><td>GET</td><td>{description}</td></tr>
+    <tr><td><code>/environments/*/applications/*/revisions/*/deployments</code></td><td>GET</td><td>{description}</td></tr>
+    <tr><td><code>/environments/test/applications/*/revisions/*/deployments</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+    <tr><td><code>/environments/*/analytics/admin</code></td><td>GET</td><td>{description}</td></tr>
+    <tr><td><code>/developers</code></td><td>GET</td><td>{description}</td></tr>
+    <tr><td><code>/userroles/*/permissions</code></td><td>GET</td><td>{description}</td></tr>
+    <tr><td><code>/</code></td><td>GET</td><td>{description}</td></tr>
+    <tr><td><code>/environments</code></td><td>GET</td><td>{description}</td></tr>
+    <tr><td><code>/environments/*/stats</code></td><td>GET</td><td>{description}</td></tr>
+    <tr><td><code>/deployments</code></td><td>GET</td><td>{description}</td></tr>
+	</tbody>
+	</table>
+
+<h2><code>businessuser</code></h2>
+<table class="table" style="width: 690px;" width="690">
+  <thead><th>Resource Path</th><th>Permissions</th><th>Description</th></thead>
+<tbody>
+    <tr><td><code>/devConnectUser</code></td><td>PUT</td><td>{description}</td></tr>
+    <tr><td><code>/companies</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+    <tr><td><code>/apps</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+    <tr><td><code>/environments/test/applications/*/revisions/*/debugsessions</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+    <tr><td><code>/appKeys</code></td><td>GET</td><td>{description}</td></tr>
+    <tr><td><code>/applications/*/revisions/*/deployments</code></td><td>GET</td><td>{description}</td></tr>
+    <tr><td><code>/axCustomReports</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+    <tr><td><code>/applications</code></td><td>GET</td><td>{description}</td></tr>
+    <tr><td><code>/apiproducts</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+    <tr><td><code>/environments/*/applications/*/revisions/*/deployments</code></td><td>GET</td><td>{description}</td></tr>
+    <tr><td><code>/environments/test/applications/*/revisions/*/deployments</code></td><td>GET</td><td>{description}</td></tr>
+    <tr><td><code>/environments/*/analytics/admin</code></td><td>GET</td><td>{description}</td></tr>
+    <tr><td><code>/developers</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+    <tr><td><code>/devPortalButton</code></td><td>GET</td><td>{description}</td></tr>
+    <tr><td><code>/userroles/*/permissions</code></td><td>GET</td><td>{description}</td></tr>
+    <tr><td><code>/</code></td><td>GET</td><td>{description}</td></tr>
+    <tr><td><code>/environments</code></td><td>GET</td><td>{description}</td></tr>
+    <tr><td><code>/environments/*/stats</code></td><td>GET</td><td>{description}</td></tr>
+    <tr><td><code>/deployments</code></td><td>GET</td><td>{description}</td></tr>
+	</tbody>
+	</table>
+
+<h2><code>opsadmin</code></h2>
+
+<table class="table" style="width: 690px;" width="690">
+  <thead><th>Resource Path</th><th>Permissions</th><th>Description</th></thead>
+<tbody>
+    <tr><td><code>/environments/*/applications/*/revisions/*/debugsessions</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+    <tr><td><code>/companies</code></td><td>GET</td><td>{description}</td></tr>
+    <tr><td><code>/apps</code></td><td>GET</td><td>{description}</td></tr>
+    <tr><td><code>/environments/test/applications/*/revisions/*/debugsessions</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+    <tr><td><code>/applications/*/revisions/*/deployments</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+    <tr><td><code>/applications</code></td><td>GET</td><td>{description}</td></tr>
+    <tr><td><code>/axCustomReports</code></td><td>GET</td><td>{description}</td></tr>
+    <tr><td><code>/apiproducts</code></td><td>GET</td><td>{description}</td></tr>
+    <tr><td><code>/environments/*/applications/*/revisions/*/deployments</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+    <tr><td><code>/environments/test/applications/*/revisions/*/deployments</code></td><td>PUT | GET | DELETE</td><td>{description}</td></tr>
+    <tr><td><code>/environments/*/analytics/admin</code></td><td>GET</td><td>{description}</td></tr>
+    <tr><td><code>/developers</code></td><td>GET</td><td>{description}</td></tr>
+    <tr><td><code>/userroles/*/permissions</code></td><td>GET</td><td>{description}</td></tr>
+    <tr><td><code>/</code></td><td>GET</td><td>{description}</td></tr>
+    <tr><td><code>/environments</code></td><td>GET</td><td>{description}</td></tr>
+    <tr><td><code>/environments/*/stats</code></td><td>GET</td><td>{description}</td></tr>
+    <tr><td><code>/deployments</code></td><td>GET</td><td>{description}</td></tr>
+</tbody>
+</table>
