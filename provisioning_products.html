@@ -1,8 +1,30 @@
 <p>[toc]</p>
 <p>This topic covers the definition of API products, which enable developers to create apps that consume APIs using API keys and OAuth access tokens.</p>
-<h2>Defining API products</h2>
-<p>An API product is a list of API resources (URIs) and rate-limiting (quota) settings. API Products form the basis of access control in Apigee. To use an API managed by the API Platform, ;a developer must acquire a consumer key that is approved to use an API product. API product configurations are enforced by OAuth and Quota policies.</p>
-<p>API products settings are enforced by matching OAuth and quota policies. <strong>Until those policies are set up, API products and quotas are not enforced by the API Platform.</strong></p>
+<h2>Overview</h2>
+<p>An API product is a list of API resources (URIs) and rate-limiting (quota) settings. API Products form the basis of access control on the API Platform. To use an API managed by the API Platform, a developer must acquire a consumer key (also known as an 'API key') or an OAuth access token that is approved to use an API product.</p>
+<p>API products settings are enforced by matching policies. <strong>Until those policies are set up, API products and quotas are not enforced by the API Platform.</strong></p>
+
+<p>For API products to be enforced, one of the following policy types must be attached to the API proxy flow:</p>
+
+<ul>
+<li>VerifyAPIKey: Takes a reference to an API key, verifies that it represents a valid app, and matches the API product</li>
+<li>OAuthV1, “VerifyAccessToken” operation: Verifies the signature, validates an OAuth 1.0a access token and “consumer key”, and matches the app to the API product</li>	
+<li>OAuthV2, “VerifyAccessToken” operation: Verifies that the OAuth 2.0 access token is valid, matches the token to the app, verifies that the app is valid, and then matches the app to an API product</li>
+<li>GetAPIProduct: Enables policies to use API product metadata without verifying a token</li></ul>
+
+<p>Once policies and API products are configured the following process is executed by the API platform:</p>
+
+<ol>
+<li>A request is received by the API platform and routed to the appropriate API proxy</li>
+<li>A policy is executed that verifies the API key or OAuth access token presented by the client</li>
+<li>The API Platform resolves the API Key or access token to an app profile</li>
+<li>The API Platform app resolves the list (if any) of API products associated with the app</li>
+<li>The first API product that matches is used to populate variables</li>
+<li>If no API product matches the API key or access token, then the request is rejected</li>
+<li>The API Platform enforces URI-based access control (environment, API proxy, and URI path) along with Quota settings</li></ol>
+
+<h2>Configuring API products</h2>
+
 <p>API products expose the following configuration options:</p>
 <ul>
 	<li>apiResources: A comma separated lists of URIs bundled into the API product. Wildcards are supported. In the API product below, &nbsp;the API resource is<span style="font-family:courier new,courier,monospace;"> "/forecastrss"</span>, which means that only requests to<span style="font-family:courier new,courier,monospace;">/weather/forecastrss</span> are permitted for apps that are approved for this API product. You can define several API products to "bundle" API resources for different business or technical purposes.</li>
@@ -16,23 +38,24 @@
 	<li>quotaInterval: Number of time units over which quotas are evaluated.</li>
 	<li>quotaTimeUnit: The time unit (minute, hour, day, or month) over which quotas are counted.</li>
 </ul>
-<p>The API Platform exposes an API that enables API product management. An API product can be created with a POST request, as in this example:</p>
+
+<p>You can configure API products using the Management UI or the Platform API. The API that enables you to create and manage API products programatically. For example, an API product can be created with a POST request:</p>
 <div id="well">
 	<pre>$ curl -H "Content-Type:application/json" -X POST -d \
-   '{"apiResources": [ "/forecastrss" ], 
-     "approvalType": "auto", 
-     "attributes":
-      [{"name": "myAttribute", "value": "myValue"},
-     "description": "Free API Product",
-     "displayName": "Free API Product",
-     "name": "weather_free",
-     "scopes": []
-     "proxies": [ {'weatherapi'} ],
-     "environments": [ {'test'} ],
-     "quota": "10",
-     "quotaInterval": "2",
-     "quotaTimeUnit": "hour"}' \</pre>
-	<pre>-u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/apiproducts</pre>
+ '{"apiResources": [ "/forecastrss" ], 
+  "approvalType": "auto", 
+  "attributes":
+    [{"name": "myAttribute", "value": "myValue"}],
+  "description": "Free API Product",
+  "displayName": "Free API Product",
+  "name": "weather_free",
+  "scopes": [],
+  "proxies": [ "weatherapi" ],
+  "environments": [ "test" ],
+  "quota": "10",
+  "quotaInterval": "2",
+  "quotaTimeUnit": "hour" }' \
+-u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/apiproducts</pre>
 </div>
 <p>Sample Response</p>
 <div id="well">
@@ -58,10 +81,24 @@
   "quotaTimeUnit": "hour"}'
 }</pre>
 </div>
-<p>The API product above authorizes access to the '/forecastrss' URI. Once appropriate OAuth policies are configured, any request with a valid credential made to the URI path following <span style="font-family:courier new,courier,monospace;">/weather/forecastrss</span> will be authorized.</p>
-<p>The API product above defines settings for the API product's 'quota'. Developers who sign up for this API product will be able to build apps that consume the API resource<span style="font-family:courier new,courier,monospace;"> /weather </span>under the conditions of the quota settings, that is, 1 request per minute.</p>
+
+<p>(For additional documentation of the API for API products, for example, updating, deleting, and searching, refer to [node:8172].)</p>
+
+<p>APIresources defined in an API product are by default identified using the <code>proxy.pathsuffix</code> variable. In this example, the 'proxy path suffix'  is the UR fragment the <code>/forecastrss</code>. The base path for the API proxy 'weatherapi' is <code>/weather</code>. Therefore, the request URI defined by this API product is <code>/weather/forecastrss</code>.</p>
+
+<p>You can override the default usage of <code>proxy.pathsuffix</code> by configuring an optional AssignMessage policy to set the path variable prior to execution of the policy that validates the API product settings.</p>
+
+<p>Once appropriate policies are configured, any request with a valid credential made to the URI path following <code>/weather/forecastrss</code> will be authorized. For example, the following complete URL would be considered 'bundled' (and therefore subject to the restrictions of) the API product created above:</p>
+<pre>http://{org_name}-test.apigee.net/weather/forecastrss?w=12797282</pre>
+<p>The following URL would not, as it is directed to the 'prod' environment:</p>
+<pre>http://{org_name}-prod.apigee.net/weather/forecastrss?w=12797282</pre>
+<p>Nor would the following URL, since it includes the base path for an API proxy other than that defined for the weatherapi, since the base path for an API proxy is unique within an environment.</p>
+<pre>http://{org_name}-prod.apigee.net/news/forecastrss?w=12797282</pre>
+
+<p>API products enforce Quota settings, by incrementing a counter each time an app makes a request. A Quota is scoped to an API product, and therefore applies all APIresources defined in the API product. Developers who sign up for this API product will be able to build apps that consume the API resource <code>/weather</code> under the conditions of the Quota settings, that is, 1 request per minute.</p>
+
 <h2>Creating developer profiles</h2>
-<p>Developers are registered in an organization by creating a profile. This step typically occurs through a developer portal, and, indeed, this API is the same API that is called by Apigee API Platform Developer portal. Note that the developer email that is included here is used as the unique key for the developer throughout the system. Arbitrary attributes can be added to the developer profile as needed. The attributes are not interpreted by the API Platform, but can be of use in custom analytics, custom policy enforcement, and so on.</p>
+<p>Developers are registered in an organization by creating a profile. Note that the developer email that is included in the profile is used as the unique key for the developer throughout the system. Arbitrary attributes can be added to the developer profile as needed. The attributes are not interpreted by the API Platform, but can be of use in custom analytics, custom policy enforcement, and so on.</p>
 <div id="well">
 	<pre>$ curl -H "Content-type:application/json" -X POST -d \
       '{"email" : "ntesla@theramin.com", 

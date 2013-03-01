@@ -1,34 +1,20 @@
 <p>[toc]</p>
 <p>The API Platform enables you to secure your APIs with API Keys using policies, without requiring code to be written.</p>
 
-<p>This topic covers API Key-based authorization for your APIs and references the Simple Proxy in the&nbsp;<a href="https://github.com/apigee/api-platform-samples">API Platform Samples</a>&nbsp;available on Github. A fully configured API Key sample is available </p>
+<p>This topic covers API Key-based authorization for your APIs and references the Simple Proxy in the <a href="https://github.com/apigee/api-platform-samples">API Platform Samples</a>&nbsp;available on Github. </p>
 
-<p>OAuth enforcement requires the configuration of API products, developers and apps, which is covered the in topic [node:427]. <p>The API product  configured in that topic provides quota-limited access to requests sent to the API resource <code>/weather</code>. This topic covers the creation and configuration of policies that enforce  API product settings at runtime.</p>
+<p>OAuth enforcement requires the configuration of API products, developers and apps, which is covered the in topic [node:427]. The API product  configured in that topic provides quota-limited access to requests sent to the API resource <code>/weather</code>. This topic covers the creation and configuration of policies that enforce  API product settings at runtime.</p>
 
-<p>To configure API Key validation, three policies are required in the <code>/policies</code> directory for the API proxy.</p>
-<p>In the <a href="https://github.com/apigee/api-platform-samples">API Platform Samples</a> distribution:</p>
-<div id="well">
-	<pre>$ cd simpleProxy/apiproxy</pre>
-</div>
-<p>To create a policies directory if none exists::</p>
-<div id="well">
-	<pre>$ mkdir policies</pre>
-</div>
-<p>AT least three directories must be present under <code>/apiproxy</code></p>
-<div id="well">
-	<pre>$ ls
-policies &nbsp; proxies&nbsp; targets&nbsp; weatherapi.xml</pre>
-</div>
 <h2>OAuth policy configuration</h2>
 
-<p>Three policies are required in the  <code>apiproxy/policies</code> directory to enable API key validation:</p>
+<p>Three policies are required in the <code>apiproxy/policies</code> directory to enable API key validation:</p>
 <ul>
-	<li>ClassifyRequest policy: Gets the value of the URI path suffix for the request</li>
-	<li>ValidateAPIKey policy: Validates the API key against the keys stored on the API Platform and gets the associated API product</li>
-	<li>CheckQuota policy: Populates and enforces the quota settings defined in the relevant API product</li>
+<li>ClassifyRequest policy: Gets the value of the URI path suffix for the request by setting variable named <code>flow.resource.name</code></li>
+<li>ValidateAPIKey policy: Validates the API key against the keys stored on the API Platform and gets the associated API product and settings, verifies that the request is for the permitted API resource (URI), API proxy, and environment</li>
+<li>CheckQuota policy: Populates and enforces the Quota settings defined in the relevant API product</li>
 </ul>
 <h4>ClassifyRequest policy of type <code>AssignMessage</code></h4>
-<p>The first processing step involves extracting a predefined variable. To enforce the API product settings, the policies must check the URI of the API resource requested by the client. The API proxy extracts the variable <code>proxy.pathsuffix</code> from the request context to obtain the value of the request path suffix URI. It is this API resource path that maps to the API resource path URI defined in the API product. (The API Platform checks to ensure that the client app is approved to access the specific API resource URI in the request path.)</p>
+<p>To enforce the API product settings, the API key validation policy must check the URI of the API resource requested by the client. In the example below, the API proxy extracts the variable <code>proxy.pathsuffix</code> from the request context to obtain the value of the request path suffix URI. It is this API resource path that maps to the URI path (APIresource) defined in the API product.</p>
 <p>In <code>apiproxy/policies</code>, a policy called <code>ClassifyRequest.xml</code> with the following content:</p>
 <pre>&lt;AssignMessage name="ClassifyRequest"&gt;
 &nbsp; &lt;AssignVariable&gt;
@@ -38,7 +24,7 @@ policies &nbsp; proxies&nbsp; targets&nbsp; weatherapi.xml</pre>
 &lt;/AssignMessage&gt;</pre>
 
 <h4>ValidateAPIKey policy of type <code>GetOAuthV1Info</code></h4>
-<p>The second processing step validates the API key presented by the client app against the keys stored on the API Platform. The only setting needed is the expected location of the API key in the client request.For exmple, the policy configuration below defines the expected key location as a query parameter named <code>apikey</code>. A successful request must present the apikey as a query parameter appended to the request, for example,<code>?apikey={ValueofAPIKey}</code>. Alternatively the expected location can be configured as an HTTP header or a form parameter.</p>
+<p>This processing step validates the API key presented by the client app against the keys stored on the API Platform. The only setting needed is the expected location of the API key in the client request. For example, the policy configuration below defines the expected key location as a query parameter named <code>apikey</code>. A successful request must present the apikey as a query parameter appended to the request, for example,<code>?apikey={ValueofAPIKey}</code>. Alternatively the expected location can be configured as an HTTP header or a form parameter.</p>
 <p>The following policy called <code>ValidateAPIKey.xml</code> with the following content is used to validate the API key:</p>
 <div id="well">
 	<pre>&lt;GetOAuthV1Info name="ValidateAPIKey"&gt;
