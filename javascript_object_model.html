@@ -1,16 +1,17 @@
 <p>[toc]</p>
-<p>The Apigee API Platform enables developers to leverage background with JavaScript to implement custom API behavior without having to change the code of backend services. The API Platform can be used as a managed container for executing custom JavaScript written JavaScript Object Model defined by Apigee. developers write custom logic, and Apigee provides the container, security, monitoring, and analytics to manage and scale custom code.</p>
-<p>The benefit of this approach is that it enables developers to offload common functions such as rate limiting, API key provisioning, OAuth authorization, transformations, and such, freeing you to focus on coding innovative aspects of an API.</p>
-<p>In short, developers can combine Apigee's out-of-the-box policies with custom JavaScript to implement sophisticated and reliable behavior that meets the needs of apps and API developers.</p>
+<p>As an API developer you are undoubtedly familiar with JavaScript. The Apigee API Platform enables you to leverage your background with JavaScript to implement custom API behavior without having to change the code of your APIs or backend services.</p>
+<p>Apigee's API Platform can be used as a managed container for executing your custom JavaScript. You write the custom logic, and Apigee provides the container, security, management, monitoring, analytics.</p>
+<p>The benefit of this approach is that it lets you offload common functions like rate limiting, API key provisioning, OAuth authorization, transformations, and such, freeing you to focus on innovation.</p>
+<p>In short, you can combine Apigee's out-of-the-box policies with your own custom JavaScript to implement sophisticated and reliable behavior that meets the needs of your apps and, if you expose APIs, your API developers.</p>
 <h3>Learn more</h3>
-<p>This document is intended to be an overview and a reference.</p>
-<p>For basic samples and &nbsp;instructions on getting JavaScript running on the API Platform refer to the Developer Guide topic, [node:3971]</p>
+<p>This document is intended to be an overview and a reference.&nbsp;</p>
+<p>For basic samples and instructions on getting JavaScript running on the API Platform refer to the quick start, [node:3971]</p>
 <p>For an example for more advanced JavaScript programming on the API Platform, see [node:3975]</p>
 <h2>The Apigee Object Model</h2>
 <p>If you have a good grasp of JavaScript, you just need to become familiar with Apigee's object model.&nbsp;JavaScript that executes in a browser relies on the "browser object model", or BOM. JavaScript that executes on the Apigee API Platform relies on a message-oriented object model. This object model defines request, response, and context objects with associated properties. This document describes these objects and provides samples to get you started writing your own JavaScript against the Apigee object model.</p>
 <p>Apigee's API Platform relies on <a href="https://developer.mozilla.org/en-US/docs/Rhino">Rhino</a>, which is an open-source implementation of JavaScript written in Java.&nbsp;Apigee also uses <a href="http://en.wikipedia.org/wiki/ECMAScript_for_XML">E4X</a>, which is an extension of JavaScript that adds support for XML.</p>
 <p>When your JavaScript is executed in an Apigee flow, a <i>scope</i> is created for the execution.</p>
-<p>Three object references are created in the scope:</p>
+<p>&nbsp;A set of object references are created in the scope:</p>
 <ul>
 	<li><span style="font-family:courier new,courier,monospace;">proxyRequest</span>: An object that represents either the inbound proxy request message (from the requesting app to the API Platform)&nbsp;</li>
 	<li><span style="font-family:courier new,courier,monospace;">proxyResponse</span>: An object that represents the outbound proxy response message (from the API Platform to the requesting app)</li>
@@ -18,8 +19,22 @@
 	<li><span style="font-family: 'courier new', courier, monospace;">targetResponse</span>: An object that represents the inbound target response message (from the backend service to the API Platform)</li>
 	<li><span style="font-family: 'courier new', courier, monospace;">context</span>: A wrapper for the message processing pipeline context and the request and response flows that are executed by the proxy and target endpoints.</li>
 </ul>
-
-
+<h3>Proxy and Target Request and Response</h3>
+<p>Enables JavaScript to specify which message object within the context should be the target of JavaScript operation:</p>
+<div id="class">
+	<ul>
+		<li>
+			<pre>proxyRequest
+proxyResponse
+targetRequest
+targetResponse</pre>
+		</li>
+	</ul>
+</div>
+<p>For example, to get the value of the <code>user-agent</code> header for the proxy request message:</p>
+<div id="class">
+	<pre>var user-agent = proxyRequest.headers['user-agent'];</pre>
+</div>
 <h2>proxyRequest and targetRequest</h2>
 <p>The API Platform generates two request objects: one for the ProxyEndpoint and one for the TargetEndpoint.</p>
 <h4>Request Object Properties</h4>
@@ -90,12 +105,12 @@ v1 = proxyRequest.body.asForm['vehicle'][1];</pre>
 <p><code>schema://host:port/path?queryParams</code></p>
 <p>Example:</p>
 <div id="well">
-	<pre>request.url = ‘http://www.example.com/path?q1=1
-request.protocol =’https’;</pre>
+	<pre>proxyRequest.url = ‘http://www.example.com/path?q1=1
+proxyRequest.protocol =’https’;</pre>
 </div>
 <p>results in</p>
 <div id="well">
-	<pre>(request.url == ‘https://www.example.com/path?q1=1)</pre>
+	<pre>(proxyRequest.url == ‘https://www.example.com/path?q1=1)</pre>
 </div>
 <h2>proxyResponse and targetResponse&nbsp;</h2>
 <p>The API Platform generates two response objects: one for the ProxyEndpoint and one for the TargetEndpoint.</p>
@@ -134,7 +149,6 @@ var b = targetResponse.content.asJSON.b;    // == 2</pre>
 	<pre>var status = targetResponse.content.status;        // 200
 var msg = targetResponse.content.status.message;   // "OK"</pre>
 </div>
-<p>&nbsp;</p>
 <h2>Context</h2>
 <p>A context object is created for each request/response transaction executed by the API Platform processing pipeline. The context object exposes methods to get, set, and remove variables related to each transaction. <span style="font-family:courier new,courier,monospace;">Context</span> is useful for building logic that relies on information external to message content, such as system variables (for example, time of day) or configuration variables (for example, the organization name where the JavaScript executes. See the [node:243] for a list of variables that can be accessed by calling <span style="font-family:courier new,courier,monospace;">context</span> in your JavaScript.</p>
 <p><code>getVariable():&nbsp;<span style="font-family: arial, helvetica, sans-serif;">Gets a variable</span></code></p>
@@ -144,26 +158,22 @@ var msg = targetResponse.content.status.message;   // "OK"</pre>
 </div>
 <p><code>setVariable()</code>: Sets a variable</p>
 <div id="well">
-	<pre>context.setVariable(‘organization.name’,'{org_name}');</pre>
+	<pre>var org = context.setVariable(‘organization.name.myorg’);</pre>
 </div>
 <p><code>removeVariable()</code>: Removes a variable.</p>
 <div id="well">
-	<pre>context.removeVariable(‘organization.name’,'{org_name}');</pre>
+	<pre>var org = context.removeVariable(‘organization.name.myorg’);</pre>
 </div>
-<h3>Context Properties</h3>
-<h4>Proxy and Target Request and Response</h4>
-<p>Enables JavaScript to specify which message object within the entire context should be the target of an operation:</p>
-<div id="class">
-<ul><li><code>context.proxyRequest</code></li>
-<li><code>context.proxyResponse</code></li>
-<li><code>context.targetRequest</code></li>
-<li><code>context.targetResponse</code></li></ul>
-</div>
-<p>For example, to get the value of the <code>user-agent</code> header for the ProxyRequest message:</p>
-<div id="class"	
+<h4>Context Properties</h4>
+<p><b><code>flow</code></b>: The name of the current flow</p>
+<p>The flow is a string that indicates the current flow. This property is used to indicate the flow to which the JavaScript is attached. Possible values are:</p>
+<ul>
+	<li><code>PROXY_REQ_FLOW</code></li>
+	<li><code>PROXY_RESP_FLOW</code></li>
+	<li><code>TARGET_REQ_FLOW</code></li>
 	<li><code>TARGET_RESP_FLOW</code></li>
 </ul>
-<p>Each flow name encompasses the PreFlow, PostFlow, and conditional Flows defined in the ProxyEndpoint or TargetEndpoint.</p>
+<p>Each flow name encompasses the preflow, postflow, and conditional flows defined in the endpoint.</p>
 <p>This property is useful when common JavaScript is executed in more than one flow, but might vary its behavior depending on the flow in which it executes.</p>
 <p>For example:</p>
 <p>Set a header only on the target request flow:</p>
@@ -174,11 +184,12 @@ var msg = targetResponse.content.status.message;   // "OK"</pre>
 </div>
 <p>Set the content only on the proxy response flow:</p>
 <div id="class">
-	<pre>if (i.flow=="PROXY_RESP_FLOW") {
+	<pre>if (context.flow=="PROXY_RESP_FLOW") {
      response.content='bar';
 }</pre>
 </div>
-<p><b><span style="font-family:courier new,courier,monospace;">session</span>:</b> A map of name/value pairs that can be used to pass objects between two policies executing within the same message context</p>
+<p>&nbsp;</p>
+<p><b><span style="font-family: 'courier new', courier, monospace;">session</span>:</b>&nbsp;A map of name/value pairs that can be used to pass objects between two policies executing within the same message context</p>
 <p>Example:</p>
 <div id="well">
 	<pre>context.session[‘key’]  = 123;
@@ -271,4 +282,3 @@ if (ex1.isSuccess() &amp;&amp; ex2.isSuccess() {
 <p>For basic samples and instructions, refer to the quick start, [node:3971]</p>
 <p>For an example of more advanced JavaScript programming on the API Platform, see [node:3975]</p>
 <p>For assistance, post to the <a href="http://support.apigee.com">Developer Forum</a>.</p>
- 
