@@ -1,8 +1,7 @@
 <p>[toc]</p>
-<p>This topic covers the definition of API products, which enable developers to create apps that consume APIs using API keys and OAuth access tokens.</p>
+<p>This topic covers the definition of API products. API products enable API providers to create bundles of URIs that are combined with Quota settings. The goal of API products is to enable API providers to expose a single set of RESTful URIs as multiple different bundles, each of which is associated with a 'service plan'. This enables API providers to create bundles on-the-fly, without requiring  recoding of backend services. In a typical scenario, a set of URIs are bundled into two API products, 'Free' and 'Premium', where 'Free' provides a low quota, and Premium provides a higher quota at a cost. Access to API products is enforced by OAuth. The following Developer Guide topics provide instruction on setting up OAuth.</p>
 <h2>Defining API products</h2>
-<p>An API product is a list of API resources (URIs) and rate-limiting (quota) settings. API Products form the basis of access control in Apigee. To use an API managed by the API Platform, ;a developer must acquire a consumer key that is approved to use an API product. API product configurations are enforced by OAuth and Quota policies.</p>
-<p>API products settings are enforced by matching OAuth and quota policies. <strong>Until those policies are set up, API products and quotas are not enforced by the API Platform.</strong></p>
+<p>An API product is a list of API resources (URIs) and rate-limiting (quota) settings. Thus to define an API product you must decide which URIs to bundle, and how many requests should be permitted over a given time interval, for example, 1 request per minute, or 10,000 requests per month. The service plan that you create applies to all URIs in the bundle.</p>
 <p>API products expose the following configuration options:</p>
 <ul>
 	<li>apiResources: A comma separated lists of URIs bundled into the API product. Wildcards are supported. In the API product below, &nbsp;the API resource is<span style="font-family:courier new,courier,monospace;"> "/forecastrss"</span>, which means that only requests to<span style="font-family:courier new,courier,monospace;">/weather/forecastrss</span> are permitted for apps that are approved for this API product. You can define several API products to "bundle" API resources for different business or technical purposes.</li>
@@ -10,8 +9,8 @@
 	<li>attributes: A set of optional, custom attributes that may be to extend the default API product profile</li>
 	<li>description: A description of the API product (which will be exposed to developers via a developer portal, for example)</li>
 	<li>scopes: An optional, comma-separated list of OAuth scopes that are validated at runtime. (The API Platform validates that the scopes in any access token presented match the scope set in the API product)</li>
-	<li>proxies: Named API proxies. By specifying proxies, you can bind the API resources listed in the API product to specific API proxies, preventing developers from accessing those &nbsp;URIs via other API proxies.</li>
-	<li>environments: Named environments (for example 'test' or 'prod"). By specifying one or more environment, you can bind the API resources listed in the API product to specific environment, preventing developer from accessing those URIs via API proxies in another environment. This setting is used, for example, to prevent URIs protected by API proxies in 'prod' from being accessed by API proxies deployed in 'test'.</li>
+	<li>proxies: Named API proxies. By specifying proxies, you can bind the API resources (URIs) listed in the API product to specific API proxies, preventing developers from accessing those URIs via other API proxies. Note that if you do not configure proxies or environments, you must set the variable <code>proxy.pathsuffix</code> explicitly, using an ExtractVariables policy.</li>
+	<li>environments: Named environments (for example 'test' or 'prod"). By specifying one or more environment, you can bind the API resources listed in the API product to specific environment, preventing developer from accessing those URIs via API proxies in another environment. This setting is used, for example, to prevent URIs protected by API proxies in 'prod' from being accessed by API proxies deployed in 'test'. Note that if you do not configure proxies or environments, you must set the variable <code>proxy.pathsuffix</code> explicitly, using an ExtractVariables policy.</li>
 	<li>quota: Number of requests permitted per app over the time interval specified.</li>
 	<li>quotaInterval: Number of time units over which quotas are evaluated.</li>
 	<li>quotaTimeUnit: The time unit (minute, hour, day, or month) over which quotas are counted.</li>
@@ -19,47 +18,45 @@
 <p>The API Platform exposes an API that enables API product management. An API product can be created with a POST request, as in this example:</p>
 <div id="well">
 	<pre>$ curl -H "Content-Type:application/json" -X POST -d \
-   '{"apiResources": [ "/forecastrss" ], 
-     "approvalType": "auto", 
-     "attributes":
-      [{"name": "myAttribute", "value": "myValue"},
-     "description": "Free API Product",
-     "displayName": "Free API Product",
-     "name": "weather_free",
-     "scopes": []
-     "proxies": [ {'weatherapi'} ],
-     "environments": [ {'test'} ],
-     "quota": "10",
-     "quotaInterval": "2",
-     "quotaTimeUnit": "hour"}' \</pre>
-	<pre>-u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/apiproducts</pre>
+'{
+  "apiResources" : [ "/forecastrss" ],
+  "approvalType" : "auto",
+  "attributes" : [ ],
+  "description" : "A bundle of API resources (URIs) that can be access for free",
+  "displayName" : "Free API bundle",
+  "environments" : [ "test" ],
+  "name" : "FreeAPIProduct",
+  "proxies" : [ "weatherapi" ],
+  "quota" : "1",
+  "quotaInterval" : "1",
+  "quotaTimeUnit" : "minute",
+  "scopes" : []
+}' \
+-u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/apiproducts</pre>
 </div>
 <p>Sample Response</p>
 <div id="well">
-	<pre>{
+<pre>{
   "apiResources" : [ "/forecastrss" ],
   "approvalType" : "auto",
-  "attributes" : [ {
-    "name" : "myAttribute",
-    "value" : "myValue"
-  },
-  "createdAt" : 1344454200828,
-  "createdBy" : "admin@apigee.com",
-  "description" : "Free API Product",
-  "displayName" : "Free API Product",
-  "lastModifiedAt" : 1344454200828,
-  "lastModifiedBy" : "admin@apigee.com",
-  "name" : "weather_free",
-  "scopes" : [ ],
-  "proxies": [ {'weatherapi'} ],
-  "environments": [ {'test'} ],
-  "quota": "10",
-  "quotaInterval": "2",
-  "quotaTimeUnit": "hour"}'
+  "attributes" : [ ],
+  "createdAt" : 1361457299970,
+  "createdBy" : "admin@#apifactory.com",
+  "description" : "A bundle of API resources (URIs) that can be access for free",
+  "displayName" : "Free API bundle",
+  "environments" : [ "test" ],
+  "lastModifiedAt" : 1361457299970,
+  "lastModifiedBy" : "admin@apifactory.com",
+  "name" : "FreeAPIProduct",
+  "proxies" : [ "weatherapi" ],
+  "quota" : "1",
+  "quotaInterval" : "1",
+  "quotaTimeUnit" : "minute",
+  "scopes" : [ ]
 }</pre>
 </div>
-<p>The API product above authorizes access to the '/forecastrss' URI. Once appropriate OAuth policies are configured, any request with a valid credential made to the URI path following <span style="font-family:courier new,courier,monospace;">/weather/forecastrss</span> will be authorized.</p>
-<p>The API product above defines settings for the API product's 'quota'. Developers who sign up for this API product will be able to build apps that consume the API resource<span style="font-family:courier new,courier,monospace;"> /weather </span>under the conditions of the quota settings, that is, 1 request per minute.</p>
+<p>The API product above authorizes access to the '/forecastrss' URI. Once appropriate OAuth policies are configured, any request with a valid credential made to the URI path following <code>/weather/forecastrss</code> will be authorized. (Note that request path consists of the base path (configured in the ProxyEndpoint) and URI suffix, which is defined as the API resource.)</p>
+<p>The API product above defines settings for the API product's 'quota'. Developers who sign up for this API product will be able to build apps that consume the API resource <code>/forecastrss</code> under the conditions of the quota settings, that is, 1 request per minute.</p>
 <h2>Creating developer profiles</h2>
 <p>Developers are registered in an organization by creating a profile. This step typically occurs through a developer portal, and, indeed, this API is the same API that is called by Apigee API Platform Developer portal. Note that the developer email that is included here is used as the unique key for the developer throughout the system. Arbitrary attributes can be added to the developer profile as needed. The attributes are not interpreted by the API Platform, but can be of use in custom analytics, custom policy enforcement, and so on.</p>
 <div id="well">
@@ -91,7 +88,7 @@
 	}</pre>
 </div>
 <h2>Registering developer apps</h2>
-<p>Every app that is created on the API Platform is associated with a developer and an API product. When an app is registered on behalf of a developer, the API Platform generates a "credential" (a consumer key and secret pair) that identifies the app. This credential is 'bound' (in a loose way) to at least one API product. The credential generated for an app enables it to consume a set of URI paths at a specified rate (defined by the quota settings in the API product).</p>
+<p>Every app that is created on the API Platform is associated with a developer and an API product. When an app is registered on behalf of a developer, the API Platform generates a "credential" (a consumer key and secret pair) that identifies the app. This credential is 'bound' to at least one API product. The credential generated for an app enables it to consume a set of URI paths at a specified rate (defined by the quota settings in the API product).</p>
 <div id="well">
 	<pre>$ curl -H "Content-type:application/json" -X POST -d \
       '{"apiProducts": [ "weather_free"], 
@@ -121,7 +118,10 @@
   "status" : "approved"
 }</pre>
 </div>
-<p>Note that for collective ownership. apps may also be associated with company entities. Such apps are referred to as company apps (as opposed to developer apps).</p>
+<p>Note that for collective ownership. apps can also be associated with <code>company</code> entities. Such apps are referred to as 'company apps' (as opposed to 'developer apps').</p>
+To manage company apps, you can use the <code>/companies/{company_name}/apps</code> API resource.
+
+
 <h2>Managing consumer keys for apps</h2>
 <h4>Get the consumer key (the API Key) for the app</h4>
 <p>The credentials for an app, (API product, consumer key and secret) are returned as part of the app profile. An administrator of an organization can retrieve the consumer key at any time, for developer support, for example.</p>
