@@ -10,30 +10,29 @@
 <h2>The Apigee Object Model</h2>
 <p>If you have a good grasp of JavaScript, you just need to become familiar with Apigee's object model.&nbsp;JavaScript that executes in a browser relies on the "browser object model", or BOM. JavaScript that executes on the Apigee API Platform relies on a message-oriented object model. This object model defines request, response, and context objects with associated properties. This document describes these objects and provides samples to get you started writing your own JavaScript against the Apigee object model.</p>
 <p>Apigee's API Platform relies on <a href="https://developer.mozilla.org/en-US/docs/Rhino">Rhino</a>, which is an open-source implementation of JavaScript written in Java.&nbsp;Apigee also uses <a href="http://en.wikipedia.org/wiki/ECMAScript_for_XML">E4X</a>, which is an extension of JavaScript that adds support for XML.</p>
-<p>When your JavaScript is executed in an Apigee flow, a <i>scope</i> is created for the execution.</p>
-<p>&nbsp;A set of object references are created in the scope:</p>
+<p>When your JavaScript is executed in an Apigee Flow, a <i>scope</i> is created for the execution.</p>
+<p>A set of object references is created in the scope:</p>
 <ul>
-	<li><span style="font-family:courier new,courier,monospace;">proxyRequest</span>: An object that represents either the inbound proxy request message (from the requesting app to the API Platform)&nbsp;</li>
-	<li><span style="font-family:courier new,courier,monospace;">proxyResponse</span>: An object that represents the outbound proxy response message (from the API Platform to the requesting app)</li>
-	<li><span style="font-family: 'courier new', courier, monospace;">targetRequest</span>: An object that represents &nbsp;the outbound target request message (from the API Platform to &nbsp;the backend service).</li>
-	<li><span style="font-family: 'courier new', courier, monospace;">targetResponse</span>: An object that represents the inbound target response message (from the backend service to the API Platform)</li>
-	<li><span style="font-family: 'courier new', courier, monospace;">context</span>: A wrapper for the message processing pipeline context and the request and response flows that are executed by the proxy and target endpoints.</li>
+	<li><code>proxyRequest</code>: An object that represents either the inbound proxy request message (from the requesting app to the API Platform)</li>
+	<li><code>proxyResponse</code>: An object that represents the outbound proxy response message (from the API Platform to the requesting app)</li>
+	<li><code>targetRequest</code>: An object that represents the outbound target request message (from the API Platform to &nbsp;the backend service).</li>
+	<li><code>targetResponse</code>: An object that represents the inbound target response message (from the backend service to the API Platform)</li>
+	<li><code>context</code>: A wrapper for the message processing pipeline context and the request and response flows that are executed by the proxy and target endpoints.</li>
 </ul>
 <h3>Proxy and Target Request and Response</h3>
 <p>Enables JavaScript to specify which message object within the context should be the target of JavaScript operation:</p>
 <div id="class">
 	<ul>
-		<li>
-			<pre>proxyRequest
-proxyResponse
-targetRequest
-targetResponse</pre>
+<li><code>proxyRequest</code>: The inbound request message received from the requesting client.</li>
+<li><code>proxyResponse</code>: The outbound response message returned to the requesting client.</li>
+<li><code>targetRequest</code>: The outbound request message sent to the backend service.</li>
+<li><code>targetResponse</code>: The inbound request message received from the backend service.</li>
 		</li>
 	</ul>
 </div>
-<p>For example, to get the value of the <code>user-agent</code> header for the proxy request message:</p>
+<p>For example, to get the value of the <code>user-agent</code> header for the proxyRequest:</p>
 <div id="class">
-	<pre>var user-agent = proxyRequest.headers['user-agent'];</pre>
+	<pre>var userAgent = context.proxyRequest.headers['user-agent'];</pre>
 </div>
 <h2>proxyRequest and targetRequest</h2>
 <p>The API Platform generates two request objects: one for the ProxyEndpoint and one for the TargetEndpoint.</p>
@@ -105,12 +104,12 @@ v1 = proxyRequest.body.asForm['vehicle'][1];</pre>
 <p><code>schema://host:port/path?queryParams</code></p>
 <p>Example:</p>
 <div id="well">
-	<pre>proxyRequest.url = ‘http://www.example.com/path?q1=1
-proxyRequest.protocol =’https’;</pre>
+	<pre>targetRequest.url = ‘http://www.example.com/path?q1=1
+targetRequest.protocol =’https’;</pre>
 </div>
 <p>results in</p>
 <div id="well">
-	<pre>(proxyRequest.url == ‘https://www.example.com/path?q1=1)</pre>
+	<pre>(targetRequest.url == ‘https://www.example.com/path?q1=1)</pre>
 </div>
 <h2>proxyResponse and targetResponse&nbsp;</h2>
 <p>The API Platform generates two response objects: one for the ProxyEndpoint and one for the TargetEndpoint.</p>
@@ -158,23 +157,23 @@ var msg = targetResponse.content.status.message;   // "OK"</pre>
 </div>
 <p><code>setVariable()</code>: Sets a variable</p>
 <div id="well">
-	<pre>var org = context.setVariable(‘organization.name.myorg’);</pre>
+	<pre>var org = context.setVariable(‘organization.name.myorg’, value);</pre>
 </div>
 <p><code>removeVariable()</code>: Removes a variable.</p>
 <div id="well">
-	<pre>var org = context.removeVariable(‘organization.name.myorg’);</pre>
+	<pre>var org = context.reomveVariable(‘organization.name.myorg’, value);</pre>
 </div>
 <h4>Context Properties</h4>
-<p><b><code>flow</code></b>: The name of the current flow</p>
-<p>The flow is a string that indicates the current flow. This property is used to indicate the flow to which the JavaScript is attached. Possible values are:</p>
+<p><b><code>flow</code></b>: The name of the current Flow</p>
+<p>The <code>flow</code> property is a string that identifies the current Flow. This property is used to indicate the Flow to which the JavaScript is attached. Possible values are:</p>
 <ul>
 	<li><code>PROXY_REQ_FLOW</code></li>
 	<li><code>PROXY_RESP_FLOW</code></li>
 	<li><code>TARGET_REQ_FLOW</code></li>
 	<li><code>TARGET_RESP_FLOW</code></li>
 </ul>
-<p>Each flow name encompasses the preflow, postflow, and conditional flows defined in the endpoint.</p>
-<p>This property is useful when common JavaScript is executed in more than one flow, but might vary its behavior depending on the flow in which it executes.</p>
+<p>Each Flow name encompasses the PreFlow, PostFlow, and any conditional flows defined in the ProxyEndpoint(s) or TargetEndpoint(s).</p>
+<p>This property is useful when common JavaScript is executed in more than one Flow, but might vary its behavior depending on the Flow in which it executes.</p>
 <p>For example:</p>
 <p>Set a header only on the target request flow:</p>
 <div id="class">
@@ -237,14 +236,14 @@ targetResponse.headers[‘Via’][1]     // “1.1 example.com”</pre>
 <p>The <span style="font-family:courier new,courier,monospace;">request</span> object is identical in type to the <span style="font-family:courier new,courier,monospace;">request</span> object generated by a standard flow.</p>
 <div id="well">
 	<pre>var myRequest = new Request();
-      myRequest.url = “http://www.example.com”;
-      var exchange = httpClient.send(myRequest);</pre>
+myRequest.url = “http://www.example.com”;
+var exchange = httpClient.send(myRequest);</pre>
 </div>
 <p>Alternatively:</p>
 <div id="well">
 	<pre>var headers = {‘X-SOME-HEADER’ : ‘some value’ };
-	var myRequest = new Request(“http://www.example.com”,”GET”,headers);
-        var exchange = httpClient.send(myRequest); </pre>
+var myRequest = new Request(“http://www.example.com”,”GET”,headers);
+var exchange = httpClient.send(myRequest); </pre>
 </div>
 <p>or</p>
 <div id="well">
