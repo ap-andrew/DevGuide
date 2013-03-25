@@ -1,6 +1,6 @@
 <p>[toc]</p>
 <h2>What's here?</h2>
-<p>The API Platform Developer Guide is designed to get you up and and running with local development of API facades that deploy and scale on the Apigee API Platform. The focus of development on the API Platform is the API facade. An API facade is an application that runs on the Apigee API Platform and which serves as a proxy for one or more backend services or APIs. Using API facades, you can proxy any publicly available API, which makes the API Platform a great solution for developers who need to customize the behavior of APIs--whether the developer controls the API or not. Once you proxy an API with an API facade, all of the enterprise capabilities of Apigee are at your disposal. You can:</p>
+<p>The API Platform Developer Guide is designed to get you up and and running with local development of API proxies that deploy and scale on the Apigee API Platform. The focus of development on the API Platform is the API proxy. An API proxy is an application that runs on the Apigee API Platform and which serves as a proxy for one or more backend services or APIs. Using API proxies, you can proxy any publicly available API, which makes the API Platform a great solution for developers who need to customize the behavior of APIs--whether the developer controls the API or not. Once you proxy an API with an API proxy, all of the enterprise capabilities of Apigee are at your disposal. You can:</p>
 <ul>
 	<li>Leverage a policy library to implement common behavior without writing any code</li>
 	<li>Innovate on the API Platform by writing and deploying custom code in the Cloud</li>
@@ -10,7 +10,7 @@
 	<li>Track and analyze consumption patterns by developers and apps</li>
 	<li>Expose the capabilities that you implement as APIs, complete with an API Console, enabling re-use across projects or sharing with other developers</li>
 </ul>
-<p>This Developer Guide provides instruction on local development of API facades. As such, it assumes basic knowledge of:</p>
+<p>This Developer Guide provides instruction on local development of API proxies. As such, it assumes basic knowledge of:</p>
 <ul>
 	<li>Representational State Transfer (REST)</li>
 	<li>JavaScript Object Notation</li>
@@ -23,13 +23,13 @@
 	<li>JavaScript and Python scripting languages</li>
 	<li>Java programming language</li>
 </ul>
-<p>For those who prefer UI-based API facade configuration, please refer to the the <a href="/docs/enterprise/content/user_guide">API Platform User Guide</a>.</p>
+<p>For those who prefer UI-based API proxy configuration, please refer to the the <a href="/docs/enterprise/content/user_guide">API Platform User Guide</a>.</p>
 <p>In this Developer Guide you will learn:</p>
 <ul>
-	<li>How to configure a basic API facade</li>
-	<li>How to upload, deploy, and test API facades on the API Platform</li>
-	<li>How to configure policies and attach them to an API facade</li>
-	<li>How to write scripts and code that execute as components of an API facade</li>
+	<li>How to configure a basic API proxy</li>
+	<li>How to upload, deploy, and test API proxies on the API Platform</li>
+	<li>How to configure policies and attach them to an API proxy</li>
+	<li>How to write scripts and code that execute as components of an API proxy</li>
 	<li>How to implement common use cases required by API developers</li>
 	<li>How to expose and reuse your policy compositions and code as APIs using WADL and API Consoles</li>
 	<li>How to configure environment settings for your organization on the API Platform</li>
@@ -75,7 +75,7 @@
 </ul>
 <p>Note: Specific values within responses my differ given the differences in username, time values, etc.</p>
 <h2>Step 1: Invoke the Weather API directly</h2>
-<p>In this example, you create an API facade for Yahoo's Weather API. Begin by invoking the API directly:</p>
+<p>In this example, you create an API proxy for Yahoo's Weather API. Begin by invoking the API directly:</p>
 <div class="well">$ curl http://weather.yahooapis.com/forecastrss?w=12797282</div>
 <p>Sample Response</p>
 <div id="well">
@@ -92,7 +92,7 @@
 </div>
 <h2>Step 2: Import and deploy simpleProxy to the API Platform</h2>
 <div id="well">
-	<p>The simple Proxy is the most basic API facade supported on the API Platform. It defines a name for the API, a target URL (which the API platform uses to consume the Yahoo Weather API), and a proxy URL (which client apps use to consume your API). &nbsp;Such API proxies are commonly refered to as "passthrough" proxies, since they merely forward requests and return responses with manipulating them.</p>
+	<p>The simple Proxy is the most basic API proxy supported on the API Platform. It defines a name for the API, a target URL (which the API platform uses to consume the Yahoo Weather API), and a proxy URL (which client apps use to consume your API). &nbsp;Such API proxies are commonly refered to as "passthrough" proxies, since they merely forward requests and return responses with manipulating them.</p>
 	<pre>$ git clone https://github.com/apigee/api-platform-samples.git</pre>
 </div>
 <div id="well">
@@ -134,4 +134,4 @@ Environment: test
 <h2>Getting help</h2>
 <p>If you have any issues with the topic, post them to the at&nbsp;<a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
 <h2>Next steps</h2>
-<p>Now that you understand API Platform basics, refer to the <a href="/docs/enterprise/content/developer_guide">API platform topics</a> to learn how to apply advanced features to your API facade.</p>
+<p>Now that you understand API Platform basics, refer to the <a href="/docs/enterprise/content/developer_guide">API platform topics</a> to learn how to apply advanced features to your API proxy.</p>

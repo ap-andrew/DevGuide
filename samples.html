@@ -10,31 +10,146 @@
 <p>All of these samples require you to have an account on <a href="http://enterprise.apigee.com">http://enterprise.apigee.com</a>.</p>
 <p>You can sign up for a trial account at <a href="http://enterprise.apigee.com/signup">http://enterprise.apigee.com/signup</a>.</p>
 <p>To use the included deployment tool, you also require Python to be installed on your machine.</p>
-<h2>Samples and tools</h2>
+
+After yo download the samples 
+
+<pre>$ cd /setup</pre>
+
+In the <code>/setup</code> directory, locate the file <code>setenv.sh</code> 
+
+<p>In this file, provide settings for your organization, username, and the environment where you want to deploy the API proxies.</p>
+
+After you setup setenv.sh, run:
+
+<pre>$ sh deploy_all.sh</pre>
+
+<p>This script deploys all API proxies samples to your organization. (The process takes 3-4 minutes.)</p>
+
+<p>Follow prompts to deploy API products, developers, and apps (which are used for OAuth</p>).
+
+<p>Once the deploy script completes, navigate to the sample-proxies directory.</p>
+
+<p>In the directory <code>sample-proxies</code>, you will find one directory per sample proxy. In each directory are two scripts:
+</p>
+
+<ul><li>invoke.sh: Run this script to invoke the deployed version of the API proxy</li>
+<li>deploy.sh: Run this script to deploy the API proxy after you make any changes</li></ul>
+
+<p>These scripts are designed to help you iterate quickly, as you make small changes, deploy and invoke to see what effect you change had. This type of iterative development is a great way to investigate the behavior of policies and scripts.</p>
+
+
+<h2>Sample API proxies</h2>
+
+<p>The following API proxies are available in this distribution:</p>
+
+<table border="1" cellpadding="1" cellspacing="1" class="table" style="width: 690px;">
+	  <thead>
+		<th>Name</th>
+		<th>Description</th>
+		<th>Policy Types</th>
+		<th>Resources</th>
+     </thead>
+<tbody>
+
+	<tr><td><code>apikey</code></td>
+	<td>Implements simple API key validation</td>
+	<td>VerifyAPIKey Quota</td>
+	<td>None</td></tr>
+	
+	<tr><td><code>conditional-policy</code></td>
+	<td>Implements simple conditional policy enforcement. When a request contains an HTTP header <code>responsetime:true</code>, a policy executes a Python script that adds a set of performance metrics to the response message, as HTTP headers</td>
+	<td>Python</td>
+	<td>timer.py</td></tr>
+	
+	<tr><td><code>conditional-routing</code></td>
+	<td>Implements simple conditional routing. When a request contains an HTTP header <code>routeTo</code>, the ProxyEndpoint dynamically routes to the specified URL.</td>
+	<td>None</td>
+	<td>None</td></tr>
+	
+	<tr><td><code>dynamic-endpoint</code></td>
+	<td>Implements simple conditional routing in a lsightly more complex scenario, that defines two URLs and one default route.</td>
+	<td>None</td>
+	<td>None</td></tr>
+	
+	<tr><td><code>javascript-mashup</code></td>
+	<td>A complete JavaScript application that calls to public APIs, combines results, and generates an enriched response for the client app. (Note: this API proxy implements the same functionality as the policy-mashup, demonstrating that the same problem can be addressed using different techniques.)</td>
+	<td>Javascript, StatisticsCollector</td>
+	<td>MashItUp.js</td></tr>
+	
+	<tr><td><code>oauth-authcode</code></td>
+	<td>Demonstrates a fully functional OAuth 2.0 token and authorization endpoint configuration.</td>
+	<td>GenerateAccessToken, GenerateAuthCode, RefreshAccessToken</td>
+	<td>None</td></tr>
+	
+	<tr><td><code>oauth-client-credentials</code></td>
+	<td>Demonstrates a fully functional OAuth 2.0 token endpoint configured for the client credentials grant type.</td>
+	<td>GenerateAccessToken</td>
+	<td>None</td></tr>
+	
+	<tr><td><code>oauth-login-app</code></td>
+	<td>Demonstrates a fully functional OAuth 2.0 token and authorization point configured with a sample login app.</td>
+	<td>GetOAuthV1Info, AssignMessage, GenerateAcceesToken, GenerateAuthorizationCode, RaiseFault</td>
+	<td>None</td></tr>
+	
+	<tr><td><code>oauth-verify-accesstoken</code></td>
+	<td>Demonstrates a n API configured to validate OAuth 2.0 access tokens and verify Quota.</td>
+	<td>VerifyAccessToken, Quota</td>
+	<td>None</td></tr>
+	
+	<tr><td><code>policy-mashup</code></td>
+	<td>A complete application that uses policy composition to call two public APIs, combines results, and generates an enriched response for the client app. (Note: this API proxy implements the same functionality as the javascript-mashup, demonstrating that the same problem can be addressed using different techniques.)</td>
+	<td>AssignMessage, ServiceCallout, ExtractVariables, JavaScript, RaiseFault, StatisticsCollector</td>
+	<td>GenerateResponse.js</td></tr>
+	
+	<tr><td><code>simple-javascript</code></td>
+	<td>Demonstrates a simple JavaScript snippet that sets HTTP response headers using predefined variables.</td>
+	<td>JavaScript</td>
+	<td>setHeader.js</td></tr>
+	
+	<tr><td><code>simple-python</code></td>
+	<td>Demonstrates a simple JavaScript snippet that sets HTTP response headers using a predefined variable.</td>
+	<td>Script</td>
+	<td>setHeader.py</td></tr>
+	
+	<tr><td><code>soap</code></td>
+	<td>Demonstrates an XSL transformation that rewrites a WSDL file in response to a request with the query parameter <code>?wsdl</code>.</td>
+	<td>AssignMessage, ExtractVariables, Script, XSL</td>
+	<td>calculateaddress.py, fixwsdl.xsl</td></tr>
+	
+	<tr><td><code>twitter-mobile-timeline</code></td>
+	<td>Demonstrates how to use JavaScript to strip out unneeded parameters from tweets, resulting in a streamlined Twitter timeline that is friendly for resource-constrained mobile devices.</td>
+	<td>JavaScript</td>
+	<td>CORS.js, MobileTimeline.js</td></tr>
+	
+	<tr><td><code>twitter-oembed</code></td>
+	<td>Transforms timeline responses (e.g. from statuses/user_timeline.json) into an oEmbed response that contains the timeline data as rich HTML content.</td>
+	<td>JavaScript</td>
+	<td>cors.js, timeline-oembed.js</td></tr>
+	
+	<tr><td><code>twitter-translate</code></td>
+	<td>The most sophisticated sample, this API proxy uses the Microsoft Azura translator API to translate tweets. To do so, it makes an outbound call to obtain an OAuth access token, and then caches the token using the API Platform caching policies, reusing the cached token each time an outbound call is made. Also, includes a demonstration browser app used to invoke the API proxy.</td>
+	<td>AssignMessage, LookupCache, PopulateCache, JavaScript</td>
+	<td>api-config.js, api-token-get.js, cors.js, timeline-translate.js, translate-query.js, translate-results.js</td></tr>
+	
+	<tr><td><code>xmltojson</code></td>
+	<td>Converts a Yahoo API weather report from XML to JSON.</td>
+	<td>XMLtoJSON</td>
+	<td>None</td></tr>
+	
+</tbody>
+
+</table>
+
+
+<h2>Reference and Tools</h2>
 <table border="0" cellpadding="5" cellspacing="1" class="table" style="width: 700px;">
 	<tbody>
-		<tr>
-			<td>
-				<p><code>/sample-proxies</code></p>
-			</td>
-			<td>
-				<p>Fully configured API proxies that can be immediately deployed and invoked on the API platform, with examples of:</p>
-				<ul>
-					<li>Conditional policy enforcement and routing</li>
-					<li>API key validation</li>
-					<li>Server-side OAuth 2.0 client credentials and authorization code grant types</li>
-					<li>Outbound requests using Auth 2.0 access tokens</li>
-					<li>Caching</li>
-					<li>Composite services, built using policy composition and Javascript, that mashup the Google location and elevation APIs and expose their own API for sharing and reuse.</li>
-				</ul>
-			</td>
-		</tr>
 		<tr>
 			<td style="width: 150px;">
 				<p><code>/simpleProxy</code></p>
 			</td>
 			<td>
-				<p>A basic API proxy that is used in the <a href="http://apigee.com/docs/enterprise/content/developer_guide/">API Platform Developer Guide</a>.&nbsp;The Developer Guide shows you how to build API facades that run on the API platform, with instructions on  API Keys, OAuth 1 and 2, developer and app provisioning, custom scripting tutorials, environment configuration, and more.</p>
+				<p>A basic API proxy that is used in the <a href="http://apigee.com/docs/enterprise/content/developer_guide/">API Platform Developer Guide</a>.&nbsp;The Developer Guide shows you how to build API proxies that run on the API platform, with instructions on  API Keys, OAuth 1 and 2, developer and app provisioning, custom scripting tutorials, environment configuration, and more.</p>
 			</td>
 		</tr>
 		<tr>
@@ -42,7 +157,7 @@
 				<p><code>/schemas</code></p>
 			</td>
 			<td>
-				<p>XML schema files that you can use as a reference when configuring API facades, policies, API products, and developer and app profiles.</p>
+				<p>XML schema files that you can use as a reference when configuring API proxies, policies, API products, and developer and app profiles.</p>
 			</td>
 		</tr>
 		<tr>

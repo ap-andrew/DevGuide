@@ -3,45 +3,17 @@
 
 <h2>Building a Report: Dimensions, Functions, and Metrics</h2>
 
-<p>A report is constructed from a set of components:</p>
+<p>A report is constructed from a set of parameters:</p>
 <ul>
-	<li>Dimensions: The dimension selected from the list of dimensions recorded by Apigee, represented as URI parameter. If no dimension is defined, then the report generated represents all message traffic across all apis in an environment.</li>
+	<li>Dimensions: The dimension selected from the list of dimensions recorded by Apigee, represented as URI parameter. If no dimension is defined, then the report generated represents all message traffic across all Apis in an environment.</li>
 	<li>Metrics: The metric calculated for the chosen dimension. Represented as a query parameter.</li>
 	<li>TimeRange: The time interval over which data should be analyzed.</li>
 	<li>Functions: The calculation run against the metric defined for the dimension.</li>
 	<li>Filters: A set of query parameters that can be used to filter and drill-down into results, to generate reports, for example, on the "top 10" results, to filter results on specific dimension names, to sort results. </li>
+	
+For complete reference on these parameters, see: [node:338]
 </ul>
-The API Platform defines the following dimensions that can be used in to build reports:</p>
-<p>API consumer dimensions:</p>
-<ul>
-	<li>access_token: The app end user's OAuth access token</li>
-	<li>apiproduct: The name of an API product.</li>
-	<li>client_id: The consumer key (API key) used to make OAuth requests</li>
-	<li>client_ip: The IP address of the app making the request to an API</li>
-	<li>developer: The developer of the app making the request to an API</li>
-	<li>developer_app: The name of the app making the request to an API</li>
-	<li>developer_email: The email address of the developer</li>
-</ul>
-<p>API configuration dimensions:</p>
-<ul>
-	<li>apiproxy: API proxy name</li>
-	<li>apiproxy_revision: APi proxy revision number</li>
-	<li>client_host: Host name of the client</li>
-	<li>condition: The name of a condition</li>
-	<li>environment: The environment where the API proxy is deployed</li>
-	<li>flow_resource: Flow resource name</li>
-	<li>organization: The organization where the API proxy is deployed</li>
-	<li>proxy: The name of the ProxyEndpoint</li>
-	<li>proxy_basepath: The base path configured in the ProxyEndpoint</li>
-	<li>proxy_client_ip: The IP address of the ProxyEndpoint</li>
-	<li>proxy_pathsuffix: The URI path suffix of the request</li>
-	<li>request_path: The URI path of the request message</li>
-	<li>request_verb: The HTTP verb associated with the request</li>
-	<li>request_uri: The full URI of the request</li>
-	<li>target: The name of the TargetEndpoint</li>
-	<li>target_host: The host name of the target service</li>
-	<li>target_url: The full target URL</li>
-</ul>
+
 <p>Custom variables can also be used to create dimensions specific to message content. See the <a href="/docs/enterprise/content/analyzing-api-message-content-using-custom-analytics">Custom Analytics</a> Developer Guide topic.</p>
 <p>The dimension that defines a report is represented in the request by a URI parameter.</p>
 <p>For example, to build a report based on API metrics:</p>
@@ -61,20 +33,6 @@ The API Platform defines the following dimensions that can be used in to build r
 	<pre>https://api.enterprise.apigee.com/v1/o/{org_name}/environments/*/stats/apis</pre>
 </div>
 
-<p>The following metrics are available:</p>
-<ul>
-	<li>message_count:</li>
-	<li>target_response_time: Round-trip time from the TargetEndpoint to the backend service</li>
-	<li>response_status_code: The status code of the response, which is good for measuring specific errors</li>
-	<li>message_count: Total number of messages</li>
-	<li>request_size: Size if the request message</li>
-	<li>response_processing_latency: Duration of processing by the API Platform response pipeline</li>
-	<li>response_size: Size of the response message</li>
-	<li>request_processing_latency: Duration of processing by the API Platform request pipeline.</li>
-	<li>total_response_time: Overall duration of processing for API Platform plus the backend service.</li>
-	<li>is_error: Defines a message as an error</li>
-</ul>
-<p>The functions available are <code>sum</code>, <code>average</code>, <code>min</code>, and <code>max</code>. </p>
 <p>The example below collects a sum of message count for all APIs. The report provides a snapshot of the throughput to all APIs in the environment specified (in this case, 'test'):</p>
 <div id="well">
 	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/environments/test/stats/apis?'select=sum(message_count)&amp;timeRange=7/24/2012%2000:00~8/25/2012%2000:00&amp;timeUnit=day'</pre>

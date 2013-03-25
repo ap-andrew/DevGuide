@@ -1,42 +1,29 @@
 <p>[toc]</p>
 <p>The API Platform enables you to secure your APIs with API Keys using policies, without requiring code to be written.</p>
 
-<p>This topic covers API Key-based authorization for your APIs and references the Simple Proxy in the <a href="https://github.com/apigee/api-platform-samples">API Platform Samples</a> available on Github.</p>
+<p>API key validation is the simplest form of app-based security that you can configure for an API. Apps simply present an API key, and the API Platform checks to see that the API key is in an approved state.</p>
 
-<p>API Key validation requires a valid API product configuration. To access a protected resource using an API key, the request must be made with an API Key approved for (at least one) API product. See topic [node:427]. This topic covers the creation and configuration of policies that enforce  API product settings at runtime by validating API keys.</p>
+<p>API keys go by many names. You can see them referred to as 'API keys', 'app keys', and 'consumer keys'. All of these names are synonymous.</p>
+
+<p><span class="label label-info">Prerequisite</span> API Key validation requires a valid API product configuration. To access a protected resource using an API key, the request must be made with an API Key approved for (at least one) API product. The topic [node:427] demonstrates how to set up API resources.</p>
+
+<p><span class="label label-success">Sample Code</span> This topic covers API Key-based authorization for your APIs and references the Simple Proxy in the <a href="https://github.com/apigee/api-platform-samples">API Platform Samples</a> available on Github.</p>
 
 <h2>Policy configuration</h2>
 
-<p>The following policies placed in <code>apiproxy/policies</code> directory enable API key validation:</p>
-<ul>
-<li>ValidateAPIKey policy: Validates the API key against the keys stored on the API Platform and gets the associated API product and settings, verifies that the request is for the permitted API resource (URI), API proxy, and environment</li>
-<li>CheckQuota policy (Optional): Populates and enforces the Quota settings defined in the relevant API product</li>
-</ul>
+<p>API keys are verified using policies of type ValidateAPIKey. The only required setting for a ValidateAPIKey policy is the expected location of the API key in the client request. API keys can be located in a query parameter, a form parameter, or an HTTP header.</p>
 
-<h4>ValidateAPIKey policy of type <code>VerifyAPIKey</code></h4>
-<p>This processing step validates the API key presented by the client app against the keys stored on the API Platform. The only required setting is the expected location of the API key in the client request. API keys can be located in a query parameter a form parameter, or an HTTP header.</p>
-	
 <p>For example, the policy configuration below defines the expected key location as a query parameter named <code>apikey</code>. A successful request must present the apikey as a query parameter appended to the request, for example,<code>?apikey={ValueofAPIKey}</code>.</p>
 
-<p>The following policy called <code>ValidateAPIKey.xml</code> with the following content is used to validate the API key:</p>
+<p>Place the following policy under <code>apiproxy/policies</code> directory:</p>
+
 <div id="well"><pre>&lt;VerifyAPIKey name=&quot;APIKeyValidation&quot;&gt;
   &lt;APIKey&gt;request.queryparameter.apikey&lt;/APIKey&gt;
 &lt;/VerifyAPIKey&gt;</pre>
 </div>
-<h4>Optional: CheckQuota policy of type <code>Quota</code></h4>
-<p>The settings for a Quota are dynamically populated at runtime, based on the Quota settings stored in the API product.&nbsp;</p>
-<p>In <code>apiproxy/policies</code>, create a file called <code>CheckQuota.xml</code> with the following content:</p>
-<div id="well">
-	<pre>&lt;Quota name="CheckQuota"&gt;&nbsp;
-&nbsp; &lt;Interval ref="apiproduct.developer.quota.interval"/&gt;
-&nbsp; &lt;TimeUnit ref="apiproduct.developer.quota.timeunit"/&gt;
-&nbsp; &lt;Allow countRef="apiproduct.developer.quota.limit"/&gt;
-&nbsp; &lt;Identifier ref="request.queryparam.apikey"/&gt;
-&lt;/Quota&gt;</pre>
-</div>
 
 <h2>Policy attachment</h2>
-<p>To be enforced, the policy must be attached to an API proxy Flow as a processing step. Security should (usually) be enforced as soon as a request is received. Therefore, the APIKeyValidation policy is usually attached the the ProxyEndpoint's <em>request PreFlow</em>. By applying the policy to the request PreFlow, API keys are verified on every request received by the API proxy from a client app.
+<p>The policy must be attached to an API proxy Flow as a processing step. By applying the policy to the request PreFlow, API keys are verified on every request received by the API proxy from a client app.</p>
 	
 <p>Attach the policy to the ProxyEndpoint as follows:</p>
 <div id="well">
@@ -45,23 +32,27 @@
       &lt;Step&gt;&lt;Name&gt;ValidateAPIKey&lt;/Name&gt;&lt;/Step&gt;
     &lt;/Request&gt;
   &lt;/PreFlow&gt;
-<!-- Remainder of ProxyEndpoint configration --></pre>
+<!-- Remainder of ProxyEndpoint configuration --></pre>
 </div>
 
 <h2>Importing and deploying the API proxy</h2>
 
-If using the API Platform samples on GitHub, run:
+<p>For changes to take effect, you must import and deploy the modified API proxy.</p>
+
+<p>If using the API Platform samples on GitHub, run:</p>
 
 <pre>$ sh deploy.sh</pre>
 
-<p>Otherwise, use the deploy tool, which is available in the base directory of the API platform samples distribution. Substitute a valid username and password for <code>myname:mypass</code> for an organization on the Apigee API Platform, along with the name of the organization as <code>myorg</code>.</p>
+<p>You can also call the deploy tool directly.</p> 
+
+<p>Substitute a valid username and password for <code>myname:mypass</code> for an organization on the Apigee API Platform, along with the name of the organization as <code>myorg</code>.</p>
+
 <div id="well">
 	<pre>$ python tools/deploy.py -n weatherapi -u myname:mypass -h https://api.enterprise.apigee.com -o myorg -e test -p / -d simpleProxy</pre>
 </div>
 <p>On import, you will see the following output. (Note that revision numbers may vary for your API proxy.)</p>
 <div id="well">
 	<pre>Writing simpleProxy/apiproxy/weatherapi.xml to apiproxy/weatherapi.xml
-Writing simpleProxy/apiproxy/policies/CheckQuota.xml to apiproxy/policies/CheckQuota.xml
 Writing simpleProxy/apiproxy/policies/ValidateAPIKey.xml to apiproxy/policies/ValidateAPIKey.xml
 Writing simpleProxy/apiproxy/proxies/default.xml to apiproxy/proxies/default.xml
 Writing simpleProxy/apiproxy/targets/default.xml to apiproxy/targets/default.xml
@@ -73,11 +64,20 @@ Environment: test
 </div>
 <h2>Submitting a request with a valid API key</h2>
 
-If you are suing the API Patform samples on Github, run:
+If you are using the API Platform samples on Github, run:
 
 <pre>$ sh invoke.sh</pre>
 
 <p>To directly invoke the API proxy using curl, use the following examples. </p>
+
+You may have forgotten your API key. As as admin in your organization, you can retrieve any app's API key as follows:
+
+<p>As an admin for your organization, you can retrieve the consumer key for an app:</p>
+<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{myorg}/developers/{developer_email}/apps/{app_name}</pre>
+</div>
+
+<p>The app profile that is returned for this call provides the consumer key and secret. The consumer key value is the value you use for the API key in your request to the protected API.</p>
+
 
 <p>For example, a request that does not include an API key results in an authorization failure.</p>
 <div id="well">

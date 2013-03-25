@@ -197,9 +197,9 @@ Environment: test
 }</pre>
 	<p>In some cases, there may be a large number of results. It may be useful to filter the list to report the top 2 locations by message volume. This is done by adding the <code>topk</code> query parameter and providing an integer value for the number to filter:</p>
 </div>
-<div id="well">
+
 	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/environments/test/stats/location?'select=sum(message_count)&amp;timeRange=11/19/2012%2000:00~11/21/2012%2000:00&amp;timeUnit=day&amp;sortby=sum(message_count)&amp;topk=2"</pre>
-</div>
+
 <p>Results can also be filtered by specifying the values of the dimensions of interest. In the example below, the report is filtered by results for London and Shanghai :</p>
 <div id="well">
 	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/environments/test/stats/location?"select=sum(message_count)&amp;timeRange=11/19/2012%2000:00~11/21/2012%2000:00&amp;timeUnit=day&amp;filter=(location%20in%20'London','Shanghai')"

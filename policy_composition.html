@@ -20,7 +20,7 @@
 	<li>ServiceCallout: Define the HTTP settings for the connection to the remote HTTP service or API.</li>
 	<li>ExtractVariables: Parse the response message from the remote HTTP service or API and populate variables. The variables are then available to be used, for example, to populate another message, which might be returned to the requesting app.</li>
 </ol>
-<p>A ServiceCallout policy composition is only one logical unit within the larger API facade flow. The ServiceCallout composition populates data from one API or service that is consumed and recombined by other policies or pieces of code that implement the API facade behavior as a whole.</p>
+<p>A ServiceCallout policy composition is only one logical unit within the larger API proxy flow. The ServiceCallout composition populates data from one API or service that is consumed and recombined by other policies or pieces of code that implement the API proxy behavior as a whole.</p>
 <p>This example uses a series of policies in order to implement a complete composite service:</p>
 <ul>
 	<li>AssignMessage: Generates the request for the geocoding API</li>
@@ -95,10 +95,10 @@
 	<li><code>geocoderesponse.latitude</code></li>
 	<li><code>geocoderesponse.longitude</code></li>
 </ul>
-<p>These variables are available for use by other policies or code (JavaScript, Python, or Java) executing in the API facade.</p>
+<p>These variables are available for use by other policies or code (JavaScript, Python, or Java) executing in the API proxy.</p>
 <p>This completes the ServiceCallout policy 'composition'. Three policies were used to execute a request/response transaction with a remote API. Those policies are AssignMessage, ServiceCallout, and ExtractVariable. The outcome of the ServiceCallout composition is data that is available to be sued or enriching request or response messages, for performing custom analytics to gain visbility into business-specific API usage, for building traditional mashups, and so on.</p>
 <h3>Generate the request with AssignMessage</h3>
-<p>A request message is populated with the variables extracted from the geocoding API. This is done, as above, using an AssignMessage policy. The request message generated in this step does not require a ServiceCallout, as the request generated for the main request pipeline, and so will simply be forwarded by the ProxyEndpoint to the TargetEndpoint, following the RouteRule configured for this API facade. The TargetEndpoint manages the connection with the remote API. (Recall that the URL for the elevation API is defined in the HTTPConnection for the TargetEndpoint.)</p>
+<p>A request message is populated with the variables extracted from the geocoding API. This is done, as above, using an AssignMessage policy. The request message generated in this step does not require a ServiceCallout, as the request generated for the main request pipeline, and so will simply be forwarded by the ProxyEndpoint to the TargetEndpoint, following the RouteRule configured for this API proxy. The TargetEndpoint manages the connection with the remote API. (Recall that the URL for the elevation API is defined in the HTTPConnection for the TargetEndpoint.)</p>
 <div id="well">
 	<pre>&lt;AssignMessage name="AssignElevationParameters"&gt;
 &lt;Remove&gt;
@@ -116,7 +116,7 @@
 &lt;/AssignMessage&gt;</pre>
 </div>
 <h3>Parse the XML response with ExtractVariables</h3>
-<p>In this example, the response from the Elevation API is returned as XML. Once again, the ExtractVariables policy is used to parse the response message and populate a custom variable that makes the data available to other components in the API facade. In the example below, XPath is used to parse the XML response and to obtain the value of the elevation returned by the Elevation API.</p>
+<p>In this example, the response from the Elevation API is returned as XML. Once again, the ExtractVariables policy is used to parse the response message and populate a custom variable that makes the data available to other components in the API proxy. In the example below, XPath is used to parse the XML response and to obtain the value of the elevation returned by the Elevation API.</p>
 <div id="well">
 	<pre>&lt;ExtractVariables name="ParseElevationResponse"&gt;
   &lt;VariablePrefix&gt;elevationresponse&lt;/VariablePrefix&gt;
@@ -128,7 +128,7 @@
 &lt;/ExtractVariables&gt;</pre>
 </div>
 <h3>Generate a composite response with JavaScript</h3>
-<p>In this example, JavaScript is used to construct a response for requesting client that contains the data populated by the previous policy executions. The JavaScript below is written to the Apigee JavaScript Object Model, and it is stored in the the <code>/resources/jsc</code> directory in the API facade configuration.</p>
+<p>In this example, JavaScript is used to construct a response for requesting client that contains the data populated by the previous policy executions. The JavaScript below is written to the Apigee JavaScript Object Model, and it is stored in the the <code>/resources/jsc</code> directory in the API proxy configuration.</p>
 <div id="well">
 	<pre>// Get the variables set by ParseElevationResponse
 var elevationMeters = context.getVariable('elevationresponse.elevation');
@@ -164,32 +164,32 @@ r.location = loc;</pre>
 <h2>Attach policies to the ProxyEndpoint Request and Response flows</h2>
 <p>The ProxyEndpoint flow configuration for this composite service is:</p>
 <div id="class">
-	<pre>&lt;flows&gt;
-  &lt;flow name="default"&gt;
-  &lt;request&gt; 
-    &lt;!-- Generate the request to the geocoding service --&gt;
-    &lt;step&gt;&lt;name&gt;GenerateGeocodingRequest&lt;/name&gt;&lt;/step&gt; 
-    &lt;!-- Send request to the geocoding service --&gt;
-    &lt;step&gt;&lt;name&gt;ExecuteGeocodingRequest&lt;/name&gt;&lt;/step&gt; 
-    &lt;!-- Parse the JSON response and set variables --&gt;
-    &lt;step&gt;&lt;name&gt;ParseGeocodingResponse&lt;/name&gt;&lt;/step&gt; 
-    &lt;!-- Generate the request for the elevation service --&gt;
-    &lt;step&gt;&lt;name&gt;AssignElevationParameters&lt;/name&gt;&lt;/step&gt;
-  &lt;/request&gt;
-  &lt;response&gt;
-  &lt;!-- Parse the XML response from the elevation service --&gt;
-  &lt;step&gt;&lt;name&gt;ParseElevationResponse&lt;/name&gt;&lt;/step&gt;
-  &lt;!-- Generate the JSON response for the requesting client app --&gt;
-  &lt;step&gt;&lt;name&gt;GenerateResponse&lt;/name&gt;&lt;/step&gt;
-  &lt;/response&gt;
-  &lt;/flow&gt;
-&lt;/flows&gt;</pre>
+	<pre>&Lt;Flows&Gt;
+  &Lt;Flow Name="default"&Gt;
+  &Lt;Request&Gt; 
+    &Lt;!-- Generate the Request to the Geocoding Service --&Gt;
+    &Lt;Step&Gt;&Lt;Name&Gt;Generategeocodingrequest&Lt;/Name&Gt;&Lt;/Step&Gt; 
+    &Lt;!-- Send Request to the Geocoding Service --&Gt;
+    &Lt;Step&Gt;&Lt;Name&Gt;Executegeocodingrequest&Lt;/Name&Gt;&Lt;/Step&Gt; 
+    &Lt;!-- Parse the Json Response and Set Variables --&Gt;
+    &Lt;Step&Gt;&Lt;Name&Gt;Parsegeocodingresponse&Lt;/Name&Gt;&Lt;/Step&Gt; 
+    &Lt;!-- Generate the Request for the Elevation Service --&Gt;
+    &Lt;Step&Gt;&Lt;Name&Gt;Assignelevationparameters&Lt;/Name&Gt;&Lt;/Step&Gt;
+  &Lt;/Request&Gt;
+  &Lt;Response&Gt;
+  &Lt;!-- Parse the Xml Response from the Elevation Service --&Gt;
+  &Lt;Step&Gt;&Lt;Name&Gt;Parseelevationresponse&Lt;/Name&Gt;&Lt;/Step&Gt;
+  &Lt;!-- Generate the Json Response for the Requesting Client App --&Gt;
+  &Lt;Step&Gt;&Lt;Name&Gt;Generateresponse&Lt;/Name&Gt;&Lt;/Step&Gt;
+  &Lt;/Response&Gt;
+  &Lt;/Flow&Gt;
+&Lt;/Flows&Gt;</pre>
 </div>
 <h2>Import and deploy</h2>
 <p>Deploy the API proxy as usual, using the deploy tool, substituting valid username, password, and organization for an account on Apigee Enterprise:</p>
-<div id="well">
+
 	<pre>$ python tools/deploy.py -n weatherapi -u myname:mypass -o myorg -e test -p / -d simpleProxy</pre>
-</div>
+
 <h2>Test</h2>
 <p>The composite service is invoked as follows:</p>
 <div id="well">

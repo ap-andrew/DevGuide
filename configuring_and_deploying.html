@@ -1,25 +1,49 @@
 <p>[toc]</p>
 
 
-<p>Apigee API facades are implemented in API proxies. An API Proxy is a bundle of configuration files (including policies) and (optionally) code. Apigee enables you develop API proxies locally and host them remotely on the Apigee API Platform, providing the flexibility to do advanced configuration and programming locally, using code editors and development tools. Over time, you can optimize your workflow locally and in the Management UI.</p>
+<p>Apigee API proxies are implemented as a 'bundle' of configuration files, including policies, and (optionally) custom scripts and code. 
+	
+<p>Using the API Platform, you can create and develop API proxies using the Management UI, or using development tools on your local machine. API proxies developed locally can be imported and deployed on the API Platform for runtime testing and production.</p>
 
-<h2>Working with the Apigee python deploy tool</h2>
+<p>Developing API proxies is an iterative process. You should plan to modify, deploy, and test API proxies frequently as you go along. Apigee provides tools to assist in this process.</p>
 
-<p>To support local development of API facades, Apigee provides an open-source tool written in Python to help you simplify and manage the process of packaging and deploying APIs from your local machine to Apigee. (The [node:2047] provides information on complete set up information.)</p>
+<h2>Create an API proxy</h2>
+<h3>Step 1: Invoke the Weather API directly</h3>
+<p>In this example, you create an API proxy for Yahoo's Weather API. </p>
+	
+<p>Begin by invoking the API directly:</p>
+<pre>$ curl http://weather.yahooapis.com/forecastrss?w=12797282</pre>
 
-<p>Now you use Apigee’s Python tool to import (upload) and deploy your API in one simple process.</p>
-<p>In the api-platform-samples package, the deploy tool, <code>deploy.py</code>, is available under <code>/tools</code></p>
+<p><b>Sample Response</b></p>
+<pre>&lt;title&gt;Yahoo! Weather - Palo Alto, CA&lt;/title&gt;
+&lt;link&gt;http://us.rd.yahoo.com/dailynews/rss/weather/Palo_Alto__CA/*http://weather.yahoo.com/forecast/USCA1093_f.html&lt;/link&gt;&lt;description&gt;Yahoo! Weather for Palo Alto, CA&lt;/description&gt;
+&lt;language&gt;en-us&lt;/language&gt;
+&lt;lastBuildDate&gt;Wed, 08 Aug 2012 9:47 am PDT&lt;/lastBuildDate&gt;
+&lt;ttl&gt;60&lt;/ttl&gt;
+&lt;yweather:location city="Palo Alto" region="CA"   country="United States"/&gt;
+&lt;yweather:units temperature="F" distance="mi" pressure="in" speed="mph"/&gt;
+&lt;yweather:wind chill="66"   direction="10"   speed="8" /&gt;
+&lt;yweather:atmosphere humidity="73"  visibility=""  pressure="30.02"  rising="0" /&gt;
+&lt;yweather:astronomy sunrise="6:18 am"   sunset="8:08 pm"/&gt;</pre>
 
-<p>The command below imports an API proxy called 'weatherapi' to the 'test' environment in an organization specified in <code>org_name</code>.</p>
-<p>Substitute a valid username, password, and Apigee API Platform organization for <code>myname:mypass</code> and <code>org_name</code>. (These are the credentials used to login in to your account on <a href="http://enterprise.apigee.com">enterprise.apigee.com</a>.)</p>
+<h3>Step 2: Import and deploy simpleProxy to the API Platform</h3>
+<p>The simpleProxy is the most basic API proxy supported on the API Platform. It defines:
+<ul><li>A name for the API: <code>weatherapi</code></li>
+<li>A target URL: <code>http://weather.yahooapis.com</code> (which the API platform uses to consume the Yahoo Weather API)</li>
+<li>A proxy URL: <code>weather</code> (which client apps use to consume your API)</li></ul>
+<p>Such API proxies are commonly referred to as "passthrough" proxies, since they merely forward requests and return responses without manipulating them.</p>
+<pre>$ git clone https://github.com/apigee/api-platform-samples.git</pre>
 
-<p>A pointer must be provided to the directory that contains the <code>/apiproxy</code> directory, in this case <code>simpleProxy</code></p>
-<p>For example, run:</p>
-<pre>$ python tools/deploy.py -n weatherapi -u myname:mypass -o org_name -e test -p / -d simpleProxy</pre>
+<pre>$ cd api-platform-samples</pre>
 
-<p>This single action zips the API proxy configuration files, pushes them to to the specified organization on the API Platform, and deploys the API proxy  to the specified environment, in the following example, 'test'.</p>
-
-<p>On success the result is:</p>
+<p>Note the directory called <code>simpleProxy</code>. That directory contains the configuration that constitute your API proxy.</p>
+<p>Use Apigee’s Python tool to import (upload) and deploy your API in one simple process.</p>
+<p>The deploy tool must be run from the base directory in the distribution. You provide a pointer to the directory that contains the <code>/apiproxy</code> directory, in this case <code>simpleProxy</code></p>
+<p>Substitute your username, password, and Apigee organization in the following command for <code>myname:mypass</code> and <code>myorg</code>.</p>
+<p>For example, from the base directory of <code>api-platform-samples</code>, run:</p>
+<pre>$ python tools/deploy.py -n weatherapi -u myname:mypass -o myorg -e test -p / -d simpleProxy</pre>
+<p>This single action zips your files, pushes them to your organization on Apigee, and deploys them to the specified environment.</p>
+<p>On success you see:</p>
 <pre>Writing ./simpleProxy/apiproxy/weatherapi.xml to apiproxy/weatherapi.xml
 Writing ./simpleProxy/apiproxy/proxies/default.xml to apiproxy/proxies/default.xml
 Writing ./simpleProxy/apiproxy/targets/default.xml to apiproxy/targets/default.xml
@@ -27,72 +51,66 @@ Imported new proxy version 1
 Environment: test
   Revision: 1 BasePath = /
   State: deployed</pre>
+<p>The tool has zipped up your files, imported the package to Apigee, and deployed to the 'test' environment in your Apigee organization.</p>
+<p>Your API is ready to be invoked.</p>
 
-<p>The tool has zipped up the API proxy configuration, imported the package to the API Platform, and deployed to the test environment.</p>
+<h3>Step 3: Invoke the proxied Weather API</h3>
+<p>Substitute your organization name for <code>{org_name}</code> in the request below</p>
+<pre>$ curl http://{org_name}-test.apigee.net/weather/forecastrss?w=12797282</pre>
 
-<p>At this point, the API facade can be invoked by client apps.</p>
+<p>You can also paste the following into a Web browser:</p>
 
-<h2><a class="jumplink" name="submit"></a>Invoke an API facade</h2>
+<pre>http://{org_name}-test.apigee.net/weather/forecastrss?w=12797282</pre>
 
-<p>The proxied URL for an API is defined by the environment where the API proxy is deployed. The proxied URL consists of:</p>
-<ul>
-	<li>Organization name: </li>
-	<li>The environment name: </li>
-	<li>The Apigee facade base URL (<code>apigee.net</code>, NOT <code>api.enterprise.apigee.com</code>)</li>
-	<li>The base path URI fragment you configure for the API proxy (in the example above, <code>/weather</code>)</li>
-</ul>
+<p><b><p><b>Sample Response</b></p></b></p>
+<div id="well">
+	<pre>&lt;title&gt;Yahoo! Weather - Palo Alto, CA&lt;/title&gt;
+&lt;link&gt;http://us.rd.yahoo.com/dailynews/rss/weather/Palo_Alto__CA/*http://weather.yahoo.com/forecast/USCA1093_f.html&lt;/link&gt;&lt;description&gt;Yahoo! Weather for Palo Alto, CA&lt;/description&gt;
+&lt;language&gt;en-us&lt;/language&gt;
+&lt;lastBuildDate&gt;Wed, 08 Aug 2012 9:47 am PDT&lt;/lastBuildDate&gt;
+&lt;ttl&gt;60&lt;/ttl&gt;
+&lt;yweather:location city="Palo Alto" region="CA"   country="United States"/&gt;
+&lt;yweather:units temperature="F" distance="mi" pressure="in" speed="mph"/&gt;
+&lt;yweather:wind chill="66"   direction="10"   speed="8" /&gt;
+&lt;yweather:atmosphere humidity="73"  visibility=""  pressure="30.02"  rising="0" /&gt;
+&lt;yweather:astronomy sunrise="6:18 am"   sunset="8:08 pm"/&gt;</pre>
+</div>
 
-<p>The URL for the API facade in this example is:</p>
+<h2>Working with APIs</h2>
+<p>You have now created, deployed and invoked a basic API proxy. The API proxy you created is managed by the API Platform.</p>
 
-<pre>http://{org_name}-test.apigee.net/weather</pre>
+<p>The API Platform exposes a RESTful API for managing API proxies. By learning the API, you can write your own scripts to optimize the development lifecycle of API proxies.</p>
 
-<p>For an organization called 'apifactory', the API facade address is:</p>
-
-<pre>http://apifactory-test.apigee.net/weather</pre>
-
-<p>To invoke an API facade, clients submit requests to:</p>
-
-<pre>$ curl http://{org_name}-{env_name}.apigee.net/weather/forecastrss?w=12797282</pre>
-
-<p>The API Platform takes the URI path following the base path (as defined in the ProxyEndpoint) and appends the value to the URL defined in the HTTPConnection for the TargetEndpoint. The result would be an outbound call to:</p>
-
-<div id="well"><pre>http://weather.yahooapis.com/forecastrss?w=12797282</pre></div>
-
-<p>The API Platform receives the response and returns the response to the client app.</p>
-
-<h2>Working with the API</h2>
-
-<p>The Python deploy tool is client that integrates with the RESTful API exposed by the API platform. (The Management UI consumes the same API as the Python deploy tool.) You are free to directly invoke the API as well. </p>
-
-<h4>List APIs</h4>
-
-<p>List APIs in our org again and see our new API listed.</p>
+<h3>List APIs in your organization</h3>
 
 <div id="well"><pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/apis</pre>
 </div>
 
-Sample Response
+<p><b><p><b>Sample Response</b></p></b></p>
 <div id="well"><pre>[ "weatherapi" ]</pre></div>	
 
-<h4>Get an API</h4>
+<h3>Get an API</h3>
 
-<p>Now let's do a GET on our new API and see what details are returned.</p>
+<p>You can call the GET method on an API.</p>
 	
 <div id="well"><pre>$ curl -u myname:mypass -H "Accept: application/json" https://api.enterprise.apigee.com/v1/o/{org_name}/apis/weatherapi</pre></div>
 	
-Sample Response
+<p><b><p><b>Sample Response</b></p></b></p>
+
 <div id="well"><pre>{
   "name" : "weatherapi",
   "revision" : [ "1" ]
 }</pre></div>
 	
-<h4>List API Revisions</h4>
+<h3>List API Revisions</h3>
 
-<p>An API facade is implemented in an API Proxy--a bundle of code and configuration. Each API Proxy in Apigee has a sequentially numbered set of packages, which the system tracks for you. Every time you modify an API Proxy (for example, by attaching a policy to it), the system generates a new revision of the API Proxy. This provides a form of revision control, which you should feel free to augment by using your own source-code management system. (In other words, store your latest working revision of an API proxy in your SCM!)</p>
+<p>An API proxy is implemented in an API Proxy--a bundle of code and configuration. Each API proxy has a sequentially numbered set of packages, which the system tracks for you. Every time you modify an API proxy (for example, by attaching a policy to it and then deploying it), the system generates a new revision of the API proxy. </p>
+	
+<p>This provides a lightweight form of revision control, which you should feel free to augment by using your own source-code management system. (In other words, store your latest working revision of an API proxy in your SCM!)</p>
 
 <div id="well"><pre>$ curl -u myname:mypass "Accept: application/json" https://api.enterprise.apigee.com/v1/o/{org_name}/apis/weatherapi</pre></div>
 
-Sample Response
+<p><b><p><b>Sample Response</b></p></b></p>
 
 <div id="well"><pre>{
   "name" : "weatherapi",
@@ -101,17 +119,17 @@ Sample Response
 
 <p>The only detail we get is the name of the API along with a 'revision', which in turn has a number. </p>
 
-<p>There is only one revision because we just created this API. As an API moves through the lifecycle of configuration, the version number increments by integers.</p>
+<p>There is only one revision because you just created this API. As an API moves through the lifecycle of iterative configuration and deployment, the version number increments by integers.</p>
 
-<p>So to get the real detail of the AP configuration, we need to look as ata specific revision.</p>
+<p>To obtain the detailed profile of an API configuration, you view at specific revision.</p>
  
-<h4>Get API Revision</h4>
+<h3>Get API Revision</h3>
 
-We do a GET on revision 1 to get a detailed view.
+<p>For example, you can call the GET method on  API proxy revision 1 to get a detailed view.</p>
 
-<div id="well"><pre>$ curl -u myname:mypass -H "Accept:application/json" https://api.enterprise.apigee.com/v1/o/{org_name}/apis/weatherapi/revisions/1</pre></div>
-Sample Response
-<div id="well"><pre>{
+<pre>$ curl -u myname:mypass -H "Accept:application/json" https://api.enterprise.apigee.com/v1/o/{org_name}/apis/weatherapi/revisions/1</pre>
+<p><b>Sample Response</b></p>
+<pre>{
   "configurationVersion" : {
     "majorVersion" : 4,
     "minorVersion" : 0
@@ -129,120 +147,36 @@ Sample Response
   "targetEndpoints" : [ ],
   "targetServers" : [ ],
   "type" : "Application"
-}</pre></div>
-
-<p>All of the important pieces of the API are empty. There are no policies, no endpoints, no resources.</p>
-Our goal is to create an API that can intermediate requests to the the Yahoo, so we need to add two key components:
-<ol>
-	<li>A ProxyEndpoint: Defining the inbound HTTP connection (from client apps)</li>
-	<li>A TargetEndpoint: Defining the outbound HTTP connection (to Yahoo)</li>
-</ol>
-
-<h2>Step 3: Add a TargetEndpoint to the API Facade</h2>
-
-<p>You need to tell Apigee where to forward those requests.</p> 
-<p>Configure the destination in the TargetEndpoint endpoint for the API.</p>
-<p>There is a lot of stuff in this request: the only element that we specify here is the <b>connection URL</b>, which in our case, is the URL for the Yahoo Weather API.</p>
-
-<div id="well"><pre>$ curl -u myname:myname -H "Content-Type: application/json" -X POST -d \
-  '{ "connection" : { "uRL" : "http://weather.yahooapis.com/forecastrss?w=12797282" }, "description" : "Connection to Weather API", "name" : "default"}' \
-https://api.enterprise.apigee.com/v1/o/{org_name}/apis/weatherapi/revisions/1/targets</pre></div>
-
-Sample Response
-
-<div id="well"><pre>{
-  "connection" : {
-    "uRL" : "http://weather.yahooapis.com/forecastrss?w=12797282"
-  },
-  "description" : "Connection to Weather API",
-  "faultRuleNames" : [ ],
-  "faultRules" : [ ],
-  "flowNames" : [ "PreFlow", "PostFlow" ],
-  "flows" : [ ],
-  "name" : "default",
-  "preFlow" : {
-    "name" : "PreFlow",
-    "request" : {
-      "steps" : [ ]
-    },
-    "response" : {
-      "steps" : [ ]
-    }
-  },
-  "type" : "Target"
-}</pre></div>
-
-<h2>Step 4: Add a ProxyEndpoint to the API Facade</h2>
-
-<p>The key piece of configuration that we add in this step is the <b>basepath</b> for our API.
-</p>
-<p>The <b>basepath</b> determines how requests are routed to this specific API facade. Remember, you could have 10 or hundreds of APIs facades on Apigee for a variety of purposes. How does Apigee know to route requests to this specific API?</p>
-<p>It does this using basepaths. A basepath is used for URL pattern matching on incoming request messages. </p>
-<p>Remember, the virtual host determines the environment where a message is routed . The base path determines the API Proxy in that environment that the request is routed to.</p>
-<p>Thus, if we set the basepath to '/weather', and we deploy to the 'test' environment, our API proxy will service requests sent to http://{org_name}-test.apigee.net.</p>
-<p>(Note that you can also set the basepath when you deploy an API. Any basepath that you set when you deploy will be appended to the basepath set in the ProxyEndpoint in this step.)</p>
-
-<div id="well"><pre>$ curl -u myname:mypass -H "Content-type: application/json" -X POST -d \
-  '{"connection" : {"basePath" : "/weather","virtualHost" : [ "default" ]}, "description" : "Default Proxy to create flows on an API", "name" : "default", "routeRule" : [ {"name" : "default","targetEndpoint" : "default"} ]}' \
-    https://api.enterprise.apigee.com/v1/o/{org_name}/apis/weatherapi/revisions/1/proxies</pre></div>
-
-Sample Response
-
-<div id="well"><pre>{
-  "connection" : {
-    "basePath" : "/weather",
-    "virtualHost" : [ "default" ]
-  },
-  "description" : "Default Proxy to create flows on an API",
-  "faultRuleNames" : [ ],
-  "faultRules" : [ ],
-  "flowNames" : [ "PreFlow", "PostFlow" ],
-  "flows" : [ ],
-  "name" : "default",
-  "preFlow" : {
-    "name" : "PreFlow",
-    "request" : {
-      "steps" : [ ]
-    },
-    "response" : {
-      "steps" : [ ]
-    }
-  },
-  "routeRule" : [ {
-    "name" : "default",
-    "targetEndpoint" : "default"
-  } ],
-  "routeRuleNames" : [ "default" ],
-  "type" : "Proxy"
 }</pre>
-</div>
 
-<p>This response shows the detail for the ProxyEndpoint called 'default' that we just created on the API. Note the an API Proxy consists of a basePath, a Virtual, FaultRules and Flows. </p>
-<p>A very important element is the routeRule. It is here that you tell the ProxyEndpoint which TargetEndpoint to use for the outbound call (in this case to Yahoo).</p>
+<p>You can see here that all of the important pieces of the API are empty. There are no policies, no Endpoints, no resources. To find out what these elements of an API proxy are, refer to [node:4593]</p>
 
-<p>As with the ProxyEndpoint, you can see that the TargetEndpoint contains fault rules, and a set of Flows.</p>
+<h3>Deploying an API to an environment</h3>
 
-<h2>Deploy an API to an environment</h2>
-<p>Now that our API facade is configured to receive and forward requests properly, we need to deploy it to an environment.</p>
+<p>Now that your API proxy is configured to receive and forward requests properly, you need to deploy it to an environment.</p>
 	
-<p>An API facade cannot be invoked until is has been deployed.
+<p>An API proxy cannot be invoked until is has been deployed.
 </p>
-<p>And what we deploy is the API <b>revision</b>.</p>
+<p>You deploy the API <b>revision</b> to an environment. First, check environments in your organization.</p>
 
-<h2>How to List Environments</h2>
-<p>Every organization in Apigee has at least two environments: 'test' and 'prod'. The distinction is really arbitrary. The goal is to provide you with an area to verify that your API facade is working properly before you open it up to outside developers.</p>
-<p>View environments in an organization</p>
+<h3>How to List Environments</h3>
+
+<p>Every organization on the API Platform has at least two environments: 'test' and 'prod'. The distinction is really arbitrary. The goal is to provide you with an area to verify that your API proxy is working properly before you open it up to outside developers. Each environment is really just a network address, enabling you segregate traffic between the API proxies that you are working on, and those that are being accessed by apps at runtime.</p>
+
+<p><b>View environments in an organization</b></p>
+
 <div id="well"><pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/environments</pre></div>
-<p>Sample Response</p>
+<p><b><p><b>Sample Response</b></p></b></p>
 
 <div id="well"><pre>[ "test", "prod" ]</pre></div>
 
-<h4>Deploy your API to the Test Environment</h4>
+<h3>Deploy your API to the Test Environment</h3>
+
 <p>Now, deploy the API to the test environment.</p>
 
 <div id="well"><pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/apis/weatherapi/revisions/1/deployments?action=deploy&env=test&basepath=/</pre></div>
 
-Sample Response
+<p><b><p><b>Sample Response</b></p></b></p>
 
 <div id="well"><pre>{
   "aPIProxy" : "weatherapi",
@@ -251,66 +185,15 @@ Sample Response
   "organization" : "{org_name}"
 }</pre></div>
 
-<h2>How to submit requests to your API at Runtime</h2>
+<p>You now have a fully configured API proxy running on the API Platform.</p>
 
-<p>The proxied URL that Apigee generates for you depends on the environment where you deploy your API Proxy.</p>
-The proxied URL is a concatenation of:
-
-<ul><li>Your organization name</li>
-<li>The environment name</li>
-<li>The Apigee Base URL (apigee.net, <b>NOT</b> api.enterprise.apigee.com) </li>
-<li>The basepath you configure for the API (in our example, /weather)</li></ul>
-
-<h4>How to Get the Virtual Host for an Environment</h4>
-
-First, get the name of the virtual host for your environment.
-<div id="well"><pre>curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/environments/test/virtualhosts</pre></div>
-Sample Response
-<div id="well"><pre>[ "default" ]</pre></div>
-
-<h2>How to Get the Virtual Host Address for an Environment</h2>
-Now get the settings for the virtual host. This will tell you where to submit requests to your API facade.
-<div id="well"><pre>curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/environments/test/virtualhosts/default</pre></div>
-Sample Response
-<div id="well"><pre>{
-  "hostAliases" : [ "{org_name}-test.apigee.net" ],
-  "interfaces" : [ ],
-  "name" : "default",
-  "port" : "80"
-}</pre></div>
-
-<p>Remember that we set the <b>basepath</b> for your API facade to be <code>/weather</code>.</p>
-<p>To invoke this API, submit requests to:</p>
-<div id="well"><pre>http://org_name-test.apigee.net/weather</pre></div>
-
-<h4>Submit Request via Apigee API</h4>
-
-<p>submit a request that invokes the Yahoo Weather API by calling the Apigee API proxy, rather than directly calling Yahoo. </p>
-
-<div id="well"><pre>$ curl 'http://org_name-test.apigee.net/weather/forecastrss?w=12797282&'</pre></div>
-
-<p>Sample Response</p>
-
-<div id="well"><pre>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;yes&quot; ?&gt;
-		&lt;rss version=&quot;2.0&quot; xmlns:yweather=&quot;http://xml.weather.yahoo.com/ns/rss/1.0&quot; xmlns:geo=&quot;http://www.w3.org/2003/01/geo/wgs84_pos#&quot;&gt;
-			&lt;channel&gt;		
-&lt;title&gt;Yahoo! Weather - Palo Alto, CA&lt;/title&gt;
-&lt;link&gt;http://us.rd.yahoo.com/dailynews/rss/weather/Palo_Alto__CA/*http://weather.yahoo.com/forecast/USCA1093_f.html&lt;/link&gt;
-&lt;description&gt;Yahoo! Weather for Palo Alto, CA&lt;/description&gt;
-. . . 
-&lt;/rss&gt;
-
-&lt;!-- api17.weather.ac4.yahoo.com uncompressed/chunked Fri Jun  8 11:33:23 PDT 2012 --&gt;</pre></div>
-
-<p>You now have a fully configured API facade running in Apigee.</p>
-
-<h2>Explore Deployments</h2>
+<h3>Explore Deployments</h3>
 
 <p>A "deployment" is a deployed revision of your API. It is often useful to check to see in which environment (and if!) your API is deployed. </p>
 
-<p>For example, you might find requests to your API facade are failing. One troubleshooting step is to ensure that the API is deployed as expected.</p>
+<p>For example, you might find requests to your API proxy are failing. One troubleshooting step is to ensure that the API is deployed as expected.</p>
 
-<h2>See All Deployments of an API Revision</h2>
+<h3>See All Deployments of an API Revision</h3>
 <div id="well"><pre>curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/apis/weatherapi/revision/1/deployments</pre></div>
 
 <div id="well"><pre>{
@@ -344,47 +227,130 @@ Sample Response
   "organization" : "org_name"
 }</div></pre>
 
-<h4>See All Deployments in the Test Environment</h4>
+<h3>See All Deployments in the Test Environment</h3>
 <div id="well"><pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/environments/test/deployments</pre></div>
 
 <p>Returns the same result as above for every API deployed in the test environment
 </p>
-<h4>See All Deployments in your organization</h4>
+<h3>See All Deployments in your organization</h3>
 <div id="well"><pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/deployments</pre></div>
-<p>Returns the same result as above for every API deployed in all environments
+<p>Returns the same result as above for all API proxies deployed in all environments.
 </p>
 
-<h2>Scripting against the API </h2>
-<p>The API can be used to build simple scripts that ease the management and deployment of the API proxies that you build. It is very useful to build a script that holds the environment settings for your account on the API Platform. </p>
+<p>To get a list of all APIs in an organization, make the following API call:</p>
 
-<p>For example, the API platform samples use the following file to store environment settings:
-</p>
-<pre>org="Your organization name"
-username="Your username in the organization"
-env="The environment you want to deploy to"
-url="https://api.enterprise.apigee.com"
-api_domain="apigee.net"
+<div id="class">
+	<pre>$ curl https://api.enterprise.apigee.com/v1/organizations/{org_name}/apis \
+-u myname:mypass </pre>
+</div>
+<p>where <code>myname:mypass</code> are the username and password for an account in an Apigee organization.</p>
+<p>This request returns a list of all API proxies in an organization.</p>
+<p>Since the API is RESTful, you can simply use the POST method, along with a JSON or XML payload, against the same resource to create an API proxy.</p>
 
-## --------------------------------------
-export org=$org
-export username=$username
-export env=$env
-export url=$url
-export api_domain=$api_domain</pre>
 
-<p>NOTE: For obvious reasons, you should not store you password in this file. Collect the password as shown below.</p>
+<p>A profile for your API proxy is generated on the API Platform. The default representation of an API proxy is JavaScript object notation (JSON). Below is the default JSON response to the POST request above, which created an API proxy called 'weatherapi'. A description of each element in the profile follows:</p>
+<div id="well">
+	<pre>{
+  "configurationVersion" : {
+    "majorVersion" : 4,
+    "minorVersion" : 0
+  },
+  "contextInfo" : "Revision 1 of application weatherapi, in organization {org_name}",
+  "createdAt" : 1357172145444,
+  "createdBy" : "you@yourcompany.com",
+  "displayName" : "weatherapi",
+  "lastModifiedAt" : 1357172145444,
+  "lastModifiedBy" : "you@yourcompany.com",
+  "name" : "weatherapi",
+  "policies" : [ ],
+  "proxyEndpoints" : [ ],
+  "resources" : [ ],
+  "revision" : "1",
+  "targetEndpoints" : [ ],
+  "targetServers" : [ ],
+  "type" : "Application"
+}</pre>
+</div>
+	
+<p><span class="label label-info">Note</span> Keep in mind that the response payload merely contains a representation of an API resource--you can create an API proxy using JSON or XML, and you can also retrieve representations of the API proxy as XML or JSON, depending on your needs.</p>
 
-<p>The API Platform samples use a simple shell script to call the Python deploy tool using the variables set in the file shown above.  To populate those variables in another script, you use the following:</p>
+<p>The API proxy profile that is generated demonstrates the complete structure of an API proxy:</p>
+<ul>
+	<li><span style="font-family:courier new,courier,monospace;">APIProxy revision</span>: The sequentially numbered iteration of the API proxy configuration, as maintained by the API Platform</li>
+	<li><span style="font-family:courier new,courier,monospace;">APIProxy name</span>: The unique name of the API proxy</li>
+	<li><span style="font-family:courier new,courier,monospace;">ConfigurationVersion</span>: API Platform version to which the API proxy configuration conforms</li>
+	<li><span style="font-family:courier new,courier,monospace;">CreatedAt</span>: Time when the API proxy was generated on the API platform, formatted in UNIX time</li>
+	<li><span style="font-family:courier new,courier,monospace;">CreatedBy</span>: Email address of the Apigee user who created the API proxy</li>
+	<li><span style="font-family:courier new,courier,monospace;">DisplayName</span>: A user-friendly name for the API proxy</li>
+	<li><span style="font-family:courier new,courier,monospace;">LastModifiedAt</span>: Time when the API proxy was generated on the API platform, formatted in UNIX time</li>
+	<li><span style="font-family:courier new,courier,monospace;">LastModifiedBy</span>: Email address of the Apigee user who created the API proxy on the API platform</li>
+	<li><span style="font-family:courier new,courier,monospace;">Policies</span>: A list of policies that have been added to this API proxy</li>
+	<li><span style="font-family:courier new,courier,monospace;">ProxyEndpoints</span>: A list of named ProxyEndpoints</li>
+	<li><span style="font-family:courier new,courier,monospace;">Resources</span>: A list of resources (JavaScript, Python, Java, XSLT) available to be executed in this API proxy</li>
+	<li><span style="font-family:courier new,courier,monospace;">TargetServers</span>: A list of named TargetServers (that can be created using the APi Platform API), used in advanced configurations for load balancing purposes</li>
+	<li><span style="font-family:courier new,courier,monospace;">TargetEndpoints</span>: A list of named TargetEndpoints</li>
+</ul>
 
-<pre>source ../../setup/setenv.sh
-echo "Enter your password for the Apigee Enterprise organization $org, followed by [ENTER]:"
-read -s password
-echo "Provide a name for the API proxy to be imported, followed by [ENTER]:"
-read proxy
-echo Deploying $proxy to $env on $url using $username and $org
-/path/to/deploy.py -n $proxy -u $username:$password -o $org -h $url -e $env -p / -d /path/to/apiproxy</pre>
+<p>Note that many of the elements of the API proxy configuration created using the simple POST method above are empty. The next steps involve configuring the key components of an API proxy.</p>
 
-When you run this script, you are prompted for your password and a name for the API proxy. The script then uses your environment settings to call the Deploy tool.
+<h2>Working with the Apigee deploy tool</h2>
+
+<p>To support local development of API proxies, Apigee provides an open-source tool written in Python to help you simplify and manage the process of packaging and deploying APIs from your local machine to Apigee. (The [node:2047] provides information on complete set up information.)</p>
+
+<p>Apigee’s Python tool enables you to import (upload) and deploy your API in one simple process.</p>
+<p>In the api-platform-samples package, the deploy tool, <code>deploy.py</code>, is available under <code>/tools</code></p>
+
+<p>The command below imports an API proxy called 'weatherapi' to the 'test' environment in an organization specified in <code>org_name</code>.</p>
+<p>Substitute a valid username, password, and Apigee API Platform organization for <code>myname:mypass</code> and <code>org_name</code>. (These are the credentials used to login in to your account on <a href="http://enterprise.apigee.com">enterprise.apigee.com</a>.)</p>
+
+<p>A pointer must be provided to the directory that contains the <code>/apiproxy</code> directory, in this case <code>simpleProxy</code></p>
+
+<p>For example, run:</p>
+<pre>$ python tools/deploy.py -n weatherapi -u myname:mypass -o org_name -e test -p / -d simpleProxy</pre>
+
+<p>This single action zips the API proxy configuration files, pushes them to to the specified organization on the API Platform, and deploys the API proxy  to the specified environment, in the following example, 'test'.</p>
+
+<p>On success the result is:</p>
+<pre>Writing ./simpleProxy/apiproxy/weatherapi.xml to apiproxy/weatherapi.xml
+Writing ./simpleProxy/apiproxy/proxies/default.xml to apiproxy/proxies/default.xml
+Writing ./simpleProxy/apiproxy/targets/default.xml to apiproxy/targets/default.xml
+Imported new proxy version 1
+Environment: test
+  Revision: 1 BasePath = /
+  State: deployed</pre>
+
+<p>The tool has zipped up the API proxy configuration, imported the package to the API Platform, and deployed to the test environment.</p>
+
+<p>At this point, the API proxy can be invoked by client apps.</p>
+
+<h3>Invoke an API proxy</h3>
+
+<p>The proxied URL for an API is defined by the environment where the API proxy is deployed. The proxied URL consists of:</p>
+<ul>
+	<li>Organization name: </li>
+	<li>The environment name: </li>
+	<li>The Apigee proxy base URL (<code>apigee.net</code>, NOT <code>api.enterprise.apigee.com</code>)</li>
+	<li>The base path URI fragment you configure for the API proxy (in the example above, <code>/weather</code>)</li>
+</ul>
+
+<p>The URL for the API proxy in this example is:</p>
+
+<pre>http://{org_name}-test.apigee.net/weather</pre>
+
+<p>For an organization called 'apifactory', the API proxy address is:</p>
+
+<pre>http://apifactory-test.apigee.net/weather</pre>
+
+<p>To invoke an API proxy, clients submit requests to:</p>
+
+<pre>$ curl http://{org_name}-{env_name}.apigee.net/weather/forecastrss?w=12797282</pre>
+
+<p>The API Platform takes the URI path following the base path (as defined in the ProxyEndpoint) and appends the value to the URL defined in the HTTPConnection for the TargetEndpoint. The result would be an outbound call to:</p>
+
+<div id="well"><pre>http://weather.yahooapis.com/forecastrss?w=12797282</pre></div>
+
+<p>The API Platform receives the response and returns the response to the client app.</p>
+
 
 
 <p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>

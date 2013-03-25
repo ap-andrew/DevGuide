@@ -1,5 +1,5 @@
 <p>[toc]</p>
-<p>Conditions enable API facades to behave dynamically at runtime. Conditions define operations on variables, which are evaluated by the API Platform processing pipeline. Conditional statements are boolean and always evaluate to true or false.</p>
+<p>Conditions enable API proxies to behave dynamically at runtime. Conditions define operations on variables, which are evaluated by the API Platform processing pipeline. Conditional statements are boolean and always evaluate to true or false.</p>
 <p>Apigee specifies a set of commonly used variables. For a complete list, see [node:243]. Custom variables can also be used in conditional statements. For instructions, see on setting custom variables, see [node:227]</p>
 <p>The basic structure of a conditional statement is:</p>
 <div id="class">
@@ -17,7 +17,7 @@
 <div id="class">
 	<pre>(proxy.pathsuffix MatchesPath "/statuses") and (request.verb != "GET")</pre>
 </div>
-<p>Conditional behavior is supported by three components of an API facade:</p>
+<p>Conditional behavior is supported by three components of an API proxy:</p>
 <p><strong>Policy enforcement</strong></p>
 <p>Using conditional statements, you can control the enforcement of policies. A common use case is conditional transformation of response messages, based on HTTP header or message content.</p>
 <p>For example, to conditionally transfrom XML to JSON based on the <code>Accept</code> header:</p>

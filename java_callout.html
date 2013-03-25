@@ -1,47 +1,114 @@
 <p>[toc]</p>
-<p>If you want to write a custom Java callout, you should become familiar with some of the patterns involved in constructing the pluggable Java code. Understanding Java patterns changes how you construct or design your code. Developers use different patterns based on their business needs. Some of the patterns are listed in the table below.</p>
-<h2><a class="jumplink" name="interface"></a>Execution interface</h2>
-<p>There are two basic execution interfaces for accessing the variables using the pattern:</p>
-<ul>
-	<li>messageContext provides access to the request/response message.</li>
-	<li>executionContext provides some control over the flow and utility methods for asynchronous processing.</li>
-</ul>
-<p>Configure Java callouts using the following pattern elements.</p>
-<h4>Pattern</h4>
-<p>Simple blocking.</p>
-<h4>Scenario</h4>
-<p>For message modifications.</p>
-<h4>Example</h4>
-<pre>public class SimpleBlockingExecution implements Execution {
+<p>This topic covers the JavaCallout interface exposed by the API Platform message processing pipeline. The API Platform enables you to write custom Java that executes as part of an API proxy Flow. Such Java code can simply modify message content, or it can execute complex asynchronous logic, depending on your requirements.</p>
 
-&nbsp;&nbsp;&nbsp; public ExecutionResult execute(MessageContext messageContext, ExecutionContext executionContext) {
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // message modification, etc
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; messageContext.getMessage().setHeader("Thread", Thread.currentThread().getName()); // executes in IO thread
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; messageContext.getMessage().setHeader("SimpleBlockingExecution", "aye");
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return ExecutionResult.SUCCESS; // flow continues to next execution
-&nbsp;&nbsp;&nbsp; }
+<p>Java samples, JavaDocs, and required dependencies are available in the <a href="https://github.com/apigee/api-platform-samples/tree/master/sample-proxies/java-callout">API Platform Samples</a> repository on Github.</p>
+
+<h2>Overview</h2>
+
+<p>To execute Java on the API Platform:</p>
+<ol>
+	<li>Write Java code to the interface described in the <a href="https://github.com/apigee/api-platform-samples/wiki/Apigee-API-Platform-Samples-Wiki">JavaCallout JavaDocs</a>.</li>
+	<li>Compile your Java code against the <a href="https://github.com/apigee/api-platform-samples/tree/master/sample-proxies/java-callout/lib">dependent JAR files</a>.</li>
+	<li>Create a Java resource (JAR file) under <code>/apiproxy/resources/java</code></li>
+	<li>Create a matching policy of type <code>JavaCallout</code> under <code>/apiproxy/policies</code></li>
+	<li>Attach the policy at the appropriate point in the processing Flow</li>
+	<li>Import and deploy your API proxy to the API Platform to debug your Java</li>
+</ol>
+
+<h2>Compiling, packaging, and importing</h2>
+
+<p>To compile JavaCallout code, you require two JAR files that are available on GitHub:</p>
+
+<ul><li><a href="https://github.com/apigee/api-platform-samples/tree/master/sample-proxies/java-callout/lib/expressions-1.0.0.jar">expressions-1.0.0.jar</a></li>
+<li><a href="https://github.com/apigee/api-platform-samples/tree/master/sample-proxies/java-callout/lib/message-flow-1.0.0.jar">message-flow-1.0.0.jar</a></li></ul>
+
+<p>The sample commands below assume that you are working in the java-callout directory under sample-proxies in the API Platform samples distribution on GitHub. If not, modify your paths appropriately to reflect your environment.</p>
+
+<pre>$ javac -d bin -sourcepath src -classpath ../lib/expressions-1.0.0.jar:../lib/message-flow-1.0.0.jar src/com/apigee/{MyClass}.java</pre>
+
+<p>Generate a JAR file containing your compiled JavaCallout. For example:</p>
+
+<pre>$ jar -cvf {MyClass}.jar /com</pre>
+
+<p>Save your JAR files under the <code>/apiproxy/resources/java</code>.</p>
+
+<p>Reference the class file and the JAR that you created in a policy of type JavaCallout. For example:</p>
+
+<pre>&lt;JavaCallout name=&quot;cityLookUp&quot;&gt;
+        &lt;ClassName&gt;com.apigee.CityLookup&lt;/ClassName&gt;
+        &lt;ResourceURL&gt;java://CityLookup.jar&lt;/ResourceURL&gt;
+&lt;/JavaCallout&gt;</pre>
+
+<p>Attach the policy to an Endpoint Flow. In the example below, the JavaCallout executes for any request where the request URI path suffix matches <code>/forecastrss</code>, and the HTTP verb of the request is <code>GET</code>. The name of the step must match the name of the policy.</p>
+
+<pre>&lt;Flows&gt;
+  &lt;Flow name=&quot;forecast&quot;&gt;
+    &lt;Condition&gt;(proxy.pathsuffix MatchesPath &amp;quot;/forecastrss&amp;quot;) and (request.verb = &amp;quot;GET&amp;quot;)&lt;/Condition&gt;
+    &lt;Request&gt;
+      &lt;Step&gt;
+        &lt;Name&gt;cityLookUp&lt;/Name&gt;
+      &lt;/Step&gt;
+    &lt;/Request&gt;			
+   &lt;/Flow&gt;
+&lt;/Flows&gt;</pre>
+
+<p>Upload your API proxy to the API platform. To do so, you can use the deploy tool available on GitHub. </p>
+
+In the example command below, modify <code>myname</code>, <code>mypass</code>, and <code>myorg</code> to match the settings for your account on <a href="enterprise.apigee.com">enterprise.apigee.com</a>:
+
+<pre>$ python tools/deploy.py -n weatherapi -u myname:mypass -o myorg -e test -p / -d simpleProxy</pre>
+
+<h2><a class="jumplink" name="interface"></a>Execution interface</h2>
+<p>The API Platform JavaCallout API exposes two basic execution interfaces that provide access to Flow variables:</p>
+<ul>
+	<li><code>messageContext </code>provides access to the request/response message</li>
+	<li><code>executionContext</code> provides control over flow processing, along with utility methods for asynchronous processing</li>
+</ul>
+
+<h4>Note on <code>@IOIntensive</code> annotation</h4>
+<p>On the API Platform, I/O and other processes that will never block the CPU execute in a core thread pool. The core thread pool is, by default, configured to one thread per CPU. Any process that might block a thread is dispatched to a separate asynchronous thread pool.</p>
+
+<p>This is controlled using an annotation called <code>@IOIntensive</code>. By placing the annotation on the policy class, the Java code executes in the asynchronous thread pool. Where the annotation is not present, Java code executes in an I/O thread.</p>
+
+<p>As a best practice, all JavaCallouts should have <code>@IOIntensive</code> annotation, unless there is a high degree of certainty that no blocking network I/O, no file I/O, no sleeps, etc. are used by the code.</p>
+
+<h2>JavaCallout patterns</h2>
+<p>Implement JavaCallouts according to the patterns described in the following section.</p>
+<h4>Pattern</h4>
+<p>Simple blocking</p>
+<h4>Scenario</h4>
+<p>Modification and mediation of message content</p>
+<h4>Example</h4>
+<pre>@IOIntensive
+public class SimpleBlockingExecution implements Execution {
+  public ExecutionResult execute(MessageContext messageContext, ExecutionContext executionContext) {
+    // message modification, etc
+    messageContext.getMessage().setHeader("Thread", Thread.currentThread().getName());
+    messageContext.getMessage().setHeader("SimpleBlockingExecution", "aye");
+    return ExecutionResult.SUCCESS; // flow continues to next execution
+    }
 }</pre>
 <h4>Pattern</h4>
-<p>Simple non-blocking.</p>
+<p>Simple non-blocking</p>
 <h4>Scenario</h4>
 <p>For reading a custom response from a file, looking up cache, calling over the network to the other services.</p>
 <h4>Examples</h4>
 <p><strong>Example 1: SimpleNonBlockingExecutionReturnError</strong></p>
-<pre>public class SimpleNonBlockingExecutionReturnError implements Execution {
-
-&nbsp;&nbsp; &nbsp;@Override
-&nbsp;&nbsp; &nbsp;public ExecutionResult execute(MessageContext messageContext, ExecutionContext executionContext) {
-&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;try {
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // message modification, IO operations, etc
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // do something here that might fail
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return ExecutionResult.SUCCESS;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; } catch (Exception ex) {
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ExecutionResult executionResult = new ExecutionResult(false, ExecutionResult.Action.ABORT);
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; executionResult.setErrorResponse(ex.getMessage());
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; executionResult.addErrorResponseHeader("ExceptionClass", ex.getClass().getName());
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return new ExecutionResult(false, ExecutionResult.Action.ABORT);
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }
-&nbsp;&nbsp; &nbsp;}
+<pre>@IOIntensive
+public class SimpleNonBlockingExecutionReturnError implements Execution {
+	@Override
+	public ExecutionResult execute(MessageContext messageContext, ExecutionContext executionContext) {
+		try {
+            // message modification, IO operations, etc
+            // do something here that might fail
+            return ExecutionResult.SUCCESS;
+        } catch (Exception ex) {
+            ExecutionResult executionResult = new ExecutionResult(false, ExecutionResult.Action.ABORT);
+            executionResult.setErrorResponse(ex.getMessage());
+            executionResult.addErrorResponseHeader("ExceptionClass", ex.getClass().getName());
+            return new ExecutionResult(false, ExecutionResult.Action.ABORT);
+        }
+	}
 }</pre>
 <p><strong>Example 2: SimpleNonBlockingExecutionReturnSuccess</strong></p>
 <pre>public class SimpleNonBlockingExecutionReturnSuccess implements Execution {
@@ -54,31 +121,34 @@
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return ExecutionResult.SUCCESS;
 &nbsp;&nbsp; &nbsp;}
 }</pre>
+
 <h4>Pattern</h4>
-<p>Non-blocking and irrelevant to the flow.</p>
+
+<p>Non-blocking and irrelevant to the flow</p>
+
 <h4>Scenario</h4>
-<p>For reporting metrics to an analytics server or logging to the disk.</p>
+
+<p>Logging, forwarding data to an analytics server</p>
+
 <h4>Examples</h4>
+
 <p><strong>Example 1: SubmitTaskAndContinue</strong></p>
+
 <pre>public class SubmitTaskAndContinue implements Execution {
-
-&nbsp;&nbsp;&nbsp; private static final Logger logger = LoggerFactory.getLogger("SubmitTaskAndContinue");
-
-&nbsp;&nbsp;&nbsp; public ExecutionResult execute(final MessageContext messageContext, final ExecutionContext executionContext) {
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; executionContext.submitTask(new Task());
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // here onwards, the execution can return success or failure as in Simple Blocking Execution
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return ExecutionResult.SUCCESS;
-&nbsp;&nbsp;&nbsp; }
-
-&nbsp;&nbsp;&nbsp; private static class Task implements Runnable {
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; public void run() {
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // report to analytics agent
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // log to disk
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // aggregate statistics
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; logger.debug("SubmitTaskAndContinue.Task.run()");
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }
-&nbsp;&nbsp;&nbsp; }
+    private static final Logger logger = LoggerFactory.getLogger("SubmitTaskAndContinue");
+    public ExecutionResult execute(final MessageContext messageContext, final ExecutionContext executionContext) {
+        executionContext.submitTask(new Task());
+        // here onwards, the execution can return success or failure as in Simple Blocking Execution
+        return ExecutionResult.SUCCESS;
+    }
+    private static class Task implements Runnable {
+        public void run() {
+            // report to analytics agent
+            // log to disk
+            // aggregate statistics
+            logger.debug("SubmitTaskAndContinue.Task.run()");
+        }
+    }
 }</pre>
 <p><strong>Example 2: SubmitTaskAndContinueCallbackHandling</strong></p>
 <pre>public class SubmitTaskAndContinueCallbackHandling implements Execution {
@@ -110,124 +180,48 @@
 <h4>Pattern</h4>
 <p>Non-blocking and influences of the flow.</p>
 <h4>Scenario</h4>
-<p>For callbacks or events based on the notifications.</p>
+<p>For callbacks or events based on notificationss</p>
 <h4>Example</h4>
 <p><strong>SubmitTaskAndPauseForCompletion</strong></p>
 <pre>public class SubmitTaskAndPauseForCompletion implements Execution {
-
-&nbsp;&nbsp;&nbsp; private static final Logger logger = LoggerFactory.getLogger("SubmitTaskAndPauseForCompletion");
-
-&nbsp;&nbsp; &nbsp;@Override
-&nbsp;&nbsp; &nbsp;public ExecutionResult execute(MessageContext messageContext, ExecutionContext executionContext) {
-&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;Message message = messageContext.getMessage();
-&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;// Blocking code here
-&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;// ...
-&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;//
-&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;executionContext.submitTask(new AuthenticationTask(), new PostAuthenticationCallback(), executionContext);
-&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;// This line resumes after the submitTask is done.
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; //...
-&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;return ExecutionResult.PAUSE; // causes the flow to pause until resumed explicitly again
-&nbsp;&nbsp; &nbsp;}
-
-&nbsp;&nbsp; &nbsp;class AuthenticationTask implements Runnable {
-&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;Subject subject;
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; @Override
-&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;public void run() {
-&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;// Lookup LDAP server and invoke the server
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // do service callout
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; logger.debug("SubmitTaskAndPauseForCompletion.AuthenticationTask.run()");
-&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;}
-&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;
-&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;public Subject getSubject() {
-&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;return subject;
-&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;}
-&nbsp;&nbsp; &nbsp;}
-&nbsp;&nbsp; &nbsp;
-&nbsp;&nbsp; &nbsp;class PostAuthenticationCallback implements Callback {
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; @Override
-&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;/**
-&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; * Post this method invocation, resume of flow is invoked by the framework
-&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; */
-&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;public void callback(Runnable task, Object handback) {
-&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;AuthenticationTask authTask = (AuthenticationTask) task;
-&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;Subject subject = authTask.getSubject();
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; logger.debug("SubmitTaskAndPauseForCompletion.PostAuthenticationCallback.callback()");
-&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;}
-&nbsp;&nbsp; &nbsp;}
+    private static final Logger logger = LoggerFactory.getLogger("SubmitTaskAndPauseForCompletion");
+	@Override
+	public ExecutionResult execute(MessageContext messageContext, ExecutionContext executionContext) {
+		Message message = messageContext.getMessage();
+		// Blocking code here
+		// ...
+		//
+		executionContext.submitTask(new AuthenticationTask(), new PostAuthenticationCallback(), executionContext);
+		// This line resumes after the submitTask is done.
+        //...
+		return ExecutionResult.PAUSE; // causes the flow to pause until resumed explicitly again
+	}
+	class AuthenticationTask implements Runnable {
+		Subject subject;
+        @Override
+		public void run() {
+			// Lookup LDAP server and invoke the server
+            // do service callout
+            logger.debug("SubmitTaskAndPauseForCompletion.AuthenticationTask.run()");
+		}		
+		public Subject getSubject() {
+			return subject;
+		}
+	}
+	class PostAuthenticationCallback implements Callback {
+        @Override
+		/**
+		 * Post this method invocation, resume of flow is invoked by the framework
+		 */
+		public void callback(Runnable task, Object handback) {
+			AuthenticationTask authTask = (AuthenticationTask) task;
+			Subject subject = authTask.getSubject();
+            logger.debug("SubmitTaskAndPauseForCompletion.PostAuthenticationCallback.callback()");
+		}
+	}
 }</pre>
-<h2><a class="jumplink" name="maven"></a>Using Maven to create and package a Java callout</h2>
-<p>With the Maven archetype <em>javacallout-quick-start</em>, you can quickly develop a Java callout. Package the code as JAR file and deploy it to an internal or external repository, such as Apigee. Note that you need to configure the repository URL in the <span style="font-family: courier new,courier,monospace;">pom.xml</span> file to deploy the JAR file to an external repository. This configured repository URL is used in the example later in this section:</p>
-<pre>http://enterprise.apigee.com/archiva/repository/gateway_m10/</pre>
-<p>After you have compiled and uploaded your Java callout, reference your code within a policy on to the message flow.</p>
-<p>The Maven archetype generates a fully configured Maven project along with a sample class. You can employ the <em>interactive</em> and <em>non-interactive</em> modes to develop a Java callout.</p>
-<p><strong>Note:</strong> You can download Maven from the Apache Maven project website at <a href="http://maven.apache.org/download.html">http://maven.apache.org/download.html</a>. Be sure to choose the latest version. Also, you need JDK version 1.6 or later installed prior to using Maven.</p>
-<h3><a name="interactive"></a>Interactive mode</h3>
-<p>Generate a <span style="font-family: courier new,courier,monospace;">pom.xml</span> ﬁle and place your source in the default directory. Maven takes care of the rest. The <span style="font-family: courier new,courier,monospace;">pom.xml</span> file displays the following key elements:</p>
-<ul>
-	<li><b>groupId</b> is the unique identifier for the Java callout project. This element is typically based on the fully qualified domain name of your organization, for example, <span style="font-family: courier new,courier,monospace;">com.apigee.gateway</span> or <span style="font-family: courier new,courier,monospace;">com.sears.oauth</span>.</li>
-	<li><b>artifactId</b> is the name of the Java callout resource, for example, oauth and logging.</li>
-	<li><b>version</b> is the version of the artifact generated by the project. The default is 1.0-SNAPSHOT.</li>
-	<li><b>package</b> is the package type for the Java callout code, for example, JAR.</li>
-	<li><strong>className</strong> is the Java callout execution class name.</li>
-</ul>
-<p>Of these elements, you must specify is a groupId, artifactId, and version. These parameters are needed later for invoking the archetype via <span style="font-family: courier new,courier,monospace;">archetype:generate</span> from the command line.</p>
-<p>The command-line execution of a Maven project (an archetype generation) is shown below.</p>
-<pre>[user@desktop /tmp]$ mvn -q archetype:generate -DarchetypeGroupId=com.apigee.gateway -DarchetypeArtifactId=javacallout-quick-start -DarchetypeRepository=http://enterprise.apigee.com/archiva/repository/gateway_m10/
-Define value for property 'groupId': : com.apigee.example
-Define value for property 'artifactId': : example
-Define value for property 'version':&nbsp; 1.0-SNAPSHOT: :
-Define value for property 'package':&nbsp; com.apigee.example: :
-Confirm properties configuration:
-groupId: com.apigee.example
-artifactId: example
-version: 1.0-SNAPSHOT
-package: com.apigee.example
-className: MyExecution
-repositoryId: gateway_m10
-repositoryURL: http://enterprise.apigee.com/archiva/repository/gateway_m10/
-&nbsp;Y: : N
-Define value for property 'groupId': : com.apigee.example
-Define value for property 'artifactId': : example
-Define value for property 'version':&nbsp; 1.0-SNAPSHOT: :
-Define value for property 'package':&nbsp; com.apigee.example: :
-Define value for property 'className':&nbsp; MyExecution: : Example
-Define value for property 'repositoryId':&nbsp; gateway_m10: :
-Define value for property 'repositoryURL':&nbsp; http://enterprise.apigee.com/archiva/repository/gateway_m10/: :
-Confirm properties configuration:
-groupId: com.apigee.example
-artifactId: example
-version: 1.0-SNAPSHOT
-package: com.apigee.example
-className: Example
-repositoryId: gateway_m10
-repositoryURL: http://enterprise.apigee.com/archiva/repository/gateway_m10/
-&nbsp;Y: : Y</pre>
-<h3>Non-interactive mode</h3>
-<p>You must provide all of the parameters described under <a href="#interactive">Interactive mode</a> to invoke Maven.</p>
-<p>The command-line execution of a Maven project (an archetype generation) is shown below.</p>
-<pre>[user@desktop /tmp]$ mvn -q archetype:generate -DarchetypeGroupId=com.apigee.gateway -DarchetypeArtifactId=javacallout-quick-start -DarchetypeRepository=http://enterprise.apigee.com/archiva/repository/gateway_m10/ -DartifactId=example -DgroupId=com.apigee.example -Dversion=1.0 -Dpackage=com.apigee.example -DclassName=Example
-Confirm properties configuration:
-groupId: com.apigee.example
-artifactId: example
-version: 1.0
-package: com.apigee.example
-className: Example
-repositoryId: gateway_m10
-repositoryURL: http://enterprise.apigee.com/archiva/repository/gateway_m10/
-&nbsp;Y: : &lt;Enter&gt;
-[user@desktop /tmp]$</pre>
-<h3>Maven project structure</h3>
-<p>The quickstart archetype shown above generates a Maven project, which defines the following directory structure.</p>
-<pre>example/
-├── java-resource.xml
-├── pom.xml
-└── src
-&nbsp;&nbsp;&nbsp; └── main
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; └── java
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; └── com
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; └── apigee
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; └── example
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; └── Example.java</pre>
-<p>The project created from the archetype includes a <span style="font-family: courier new,courier,monospace;">pom.xml</span> file, a <span style="font-family: courier new,courier,monospace;">java-resource.xml</span> file, and a source tree for your application's sources.</p>
+
+
+
+<p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
+<p>Back to <a href="/docs/enterprise/content/developer_guide">API Platform Developer Guide</a>.</p>

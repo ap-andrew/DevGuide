@@ -1,0 +1,59 @@
+
+
+<h2>Step 1: Invoke the Weather API directly</h2>
+<p>In this example, you create an API proxy for Yahoo's Weather API. Begin by invoking the API directly:</p>
+<div class="well">$ curl http://weather.yahooapis.com/forecastrss?w=12797282</div>
+<p>Sample Response</p>
+<div id="well">
+	<pre>&lt;title&gt;Yahoo! Weather - Palo Alto, CA&lt;/title&gt;
+&lt;link&gt;http://us.rd.yahoo.com/dailynews/rss/weather/Palo_Alto__CA/*http://weather.yahoo.com/forecast/USCA1093_f.html&lt;/link&gt;&lt;description&gt;Yahoo! Weather for Palo Alto, CA&lt;/description&gt;
+&lt;language&gt;en-us&lt;/language&gt;
+&lt;lastBuildDate&gt;Wed, 08 Aug 2012 9:47 am PDT&lt;/lastBuildDate&gt;
+&lt;ttl&gt;60&lt;/ttl&gt;
+&lt;yweather:location city="Palo Alto" region="CA"   country="United States"/&gt;
+&lt;yweather:units temperature="F" distance="mi" pressure="in" speed="mph"/&gt;
+&lt;yweather:wind chill="66"   direction="10"   speed="8" /&gt;
+&lt;yweather:atmosphere humidity="73"  visibility=""  pressure="30.02"  rising="0" /&gt;
+&lt;yweather:astronomy sunrise="6:18 am"   sunset="8:08 pm"/&gt;</pre>
+</div>
+<h2>Step 2: Import and deploy simpleProxy to the API Platform</h2>
+<div id="well">
+	<p>The simpleProxy is the most basic API proxy supported on the API Platform. It defines a name for the API, a target URL (which the API platform uses to consume the Yahoo Weather API), and a proxy URL (which client apps use to consume your API). &nbsp;Such API proxies are commonly refered to as "passthrough" proxies, since they merely forward requests and return responses without manipulating them.</p>
+	<pre>$ git clone https://github.com/apigee/api-platform-samples.git</pre>
+</div>
+<div id="well">
+	<pre>$ cd api-platform-samples</pre>
+</div>
+<p>Note the directory called <code>simpleProxy</code>. That directory contains the configuration that constitute your API proxy.</p>
+<p>Use Apigee’s Python tool to import (upload) and deploy your API in one simple process.</p>
+<p>The deploy tool must be run from the base directory in the distribution. You provide a pointer to the directory that contains the <code>/apiproxy</code> directory, in this case <code>simpleProxy</code></p>
+<p>Substitute your username, password, and Apigee organization in the following command for <code>myname:mypass</code> and <code>myorg</code>.</p>
+<p>For example, from the base directory of <code>api-platform-samples</code>, run:</p>
+<pre>$ python tools/deploy.py -n weatherapi -u myname:mypass -o myorg -e test -p / -d simpleProxy</pre>
+<p>This single action zips your files, pushes them to your organization on Apigee, and deploys them to the specified environment.</p>
+<p>On success you see:</p>
+<pre>Writing ./simpleProxy/apiproxy/weatherapi.xml to apiproxy/weatherapi.xml
+Writing ./simpleProxy/apiproxy/proxies/default.xml to apiproxy/proxies/default.xml
+Writing ./simpleProxy/apiproxy/targets/default.xml to apiproxy/targets/default.xml
+Imported new proxy version 1
+Environment: test
+  Revision: 1 BasePath = /
+  State: deployed</pre>
+<p>The tool has zipped up your files, imported the package to Apigee, and deployed to the 'test' environment in your Apigee organization.</p>
+<p>Your API is ready to be invoked.</p>
+<h2>Step 3: Invoke the proxied Weather API</h2>
+<p>Substitute your organization name for <code>{org_name}</code> in the request below</p>
+<pre>$ curl http://{org_name}-test.apigee.net/weather/forecastrss?w=12797282</pre>
+<p>Sample Response</p>
+<div id="well">
+	<pre>&lt;title&gt;Yahoo! Weather - Palo Alto, CA&lt;/title&gt;
+&lt;link&gt;http://us.rd.yahoo.com/dailynews/rss/weather/Palo_Alto__CA/*http://weather.yahoo.com/forecast/USCA1093_f.html&lt;/link&gt;&lt;description&gt;Yahoo! Weather for Palo Alto, CA&lt;/description&gt;
+&lt;language&gt;en-us&lt;/language&gt;
+&lt;lastBuildDate&gt;Wed, 08 Aug 2012 9:47 am PDT&lt;/lastBuildDate&gt;
+&lt;ttl&gt;60&lt;/ttl&gt;
+&lt;yweather:location city="Palo Alto" region="CA"   country="United States"/&gt;
+&lt;yweather:units temperature="F" distance="mi" pressure="in" speed="mph"/&gt;
+&lt;yweather:wind chill="66"   direction="10"   speed="8" /&gt;
+&lt;yweather:atmosphere humidity="73"  visibility=""  pressure="30.02"  rising="0" /&gt;
+&lt;yweather:astronomy sunrise="6:18 am"   sunset="8:08 pm"/&gt;</pre>
+</div>

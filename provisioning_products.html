@@ -2,39 +2,109 @@
 <p>This topic covers the definition of API products, which enable developers to create apps that consume APIs using API keys and OAuth access tokens.</p>
 <h2>Overview</h2>
 <p>An API product is a list of API resources (URIs) and rate-limiting (quota) settings. API Products form the basis of access control on the API Platform. To use an API managed by the API Platform, a developer must acquire a consumer key (also known as an 'API key') or an OAuth access token that is approved to use an API product.</p>
-<p>API products settings are enforced by matching policies. <strong>Until those policies are set up, API products and quotas are not enforced by the API Platform.</strong></p>
-<p>For API products to be enforced, one of the following policy types must be attached to the API proxy flow:</p>
-<ul>
-	<li>VerifyAPIKey: Takes a reference to an API key, verifies that it represents a valid app, and matches the API product</li>
-	<li>OAuthV1, “VerifyAccessToken” operation: Verifies the signature, validates an OAuth 1.0a access token and “consumer key”, and matches the app to the API product</li>
-	<li>OAuthV2, “VerifyAccessToken” operation: Verifies that the OAuth 2.0 access token is valid, matches the token to the app, verifies that the app is valid, and then matches the app to an API product</li>
-	<li>GetAPIProduct: Enables policies to use API product metadata without verifying a token</li>
-</ul>
-<p>Once policies and API products are configured the following process is executed by the API platform:</p>
-<ol>
-	<li>A request is received by the API platform and routed to the appropriate API proxy</li>
-	<li>A policy is executed that verifies the API key or OAuth access token presented by the client</li>
-	<li>The API Platform resolves the API Key or access token to an app profile</li>
-	<li>The API Platform resolves the list (if any) of API products associated with the app</li>
-	<li>The first API product that matches is used to populate Quota variables</li>
-	<li>If no API product matches the API key or access token, then the request is rejected</li>
-	<li>The API Platform enforces URI-based access control (environment, API proxy, and URI path) along with Quota settings</li>
-</ol>
+
 <h2>Configuring API products</h2>
+
+<p>You can configure API products using the Management UI or the Platform API. The API enables you to create and manage API products programatically.</p>
+
+<p>To set up the minimal API product, submit POST a payload to the <code>/apiproducts</code> resource in your organization.</p>
+
+(Remember to change the values for <code>myname</code>, <code>mypass</code>, and <code>org_name</code> to match the settings for your account on enterprise.apigee.com.)
+
+<pre>curl -H "Content-Type:application/json" -X POST -d \
+ '{"approvalType": "auto", 
+  "displayName": "Free API Product",
+  "name": "weather_free",
+  "proxies": [ "weatherapi" ],
+  "environments": [ "test" ]}' \
+-u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/apiproducts</pre>
+
+<p>Sample response:</p>
+
+<pre>{
+  "apiResources" : [ ],
+  "approvalType" : "auto",
+  "attributes" : [ ],
+  "createdAt" : 1362759663145,
+  "createdBy" : "developer@apigee.com",
+  "displayName" : "Free API Product",
+  "environments" : [ "test" ],
+  "lastModifiedAt" : 1362759663145,
+  "lastModifiedBy" : "developer@apigee.com",
+  "name" : "weather_free",
+  "proxies" : [ "weatherapi" ],
+  "scopes" : [ ]
+}</pre>
+
+<p>You have now set up a very basic API product that can be used to restrict access to the API proxy named <code>weatherapi</code> running the environment <code>test</code>.</p>
+
+<p>When you add a security policy to the API proxy called weatherapi running in test, the security policy will check the credentials against this API product. If the API key is not approved, then the request is rejected.</p>
+
+
+<p>The API product created above implements the most basic scenario. API products expose a few more configuration settings that enable you to enforce dynamic access control over APIs, including defining dynamic Quota settings.</p>
+
+<h2>API Product configuration settings</h2>
+
 <p>API products expose the following configuration options:</p>
-<ul>
-	<li>apiResources: A comma-separated list of URIs bundled into the API product. The URIs by default are mapped from the proxy.pathsuffix variable. The proxy path suffix is defined as the URI fragment following the ProxyEndpoint base path. For example, in the sample API product below, &nbsp;the <span style="font-family:courier new,courier,monospace;">apiResources</span>&nbsp; element is defined to be <span style="font-family:courier new,courier,monospace;">"/forecastrss".</span>&nbsp;Since the base path defined for this API proxy is <span style="font-family:courier new,courier,monospace;">/weather</span>, that means that only requests to<span style="font-family:courier new,courier,monospace;">/weather/forecastrss</span> are permitted for apps that are approved for this API product. You can define several API products to "bundle" API resources for different business or technical purposes.&nbsp;Wildcards (/**) are supported.</li>
-	<li>approvalType: Automatic or Manual approval for consumer keys returned to apps enrolled for this product. If set to manual, the consumer key is returned in the 'pending' state, and must manually be approved before the app can access the provider resources.</li>
-	<li>attributes: A set of optional, custom attributes that may be to extend the default API product profile</li>
-	<li>description: A description of the API product (which will be exposed to developers via a developer portal, for example)</li>
-	<li>scopes: An optional, comma-separated list of OAuth scopes that are validated at runtime. (The API Platform validates that the scopes in any access token presented match the scope set in the API product)</li>
-	<li>proxies: Named API proxies to which this API product is bound. By specifying proxies, you can bind the API resources listed in the API product to specific API proxies, preventing developers from accessing those URIs via other API proxies.</li>
-	<li>environments: Named environments (for example 'test' or 'prod") to which this API product is bound. By specifying one or more environment, you can bind the API resources listed in the API product to specific environment, preventing developer from accessing those URIs via API proxies in another environment. This setting is used, for example, to prevent URIs protected by API proxies in 'prod' from being accessed by API proxies deployed in 'test'.</li>
-	<li>quota: Number of requests permitted per app over the time interval specified.</li>
-	<li>quotaInterval: Number of time units over which quotas are evaluated.</li>
-	<li>quotaTimeUnit: The time unit (minute, hour, day, or month) over which quotas are counted.</li>
-</ul>
-<p>You can configure API products using the Management UI or the Platform API. The API that enables you to create and manage API products programatically. For example, an API product can be created with a POST request:</p>
+
+<table border="1" cellpadding="1" cellspacing="1" class="table" style="width: 690px;">
+	  <thead>
+		<th>Name</th>
+		<th>Description</th>
+		<th>Default</th>
+		<th>Required?</th>
+     </thead>
+<tbody>
+
+	<tr><td><code>apiResources</code></td>
+	<td>A comma-separated list of URIs bundled into the API product. The URIs by default are mapped from the <code>proxy.pathsuffix</code> variable. The proxy path suffix is defined as the URI fragment following the ProxyEndpoint base path. For example, in the sample API product below, the <code>apiResources</code> element is defined to be <code>/forecastrss</code>.Since the BasePath defined for this API proxy is <code>/weather</code>, that means that only requests to <code>/weather/forecastrss</code> are permitted by this API product. <p>You can define several API products to "bundle" API resources for different business or technical purposes.</p> <p>Wildcards (<code>/**</code> and <code>/*</code>) are supported.</p></td>
+	<td>N/A</td>
+	<td>No</td></tr>
+	
+	<tr><td><code>approvalType</code></td>
+	<td>Specifies how consumer keys are approved to access the resources defined by the API product. If set to manual, the consumer key is returned at app creation or enrollment time in the 'pending' state, and must manually be approved before the app can access the provider resources. If set to Auto, all requests are approved. (Auto is typically used for providing access to free/trial API products that provide limited Quota or capabilities.)</td>
+	<td>N/A</td>
+	<td>Yes</td></tr>
+	
+	<tr><td><code>attributes</code></td>
+	<td>Custom attributes that may be used to extend the default API product profile with customer-specific metadata.</td>
+	<td>N/A</td>
+	<td>No</td></tr>
+	
+	<tr><td><code>scopes</code></td>
+	<td>An comma-separated list of OAuth scopes that are validated at runtime. (The API Platform validates that the scopes in any access token presented match the scope set in the API product.)</td>
+	<td>N/A</td>
+	<td>No</td></tr>
+	
+	<tr><td><code>proxies</code></td>
+	<td>Named API proxies to which this API product is bound. By specifying proxies, you can bind the API resources listed in the API product to specific API proxies, preventing developers from accessing those URIs via other API proxies.</td>
+	<td>N/A</td>
+	<td>No. If not defined, <code>apiResources</code> must be explicitly defined, and <code>flow.resource.name</code> variable set in AssignMessage policy.</td></tr>
+	
+	<tr><td><code>environments</code></td>
+	<td>Named environments (for example 'test' or 'prod") to which this API product is bound. By specifying one or more environment, you can bind the API resources listed in the API product to specific environment, preventing developer from accessing those URIs via API proxies in another environment. This setting is used, for example, to prevent URIs protected by API proxies in 'prod' from being accessed by API proxies deployed in 'test'.</td>
+	<td>N/A</td>
+	<td>No. If not defined, <code>apiResources</code> must be explicitly defined, and <code>flow.resource.name</code> variable set in AssignMessage policy.</td></tr>
+	
+	<tr><td><code>quota</code></td>
+	<td>Number of requests permitted per app over the time interval specified.</td>
+	<td>N/A</td>
+	<td>No</td></tr>
+	
+	<tr><td><code>quotaInterval</code></td>
+	<td>Number of time units over which quotas are evaluated</td>
+	<td>N/A</td>
+	<td>No</td></tr>
+	
+	<tr><td><code>quotaTimeUnit</code></td>
+	<td>The time unit (minute, hour, day, or month) over which quotas are counted.</td>
+	<td>N/A</td>
+	<td>No</td></tr>
+
+</tbody>
+</table>
+
+
 <div id="well">
 	<pre>$ curl -H "Content-Type:application/json" -X POST -d \
  '{"apiResources": [ "/forecastrss" ], 
@@ -72,32 +142,64 @@
   "proxies": [ {'weatherapi'} ],
   "environments": [ {'test'} ],
   "quota": "10",
-  "quotaInterval": "2",
+  "quotaInterval": "1",
   "quotaTimeUnit": "hour"}'
 }</pre>
 </div>
-<p>&nbsp;</p>
-<p><span style="font-family:courier new,courier,monospace;">apiResources</span> defined in an API product are by default identified using the <code>proxy.pathsuffix</code> variable. In this example, the 'proxy path suffix' is the UR fragment the <code>/forecastrss</code>. The base path for the API proxy 'weatherapi' is <code>/weather</code>. Therefore, the request URI defined by this API product is <code>/weather/forecastrss</code>.</p>
-<p>Note: You can override the default usage of <code>proxy.pathsuffix</code> by configuring an optional AssignMessage policy to set the variable <span style="font-family:courier new,courier,monospace;">flow.resource.name</span> prior to execution of the policy that validates the API product settings.</p>
-<p>For example</p>
-<p>&nbsp;</p>
-<div>&lt;AssignMessage name="ClassifyRequest"&gt;</div>
-<div>&nbsp; &lt;AssignVariable&gt;</div>
-<div>&nbsp; &nbsp; &lt;Name&gt;flow.resource.name&lt;/Name&gt;</div>
-<div>&nbsp; &nbsp; &lt;Ref&gt;proxy.basepath&lt;/Ref&gt;</div>
-<div>&nbsp; &lt;/AssignVariable&gt;</div>
-<div>&lt;/AssignMessage&gt;</div>
-<div>&nbsp;</div>
-<div>Attach this policy before a APIKeyValidation or OAuth policy to populate the approrpiate path to be evaluated by the authorization policy.</div>
+
+
+<p>The easiest way to configure an API product is do define an API proxy and an environment. If you define a valid API proxy and valid environment, then no API resources need to be explicitly defined.</p>
+
+<p>For example:</p>
+
+<pre>$ curl -H "Content-Type:application/json" -X POST -d \
+'{"apiResources": [], 
+"approvalType": "auto", 
+"attributes": [],
+"description": "Free API Product",
+"displayName": "Free API Product",
+"name": "weather_free",
+"scopes": [],
+"proxies": [ "weatherapi" ],
+"environments": [ "test" ],
+"quota": "10",
+"quotaInterval": "1",
+"quotaTimeUnit": "hour" }' \
+-u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/apiproducts</pre>
+
+<p><code>apiResources</code> defined in an API product are by default identified using the <code>proxy.pathsuffix</code> variable. In this example, the 'proxy path suffix' is the UR fragment the <code>/forecastrss</code>. The base path for the API proxy 'weatherapi' is <code>/weather</code>. Therefore, the request URI defined by this API product is <code>/weather/forecastrss</code>.</p>
+<p>Note: You can override the default usage of <code>proxy.pathsuffix</code> by configuring an optional AssignMessage policy to set the variable <p>flow.resource.name</p> prior to execution of the policy that validates the API product settings.</p>
+<p>For example:</p>
+
+<pre>&lt;AssignMessage name="ClassifyRequest"&gt;
+  &lt;AssignVariable&gt;
+  &lt;Name&gt;flow.resource.name&lt;/Name&gt;
+  &lt;Ref&gt;proxy.basepath&lt;/Ref&gt;
+ &lt;/AssignVariable&gt;
+&lt;/AssignMessage&gt;</pre>
+
+<p>Attach this policy in a Flow before a APIKeyValidation or OAuth policy to populate the appropriate URI path to be evaluated by the authorization policy.</p>
+
+
 <p>Once appropriate policies are configured, any request with a valid credential made to the URI path following <code>/weather/forecastrss</code> will be authorized. For example, the following complete URL would be considered 'bundled' (and therefore subject to the restrictions of) the API product created above:</p>
+
 <pre>http://{org_name}-test.apigee.net/weather/forecastrss?w=12797282</pre>
+
 <p>The following URL would not, as it is directed to the 'prod' environment (and the API product is bound to the 'test' environment):</p>
 <pre>http://{org_name}-prod.apigee.net/weather/forecastrss?w=12797282</pre>
+
 <p>Nor would the following URL, since it includes the base path for an API proxy other than that defined for the weatherapi. (Recall that the base path for a ProxyEndpoint is always unique within an environment.)</p>
+
 <pre>http://{org_name}-prod.apigee.net/news/forecastrss?w=12797282</pre>
-<p>API products enforce Quota settings, by incrementing a counter each time an app makes a request. A Quota is scoped to an API product, and therefore applies all <span style="font-family:courier new,courier,monospace;">apiResources </span>defined in the API product. Developers who sign up for this API product will be able to build apps that consume the API resource <code>/weather</code> under the conditions of the Quota settings, that is, 1 request per minute.</p>
+
+<p>API products enforce Quota settings, by incrementing a counter each time an app makes a request. A Quota is scoped to an API product, and therefore applies all <code>apiResources</code> defined in the API product. Developers who sign up for this API product will be able to build apps that consume the API resource <code>/weather</code> under the conditions of the Quota settings.</p>
+
 <h2>Creating developer profiles</h2>
-<p>Developers are registered in an organization by creating a profile. Note that the developer email that is included in the profile is used as the unique key for the developer throughout the system. Arbitrary attributes can be added to the developer profile as needed. The attributes are not interpreted by the API Platform, but can be of use in custom analytics, custom policy enforcement, and so on.</p>
+
+<p>Developers are registered in an organization by creating a profile. Note that the developer email that is included in the profile is used as the unique key for the developer throughout the API Platform. Arbitrary attributes can be added to the developer profile as needed. The attributes are not interpreted by the API Platform, but can be of use in custom analytics, custom policy enforcement, and so on.</p>
+
+<p>For example, to create a profile for a developer whose email address is ntesla@theramin.com:</p>
+
 <div id="well">
 	<pre>$ curl -H "Content-type:application/json" -X POST -d \
       '{"email" : "ntesla@theramin.com", 
@@ -107,6 +209,7 @@
         "attributes" : [ { "name" : "project_type", "value" : "public"} ] }' \
 -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/developers</pre>
 </div>
+
 <p>Sample Response</p>
 <div id="well">
 	<pre>{
@@ -127,7 +230,9 @@
 	}</pre>
 </div>
 <h2>Registering developer apps</h2>
-<p>Every app that is created on the API Platform is associated with a developer and an API product. When an app is registered on behalf of a developer, the API Platform generates a "credential" (a consumer key and secret pair) that identifies the app. This credential is 'bound' (in a loose way) to at least one API product. The credential generated for an app enables it to consume a set of URI paths at a specified rate (defined by the quota settings in the API product).</p>
+<p>Every app that is created on the API Platform is associated with a developer and an API product. When an app is registered on behalf of a developer, the API Platform generates a "credential" (a consumer key and secret pair) that identifies the app. 
+	
+<p>This credential is 'bound' (in a loose way) to at least one API product. For example, when you create an app in the API Platform Management UI, there is an option to associate the app with an API product.</p>
 <div id="well">
 	<pre>$ curl -H "Content-type:application/json" -X POST -d \
       '{"apiProducts": [ "weather_free"], 
@@ -157,11 +262,11 @@
   "status" : "approved"
 }</pre>
 </div>
-<p>Note that for collective ownership. apps may also be associated with company entities. Such apps are referred to as company apps (as opposed to developer apps).</p>
+
 <h2>Managing consumer keys for apps</h2>
 <h4>Get the consumer key (the API Key) for the app</h4>
-<p>The credentials for an app, (API product, consumer key and secret) are returned as part of the app profile. An administrator of an organization can retrieve the consumer key at any time, for developer support, for example.</p>
-<p>Every consumer key has a profile, which an administrators in an organization can retrieve. The profile shows the status of the consumer key, as well as any API product associations for the key.</p>
+<p>The credentials for an app, (API product, consumer key and secret) are returned as part of the app profile. An administrator of an organization can retrieve the consumer key at any time.</p>
+<p>The app profile displays the value of the consumer key and secret, the status of the consumer key, as well as any API product associations for the key.</p>
 <div id="well">
 	<pre>$ curl -H "Accept: application/json" \
 -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/developers/ntesla@theramin.com/apps/weatherapp/keys/HQg0nCZ54adKobpqEJaE8FefGkdKFc2J</pre>
@@ -202,6 +307,25 @@
 <div id="well">
 	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/developers/ntesla@theramin.com/apps/weatherapp/keys/HQg0nCZ54adKobpqEJaE8FefGkdKFc2J/apiproducts/weather_free?"action=approve"</pre>
 </div>
-<p>To enforce API product access at runtime, OAuth and quota policies must be configured. To learn how to configure runtime enforcement of API products, see [node:3972]</p>
+<p>API products settings are enforced by matching policies. <strong>Until those policies are set up, API products and quotas are not enforced by the API Platform.</strong></p>
+<p>For API products to be enforced, one of the following policy types must be attached to the API proxy flow:</p>
+<ul>
+	<li>VerifyAPIKey: Takes a reference to an API key, verifies that it represents a valid app, and matches the API product</li>
+	<li>OAuthV1, “VerifyAccessToken” operation: Verifies the signature, validates an OAuth 1.0a access token and “consumer key”, and matches the app to the API product</li>
+	<li>OAuthV2, “VerifyAccessToken” operation: Verifies that the OAuth 2.0 access token is valid, matches the token to the app, verifies that the app is valid, and then matches the app to an API product</li>
+	<li>GetAPIProduct: Enables policies to use API product metadata without verifying a token</li>
+</ul>
+<p>Once policies and API products are configured the following process is executed by the API platform:</p>
+<ol>
+	<li>A request is received by the API platform and routed to the appropriate API proxy</li>
+	<li>A policy is executed that verifies the API key or OAuth access token presented by the client</li>
+	<li>The API Platform resolves the API Key or access token to an app profile</li>
+	<li>The API Platform resolves the list (if any) of API products associated with the app</li>
+	<li>The first API product that matches is used to populate Quota variables</li>
+	<li>If no API product matches the API key or access token, then the request is rejected</li>
+	<li>The API Platform enforces URI-based access control (environment, API proxy, and URI path) along with Quota settings</li>
+</ol>
+
+<p>To learn how to configure security and Quota policies to enforce the settings provisioned in this topic, see [node:3972]</p>
 <p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
 <p>Back to <a href="/docs/enterprise/content/developer_guide">API Platform Developer Guide</a>.</p>

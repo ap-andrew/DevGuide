@@ -8,6 +8,9 @@
 Try adding the <code>-v</code> option to your cURL request to view the HTTP code. For example:</p>
 
 <code>$ curl http://myorg-test.apigee.net/weather -v </code>
+
+<h2>Protocol https not supported or disabled in libcurl</h2>
+<p>Usually seen on machines running Windows. This means that you downloaded and installed a version of curl that did not include the libcurl package. Download a different package from http://curl.haxx.se/download.html, and make sure it includes libcurl for SSL.</p>
  
 <h2>HTTP Errors</h2>
 <p><strong>HTTP 403:</strong> This an authorization failure. It means that the username and password combination you are using is not valid for the organization you specified. To test your credentials, login to <a href="http://enterprise.apigee.com/login">enterprise.apigee.com/login</a>. Once logged in check your account settings to see the organization name. In some situations, you may belong to multiple organizations. Make sure that you are using the correct credentials for you organization. Check your spelling. &nbsp;If you need an account, sign up here:&nbsp;<a href="http://enterprise.apigee.com/trial">http://enterprise.apigee.com/trial</a>.</p>

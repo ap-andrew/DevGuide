@@ -1,0 +1,107 @@
+<p>[toc]</p>
+<h2>What's here?</h2>
+<p>The API Platform Developer Guide is designed to get you up and and running with local development of API proxies that deploy and scale on the Apigee API Platform.</p>
+
+<p>Every API exposed by API Platform is encapsulated in an "API proxy". An API proxy is just a package of XML configuration files, XML policies and, optionally, custom code that you have written.</p>
+
+<p>A huge benefit for developers is that Apigee's API platform lets you go 'under the hood' to create API proxies in your local development environment, using the tools of your choice.</p>
+
+<p>Using API proxies, you can proxy any publicly available API (according the API provider's terms of service, of course.). This makes the API Platform a great solution for developers who need to customize the behavior of APIs—-whether the developer controls the API or not.</p>
+
+<p>Using API proxies you can:
+
+<p>You can:</p>
+<ul>
+	<li>Leverage a policy library to implement common behavior without writing any code</li>
+	<li>Innovate on the API Platform by writing and deploying custom code in the Cloud</li>
+	<li>Combine policies and custom code to create sophisticated, yet easy-to-manage and secure, applications</li>
+	<li>Provision and manage API keys and OAuth authorization</li>
+	<li>Monitor the operational performance of APIs</li>
+	<li>Track and analyze consumption patterns by developers and apps</li>
+	<li>Expose the capabilities that you implement as APIs, complete with an API Console, enabling re-use across projects or sharing with other developers</li>
+</ul>
+
+<h2>Prerequisites</h2>
+<p>This Developer Guide provides instruction on local development of API proxies. As such, it assumes basic knowledge of:</p>
+<ul>
+	<li>Representational State Transfer (REST)</li>
+	<li>JavaScript Object Notation</li>
+	<li>Extensible Markup Language</li>
+	<li>XML Schema</li>
+	<li>Web Application Definition Language (WADL)</li>
+</ul>
+<p>Optionally:</p>
+<ul>
+	<li>JavaScript and Python scripting languages</li>
+	<li>Java programming language</li>
+</ul>
+<p>For those who prefer UI-based API proxy configuration, please refer to the the <a href="/docs/enterprise/content/user_guide">API Platform User Guide</a>.</p>
+<h2>What you will learn</h2>
+<ul>
+	<li>How to configure a basic API proxy</li>
+	<li>How to upload, deploy, and test API proxies on the API Platform</li>
+	<li>How to configure security for APIs using API keys and OAuth</li>
+	<li>How to write scripts and code that execute as components of an API proxy</li>
+	<li>How to implement common use cases required by API developers</li>
+	<li>How to expose and reuse your policy compositions and code as APIs using WADL and API Consoles</li>
+	<li>How to configure environment settings for your organization on the API Platform</li>
+</ul>
+<h2>Set up</h2>
+<h3>An Apigee API platform account:</h3>
+<p>The Apigee API Platform enables any developer to leverage the enterprise-strength capabilities of Apigee Enterprise. Apigee provides free accounts that give you access to all of the features available to enterprise customers. You can sign up for a free account at <a href="http://enterprise.apigee.com/signup">http://enterprise.apigee.com/signup</a>.</p>
+<p>An Apigee API Platform account provides you with:</p>
+<ul>
+	<li>An organization</li>
+	<li>A username</li>
+	<li>A password</li>
+</ul>
+<p>You use these credentials to login to <a href="http://enterprise.apigee.com">enterprise.apigee.com</a> and to access the RESTful API exposed by the Apigee API Platform. If you need an account in an existing organization, please contact your organization administrator.</p>
+<h3>API Platform Samples</h3>
+<p>The developer topics as a whole rely on a set of samples that are located on Github.</p>
+<p>To obtain the sample files, run:</p>
+<div id="well">
+	<pre>$ git clone https://github.com/apigee/api-platform-samples.git</pre>
+</div>
+<p>If you do not have Git, please refer to <a href="https://help.github.com/articles/set-up-git">Github's git setup instructions</a>. If you don't want to install Git, you can browse the files at <a href="https://github.com/apigee/api-platform-samples">https://github.com/apigee/api-platform-samples</a>.</p>
+<h3>Python</h3>
+<p>Python is required to run the Apigee deploy tool. Python is present in most Linux environments, on a Mac with XCode installed, on a Windows machine with&nbsp;<a href="http://www.cygwin.com/">Cygwin</a>&nbsp;installed, and in many other places.</p>
+<p>To obtain Python, please refer to the&nbsp;<a href="http://www.python.org/getit/">Python installation instructions</a>.</p>
+<h3>An HTTP Client</h3>
+<p>The Developer Guide provides sample HTTP requests using cURL. If you need cURL, you can download&nbsp;it from http://curl.haxx.se. </p>
+<p>Note: If you are running Windows, makes sure to download a version of curl that includes the libcurl library.</p>
+
+<h3>How to use the sample cURL commands</h3>
+<p>The goal of the topic is to enable you to cut and paste cURL commands provided in the documentation directly into your command-line terminal.</p>
+<p>After you cut and paste the command to your terminal, you must replace the following variables in the command with information for your Apigee account:</p>
+<ul>
+	<li><code>myname</code>: The username for your Apigee account</li>
+	<li><code>mypass</code>: The password for your account in an Apigee account</li>
+	<li><code>myorg</code>: The name of your organization</li>
+</ul>
+<p>Note: Specific values within responses my differ given the differences in username, time values, etc.</p>
+
+<h2>Making an API call</h2>
+
+<p>In this step, you make an API call to the Apigee API Platform. The following curl command can be copied and pasted into a terminal Window on your computer.</p>
+
+<pre>$ curl https://api.enterprise.apigee.com/v1/organizations/{org_name}/apis -u myname:mypass</pre>
+
+<p>For example, if you username is <code>me@mycompany.com</code>, your password is <code>secret</code>, and your account in the organization called <code>apifactory</code>, then the request looks like this:</p>
+
+<pre>$ curl https://api.enterprise.apigee.com/v1/organizations/apifactory/apis -u me@mycompany.com:secret</pre>
+
+<p>For brevity the following URI also works:</p>
+
+<pre>$ curl https://api.enterprise.apigee.com/v1/o/apifactory/apis -u me@mycompany.com:secret</pre>
+
+<p>JSON is the default format for response message.</p>
+
+<p>If you prefer XML, you can add an HTTP header to get an XML response instead:</p>
+
+<pre>$ curl -H "Accept:text/xml" \
+https://api.enterprise.apigee.com/v1/organizations/apifactory/apis -u me@mycompany.com:secret</pre>
+
+<h2>Getting help</h2>
+<p>If you have any issues with the topic, post them to the at&nbsp;<a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
+<h2>Next steps</h2>
+<p>Now that you understand API Platform basics, refer to the <a href="/docs/enterprise/content/developer_guide">API platform topics</a> to learn how to apply advanced features to your API proxy.</p>

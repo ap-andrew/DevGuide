@@ -1,0 +1,12 @@
+Quota
+
+<h4>CheckQuota Policy</h4>
+<p>This policy maintains a separate quota per app, based on the client id (which is the same value of the app's consumer key), and sets the parameters based on the API product.</p>
+<p>Create this policy by creating a file called <code>CheckQuota.xml</code> under <code>apiproxy/policies</code> with the following content:</p>
+
+	<pre>&lt;Quota name="CheckQuota"&gt; 
+  &lt;Interval ref="apiproduct.developer.quota.interval"/&gt;
+  &lt;TimeUnit ref="apiproduct.developer.quota.timeunit"/&gt;
+  &lt;Allow countRef="apiproduct.developer.quota.limit"/&gt;
+  &lt;Identifier ref="client_id"/&gt;
+&lt;/Quota&gt;</pre>

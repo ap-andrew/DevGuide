@@ -1,6 +1,6 @@
 <p>[toc]</p>
 
-<p>This topic demonstrates authoring, storing, and attaching policies to modify the behavior of an API facade.</p>
+<p>This topic demonstrates authoring, storing, and attaching policies to modify the behavior of an API proxy.</p>
 
 <p>The Apigee API Platform defines a set of out-of-the-box policies. A policy is a configuration file that encapsulates an atomic unit of common management functionality. The purpose of policies is to provide advanced management capabilities without requiring developers to write and maintain code. Policies are designed to be easily understood and reusable. Policies can be combined into policy compositions to enable sophisticated, yet easily managed and maintained, API behavior. Policies and compositions can also be augmented with custom scripts and code, enabling developers to delegate mundane tasks to policies, while focusing creative development effort on implementing custom logic, in turn using the API platform as a cloud deployment environment in which to expose, manage, and scale custom API behavior.</p>
 
@@ -78,12 +78,12 @@ async="false" name="QuotaPolicy"&gt;
   &lt;/RouteRule&gt; 
 &lt;/ProxyEndpoint&gt;</pre>
 
-<p>In the ProxyEndpoint configuration above, the quota policy executes when the ProxyEndpoint receives a request from a client app, and before any additional processing takes place.</p>
+<p>In the ProxyEndpoint configuration above, the Quota policy executes when the ProxyEndpoint receives a request from a client app, and before any additional processing takes place.</p>
 
 <h2><a class="jumplink" name="import_deploy"></a>Importing and deploying changes</h2>
 <p>Whenever an API proxy is modified, the changes must be imported to an organization on the API platform and then deployed into an environment. Policy changes do not take effect until the modified configuration files have been imported and deployed.</p>
 
-<p>From the base directory of <span style="font-family:courier new,courier,monospace;">api-platform-samples</span>, run the Python deploy tool, substituting your username and password for <span style="font-family:courier new,courier,monospace;">myname:mypass</span> and your Apigee organization for <span style="font-family:courier new,courier,monospace;">myorg</span>.</p>
+<p>Run the Python deploy tool, substituting your username and password for <span style="font-family:courier new,courier,monospace;">myname:mypass</span> and your Apigee organization for <span style="font-family:courier new,courier,monospace;">myorg</span>.</p>
 <pre>$ python tools/deploy.py -n weatherapi -u myname:mypass -o myorg -e test -p / -d simpleProxy</pre>
 <p>You should see the following result:</p>
 <pre>Writing ./simpleProxy/apiproxy/weatherapi.xml to apiproxy/weatherapi.xml
@@ -95,14 +95,14 @@ Undeploying revision 1 in same environment and path:
 Environment: test
   Revision: 2 BasePath = /
   State: deployed</pre>
-<p>Note that the deploy tool deploys a new revision number, and provides a notice indicating that the previous revision has been undeployed. If necessary, the revision mechanism can be used to revert to the previous revision of the API proxy, thus rolling back any changes. The Apigee deploy tool always increments the revision number of an API facade on import.</p>
+<p>Note that the deploy tool deploys a new revision number, and provides a notice indicating that the previous revision has been undeployed. If necessary, the revision mechanism can be used to revert to the previous revision of the API proxy, thus rolling back any changes. The Apigee deploy tool always increments the revision number of an API proxy on import.</p>
 
 <h2><a class="jumplink" name="verify_quota_policy"></a>Verifying policy enforcement</h2>
 <p>To verify that a policy is enforced properly, the API must be invoked by an HTTP client. Submit multiple request to the API, exceeding the quota limit that you set in the quota policy. (The URI path, configured as the base path setting in the ProxyEndpoint, in the request below is <code>/weather</code>). </p>
 <pre>http://{org_name}-test.apigee.net/weather/forecastrss?w=12797282</pre>
 <p>After you submit more than 1 request within a minute:</p>
 <pre>{"fault":{"faultstring":"policies.ratelimit.QuotaViolation","detail":{"errorcode":"policies.ratelimit.QuotaViolation"}}}</pre>
-<p>Now that you understand how to create and attach a simple quota policy, you can begin working locally with all of the policies that are provided by Apigee.</p>
+<p>Now that you understand how to create and attach a simple Quota policy, you can begin working locally with all of the policies that are provided by Apigee.</p>
 <h2>Configuring conditional policy enforcement</h2>
 <p>A powerful feature of the API Platform is conditional policy enforcement.</p>
 <p>Conditional statements can be added to policy attachments. For example, to add a conditional statement that enforces a quota policy only for XML messages:</p>
