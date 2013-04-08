@@ -197,9 +197,9 @@
 
 <p>Sample TargetEndpoint configuration:</p>
 <pre>&lt;TargetEndpoint name="default"&gt;
-&nbsp; &nbsp; &lt;HTTPTargetConnection&gt;
-&nbsp; &nbsp; &nbsp; &nbsp; &lt;URL&gt;http://weather.yahooapis.com&lt;/URL&gt;
-&nbsp; &nbsp; &lt;/HTTPTargetConnection&gt;
+  &lt;HTTPTargetConnection&gt;
+    &lt;URL&gt;http://weather.yahooapis.com&lt;/URL&gt;
+  &lt;/HTTPTargetConnection&gt;
 &lt;/TargetEndpoint&gt;</pre>
 
 <h3>TargetEndpoint Configuration Elements</h3>
@@ -513,7 +513,7 @@
 <h3>A note on 'API resources' </h3>
 <p>A common usage of conditional flows is the definition of 'API resources', as defined by the WADL specification. 
 	
-<span class="label label-warning">Warning</span> 'API resources' should not be confused with 'proxy resources'. AN API resource uses the definition from the web application definition language (WADL) specification to identify specific RESTful resources. Proxy resource4s (defined below) define code, scripts, or other files that can be attached to PAI proxy flows by referencing them in policies. 
+<p><span class="label label-warning">Warning</span> 'API resources' should not be confused with 'proxy resources'. An API resource uses the definition from the web application definition language (WADL) specification to identify specific RESTful 'resources'. Proxy resources (defined below) define code, scripts, or other files that can be attached to PAI proxy flows by referencing them in policies. </p>
 	
 <p>When an API resource is created in the Management UI, a conditional flow for the URI is configured in the API proxy.</p>
 

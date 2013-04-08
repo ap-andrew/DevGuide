@@ -1,18 +1,25 @@
 <p>[toc]</p>
 
-<p>This topic demonstrates authoring, storing, and attaching policies to modify the behavior of an API proxy.</p>
+<p>You have now learned how to create and deploy an API proxy that acts as a passive 'passthrough' proxy. API proxy development gets interesting when you change the behavior of an API by applying policies.</p>
 
-<p>The Apigee API Platform defines a set of out-of-the-box policies. A policy is a configuration file that encapsulates an atomic unit of common management functionality. The purpose of policies is to provide advanced management capabilities without requiring developers to write and maintain code. Policies are designed to be easily understood and reusable. Policies can be combined into policy compositions to enable sophisticated, yet easily managed and maintained, API behavior. Policies and compositions can also be augmented with custom scripts and code, enabling developers to delegate mundane tasks to policies, while focusing creative development effort on implementing custom logic, in turn using the API platform as a cloud deployment environment in which to expose, manage, and scale custom API behavior.</p>
+<p>The Apigee API Platform defines a set of out-of-the-box policies. A policy is a configuration file that encapsulates an atomic unit of common management functionality. The purpose of policies is to provide advanced management capabilities without requiring developers to write and maintain code. Policies are designed to be easily understood and reusable. 
 
-<p>Concretely, a policy is an XML-formatted configuration file that conforms to the API Platform XML schema. Each policy type has an associated XML schema that specifies the necessary configuration. Policy schemas are available in the <a href="https://github.com/apigee/api-platform-samples/">API Platform samples</a> on Github.</p>
+<p>Policies can be combined into policy compositions to enable sophisticated, yet easily managed and maintained, API behavior. Policies and compositions can also be augmented with custom scripts and code, enabling developers to delegate mundane tasks to policies, while focusing creative development effort on implementing custom logic, in turn using the API platform as a cloud deployment environment in which to expose, manage, and scale custom API behavior.</p>
+
+<p>A policy is an XML-formatted configuration file. A policy's structure, required and optional elements, is defined by an XML schema. Each policy type has an associated XML schema that specifies the necessary configuration. If you are proficient with XML tools, it is worthwhile to familiarize yourself with the policy schemas in the <a href="https://github.com/apigee/api-platform-samples/">API Platform samples</a> on Github.</p>
 
 <p>A complete list of out-of-the-box policies is documented in the <a href="/docs/enterprise/content/customize-apis">API Platform Policy Reference</a>.</p>
-<p>For documentation on Quota policy, please refer to [node:56].</p>
+
+<p>For documentation specific to the Quota policy used in this topic, please refer to [node:56].</p>
 
 <h2>Creating a policy</h2>
 	
-<p>This topic uses the Quota policy type as an example of how to create, configure, attach, and deploy policies. Quota policies are very common, as they provide settings that control how often a client app is permitted to invoke an API over a given time interval. In the example below, a quota policy is configured to limit apps to 1 request per minute. (While this may not be realistic, it does provide a simple way to see the effects of a policy.)</p>
+<p>This topic uses the Quota policy type as an example of how to create, configure, attach, deploy, and test policies.</p>
+
+<p>Quota policies are very common. Quotas provide control over how often a client app is permitted to invoke an API over a given time interval. In the example below, a Quota policy is configured to limit apps to 1 request per minute. (While this may not be realistic, it does provide a simple way to see the effects of a policy.)</p>
+
 <p>Policy files are stored as XML files under <code>/apiproxy/policies</code> directory.</p>
+
 <p>For example, a policy of type Quota called "QuotaPolicy" could be created as a file called <code>QuotaPolicy.xml</code> with the following content:</p>
 
 <pre>&lt;Quota enabled="true" continueOnError="false"
@@ -31,10 +38,13 @@ async="false" name="QuotaPolicy"&gt;
 	<li><code>async</code>: If set to <code>true</code> the processing pipeline will continue processing subsequent policy steps before the current step completes. Asynchronous setting is useful, for example, when using policies to call out to external APIs or services as part of a flow.</li>
 	<li><code>name</code>: The name that you give to this policy. This name is unique to this policy instance, and it is used to attach the policy to the flow as a processing step.</li>
 </ul>
-<p>The elements <code>Allow</code>, <code>Interval</code>, and <code>TimeUnit</code> are specific to the quota policy. These elements provide settings that the API Platform enforces on behalf of an API. Other policy types define their own settings.</p>
 
-<h2>Attaching a policy to a ProxyEndpoint or TargetEndpoint flow</h2>
-<p>Policies in the <code>/policies</code> directory are available to be executed in the processing pipeline of a ProxyEndpoint or a TargetEndpoint. Policies are executed as processing steps in a request flow or response flow. To specify the point in the flow at which a policy executes, the policy is attached to a ProxyEndpoint or TargetEndpoint flow as a processing step.</p>
+<p>In the example above, the elements <code>Allow</code>, <code>Interval</code>, and <code>TimeUnit</code> are specific to the quota policy. These elements provide settings that the API Platform enforces on behalf of an API. Other policy types define their own settings.</p>
+
+<h2>Attaching a policy to a ProxyEndpoint or TargetEndpoint Flow</h2>
+<p>Policies in the <code>/policies</code> directory are available to be executed in the processing pipeline of a ProxyEndpoint or a TargetEndpoint. You can think of the <code>/policies</code> directory as a repository for instances of policies. The policies in the repository have no effect until they are attached as a processing 'Step' in the API proxy Flow.</p>
+
+<p>The choice of attachment point is critical. If you attach the Quota policy to a response Flow, for example, the Quota would be enforced after the request message was sent to the backend service. That would defeat the purpose of applying a Quota policy! Therefore, we need to attach the Quota policy as a processing Step on the request Flow.</p>
 
 <p>The format of a policy attachment is:</p>
 
@@ -48,9 +58,9 @@ async="false" name="QuotaPolicy"&gt;
     &lt;Name&gt;QuotaPolicy&lt;/Name&gt;
 &lt;/Step&gt;</pre>
 
-<p>A policy is attached to a flow by adding the step configuration to the appropriate request or response flow in a ProxyEndpoint or TargetEndpoint. For example, a quota must be enforced before any additional processing occurs. Therefore, a quota policy should be attached to the ProxyEndpoint request PreFlow.</p>
+<p>A policy is attached to a Flow by adding the Step configuration to the appropriate request or response flow in a ProxyEndpoint or TargetEndpoint. For example, a Quota must be enforced before any additional processing occurs. Therefore, a Quota policy should be attached to the ProxyEndpoint request 'PreFlow'. A PreFlow is an important construct. A PreFlow always executes, even if other Flows are configured to execute dynamically. (Dynamic execution is an advanced topic that you will cover in a later topic.)</p>
 	
-<p>For example, the following basic ProxyEndpoint configuration has no policy attachments:</p>
+<p>The following example demonstrates a simple ProxyEndpoint configuration has no policy attachments. It simply defines the HTTPConnections and a RouteRule. </p>
 
 <pre>&lt;ProxyEndpoint name="default"&gt;
     &lt;HTTPProxyConnection&gt;
@@ -62,7 +72,7 @@ async="false" name="QuotaPolicy"&gt;
   &lt;/RouteRule&gt;
 &lt;/ProxyEndpoint&gt;</pre>
 
-<p>A quota policy can be attached as a processing step to the ProxyEndpoint request PreFlow as follows:</p>
+<p>But you want to change this configuration so that the ProxyEndpoint enforces a Quota policy before anything else happens. (If a developer has exceeded a Quota, you don;t want to waste any computational resources on the request:</p>
 <pre>&lt;ProxyEndpoint name="default"&gt;
 &nbsp; &lt;PreFlow&gt;
 &nbsp; &nbsp; &lt;Request&gt;
@@ -81,9 +91,9 @@ async="false" name="QuotaPolicy"&gt;
 <p>In the ProxyEndpoint configuration above, the Quota policy executes when the ProxyEndpoint receives a request from a client app, and before any additional processing takes place.</p>
 
 <h2><a class="jumplink" name="import_deploy"></a>Importing and deploying changes</h2>
-<p>Whenever an API proxy is modified, the changes must be imported to an organization on the API platform and then deployed into an environment. Policy changes do not take effect until the modified configuration files have been imported and deployed.</p>
+<p>Whenever you modify API proxy, you must import and deploy. Policy changes do not take effect until the modified configuration files have been imported and deployed.</p>
 
-<p>Run the Python deploy tool, substituting your username and password for <span style="font-family:courier new,courier,monospace;">myname:mypass</span> and your Apigee organization for <span style="font-family:courier new,courier,monospace;">myorg</span>.</p>
+<p>To deploy your changes, run the Python deploy tool, substituting your username and password for <span style="font-family:courier new,courier,monospace;">myname:mypass</span> and your Apigee organization for <span style="font-family:courier new,courier,monospace;">myorg</span>.</p>
 <pre>$ python tools/deploy.py -n weatherapi -u myname:mypass -o myorg -e test -p / -d simpleProxy</pre>
 <p>You should see the following result:</p>
 <pre>Writing ./simpleProxy/apiproxy/weatherapi.xml to apiproxy/weatherapi.xml
@@ -97,8 +107,12 @@ Environment: test
   State: deployed</pre>
 <p>Note that the deploy tool deploys a new revision number, and provides a notice indicating that the previous revision has been undeployed. If necessary, the revision mechanism can be used to revert to the previous revision of the API proxy, thus rolling back any changes. The Apigee deploy tool always increments the revision number of an API proxy on import.</p>
 
+<p>You can also use the shell scripts provided with the API Platform samples on GitHub. Those scripts simply wrap the Python deploy, and therefore provide an example of how you might start scripting your deployment procedures. By scripting deployment procedures, you gain the benefit of consistency, repeatability, and so on.</p>
+
 <h2><a class="jumplink" name="verify_quota_policy"></a>Verifying policy enforcement</h2>
-<p>To verify that a policy is enforced properly, the API must be invoked by an HTTP client. Submit multiple request to the API, exceeding the quota limit that you set in the quota policy. (The URI path, configured as the base path setting in the ProxyEndpoint, in the request below is <code>/weather</code>). </p>
+
+<p>To verify that a policy is enforced properly, the API must be invoked by an HTTP client. STo verify this Quota configuration, submit multiple request to the API, exceeding the quota limit that you set in the quota policy. (The URI path, configured as the base path setting in the ProxyEndpoint, in the request below is <code>/weather</code>). </p>
+
 <pre>http://{org_name}-test.apigee.net/weather/forecastrss?w=12797282</pre>
 <p>After you submit more than 1 request within a minute:</p>
 <pre>{"fault":{"faultstring":"policies.ratelimit.QuotaViolation","detail":{"errorcode":"policies.ratelimit.QuotaViolation"}}}</pre>
