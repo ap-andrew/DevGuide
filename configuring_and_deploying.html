@@ -149,7 +149,7 @@ Environment: test
   "type" : "Application"
 }</pre>
 
-<p>You can see here that all of the important pieces of the API are empty. There are no policies, no Endpoints, no resources. To find out what these elements of an API proxy are, refer to [node:4593]</p>
+<p>You can see here that all of the important pieces of the API are empty. There are no policies, no Endpoints, no resources. To find out what these elements of an API proxy are, refer to [node:8407]</p>
 
 <h3>Deploying an API to an environment</h3>
 
@@ -295,7 +295,7 @@ Environment: test
 
 <h2>Working with the Apigee deploy tool</h2>
 
-<p>To support local development of API proxies, Apigee provides an open-source tool written in Python to help you simplify and manage the process of packaging and deploying APIs from your local machine to Apigee. (The [node:2047] provides information on complete set up information.)</p>
+<p>To support local development of API proxies, Apigee provides an open-source tool written in Python to help you simplify and manage the process of packaging and deploying APIs from your local machine to Apigee. (The [node:2047] provides information on complete set up.)</p>
 
 <p>Apigee’s Python tool enables you to import (upload) and deploy your API in one simple process.</p>
 <p>In the api-platform-samples package, the deploy tool, <code>deploy.py</code>, is available under <code>/tools</code></p>
@@ -327,8 +327,8 @@ Environment: test
 
 <p>The proxied URL for an API is defined by the environment where the API proxy is deployed. The proxied URL consists of:</p>
 <ul>
-	<li>Organization name: </li>
-	<li>The environment name: </li>
+	<li>Organization name: The name of the organization in which you have an account on the API Platform</li>
+	<li>The environment name: The name of the environment where you want run the API proxy (usually either 'test' or 'prod')</li>
 	<li>The Apigee proxy base URL (<code>apigee.net</code>, NOT <code>api.enterprise.apigee.com</code>)</li>
 	<li>The base path URI fragment you configure for the API proxy (in the example above, <code>/weather</code>)</li>
 </ul>
@@ -345,13 +345,11 @@ Environment: test
 
 <pre>$ curl http://{org_name}-{env_name}.apigee.net/weather/forecastrss?w=12797282</pre>
 
-<p>The API Platform takes the URI path following the base path (as defined in the ProxyEndpoint) and appends the value to the URL defined in the HTTPConnection for the TargetEndpoint. The result would be an outbound call to:</p>
+<p>The API Platform takes the URI path following the base path (defined in the ProxyEndpoint) and appends the value to the URL defined in the HTTPConnection for the TargetEndpoint. The result would be an outbound call to:</p>
 
 <div id="well"><pre>http://weather.yahooapis.com/forecastrss?w=12797282</pre></div>
 
 <p>The API Platform receives the response and returns the response to the client app.</p>
-
-
 
 <p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
 
