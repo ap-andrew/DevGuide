@@ -1,17 +1,18 @@
 <p>[toc]</p>
 <p>This topic covers the definition of API products, which enable developers to create apps that consume APIs using API keys and OAuth access tokens.</p>
 <h2>Overview</h2>
-<p>An API product is a list of API resources (URIs) and rate-limiting (quota) settings. API Products form the basis of access control on the API Platform. To use an API managed by the API Platform, a developer must acquire a consumer key (also known as an 'API key') or an OAuth access token that is approved to use an API product.</p>
+<p>An API product is a list of API resources (URIs) and rate-limiting (quota) settings. 
+<p>API Products form the basis of access control on the API Platform. To use an API managed by the API Platform, a developer must acquire a consumer key (also known as an 'API key') or an OAuth access token that is approved to use an API product.</p>
 
 <h2>Configuring API products</h2>
 
 <p>You can configure API products using the Management UI or the Platform API. The API enables you to create and manage API products programatically.</p>
 
-<p>To set up the minimal API product, submit POST a payload to the <code>/apiproducts</code> resource in your organization.</p>
+<p>To set up a minimal API product, POST a payload to the <code>/apiproducts</code> resource in your organization.</p>
 
 (Remember to change the values for <code>myname</code>, <code>mypass</code>, and <code>org_name</code> to match the settings for your account on enterprise.apigee.com.)
 
-<pre>curl -H "Content-Type:application/json" -X POST -d \
+<pre>$ curl -H "Content-Type:application/json" -X POST -d \
  '{"approvalType": "auto", 
   "displayName": "Free API Product",
   "name": "weather_free",
@@ -36,12 +37,12 @@
   "scopes" : [ ]
 }</pre>
 
-<p>You have now set up a very basic API product that can be used to restrict access to the API proxy named <code>weatherapi</code> running the environment <code>test</code>.</p>
+<p>You have now set up a very basic API product that can be used to restrict access to the API proxy named <code>weatherapi</code> running in the environment called <code>test</code>.</p>
 
-<p>When you add a security policy to the API proxy called weatherapi running in test, the security policy will check the credentials against this API product. If the API key is not approved, then the request is rejected.</p>
+<p>When you add a security policy to the API proxy called weatherapi running in test, the security policy will check the API key or access token presented by the app. If the API key or access token is not approved, then the request is rejected.</p>
 
 
-<p>The API product created above implements the most basic scenario. API products expose a few more configuration settings that enable you to enforce dynamic access control over APIs, including defining dynamic Quota settings.</p>
+<p>The API product created above implements the most basic scenario--authorizing request to an API proxy in an environments. However, API products expose a additional configuration settings that enable you to enforce dynamic access control over APIs, including defining dynamic Quota settings.</p>
 
 <h2>API Product configuration settings</h2>
 
@@ -57,12 +58,13 @@
 <tbody>
 
 	<tr><td><code>apiResources</code></td>
-	<td>A comma-separated list of URIs bundled into the API product. The URIs by default are mapped from the <code>proxy.pathsuffix</code> variable. The proxy path suffix is defined as the URI fragment following the ProxyEndpoint base path. For example, in the sample API product below, the <code>apiResources</code> element is defined to be <code>/forecastrss</code>.Since the BasePath defined for this API proxy is <code>/weather</code>, that means that only requests to <code>/weather/forecastrss</code> are permitted by this API product. <p>You can define several API products to "bundle" API resources for different business or technical purposes.</p> <p>Wildcards (<code>/**</code> and <code>/*</code>) are supported.</p></td>
+	<td><p>A comma-separated list of URIs 'bundled' into the API product. This provides fine-grained control over the URIs exposed by an API product.</p>
+		<p>The URIs by default are mapped from the <code>proxy.pathsuffix</code> variable. The proxy path suffix is defined as the URI fragment following the ProxyEndpoint base path. For example, in the sample API product below, the <code>apiResources</code> element is defined to be <code>/forecastrss</code>.Since the BasePath defined for this API proxy is <code>/weather</code>, that means that only requests to <code>/weather/forecastrss</code> are permitted by this API product</p>. <p>You can define several API products to "bundle" API resources for different business or technical purposes.</p> <p>Wildcards (<code>/**</code> and <code>/*</code>) are supported.</p></td>
 	<td>N/A</td>
 	<td>No</td></tr>
 	
 	<tr><td><code>approvalType</code></td>
-	<td>Specifies how consumer keys are approved to access the resources defined by the API product. If set to manual, the consumer key is returned at app creation or enrollment time in the 'pending' state, and must manually be approved before the app can access the provider resources. If set to Auto, all requests are approved. (Auto is typically used for providing access to free/trial API products that provide limited Quota or capabilities.)</td>
+	<td>Specifies how consumer keys are approved to access the resources defined by the API product. If set to <code>manual</code>, the consumer key that is generated for app is in the 'pending' state. Such keys won't work until they have been explicitly approved. If set to <code>Auto</code>, all keys are generated in the 'approved' and work right away. (<code>Auto</code> is typically used for providing access to free/trial API products that provide limited Quota or capabilities.)</td>
 	<td>N/A</td>
 	<td>Yes</td></tr>
 	
@@ -123,7 +125,7 @@
 -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/apiproducts</pre>
 </div>
 <p>Sample Response</p>
-<div id="well">
+
 	<pre>{
   "apiResources" : [ "/forecastrss" ],
   "approvalType" : "auto",
@@ -145,60 +147,14 @@
   "quotaInterval": "1",
   "quotaTimeUnit": "hour"}'
 }</pre>
-</div>
-
-
-<p>The easiest way to configure an API product is do define an API proxy and an environment. If you define a valid API proxy and valid environment, then no API resources need to be explicitly defined.</p>
-
-<p>For example:</p>
-
-<pre>$ curl -H "Content-Type:application/json" -X POST -d \
-'{"apiResources": [], 
-"approvalType": "auto", 
-"attributes": [],
-"description": "Free API Product",
-"displayName": "Free API Product",
-"name": "weather_free",
-"scopes": [],
-"proxies": [ "weatherapi" ],
-"environments": [ "test" ],
-"quota": "10",
-"quotaInterval": "1",
-"quotaTimeUnit": "hour" }' \
--u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/apiproducts</pre>
-
-<p><code>apiResources</code> defined in an API product are by default identified using the <code>proxy.pathsuffix</code> variable. In this example, the 'proxy path suffix' is the UR fragment the <code>/forecastrss</code>. The base path for the API proxy 'weatherapi' is <code>/weather</code>. Therefore, the request URI defined by this API product is <code>/weather/forecastrss</code>.</p>
-<p>Note: You can override the default usage of <code>proxy.pathsuffix</code> by configuring an optional AssignMessage policy to set the variable <p>flow.resource.name</p> prior to execution of the policy that validates the API product settings.</p>
-<p>For example:</p>
-
-<pre>&lt;AssignMessage name="ClassifyRequest"&gt;
-  &lt;AssignVariable&gt;
-  &lt;Name&gt;flow.resource.name&lt;/Name&gt;
-  &lt;Ref&gt;proxy.basepath&lt;/Ref&gt;
- &lt;/AssignVariable&gt;
-&lt;/AssignMessage&gt;</pre>
-
-<p>Attach this policy in a Flow before a APIKeyValidation or OAuth policy to populate the appropriate URI path to be evaluated by the authorization policy.</p>
-
-
-<p>Once appropriate policies are configured, any request with a valid credential made to the URI path following <code>/weather/forecastrss</code> will be authorized. For example, the following complete URL would be considered 'bundled' (and therefore subject to the restrictions of) the API product created above:</p>
-
-<pre>http://{org_name}-test.apigee.net/weather/forecastrss?w=12797282</pre>
-
-<p>The following URL would not, as it is directed to the 'prod' environment (and the API product is bound to the 'test' environment):</p>
-<pre>http://{org_name}-prod.apigee.net/weather/forecastrss?w=12797282</pre>
-
-<p>Nor would the following URL, since it includes the base path for an API proxy other than that defined for the weatherapi. (Recall that the base path for a ProxyEndpoint is always unique within an environment.)</p>
-
-<pre>http://{org_name}-prod.apigee.net/news/forecastrss?w=12797282</pre>
-
-<p>API products enforce Quota settings, by incrementing a counter each time an app makes a request. A Quota is scoped to an API product, and therefore applies all <code>apiResources</code> defined in the API product. Developers who sign up for this API product will be able to build apps that consume the API resource <code>/weather</code> under the conditions of the Quota settings.</p>
 
 <h2>Creating developer profiles</h2>
 
+<p>All apps belong to either developer or companies. Therefore, to create an app, you first need to create a developer. You can create a developer using the Management UI or using the API.</p>
+	
 <p>Developers are registered in an organization by creating a profile. Note that the developer email that is included in the profile is used as the unique key for the developer throughout the API Platform. Arbitrary attributes can be added to the developer profile as needed. The attributes are not interpreted by the API Platform, but can be of use in custom analytics, custom policy enforcement, and so on.</p>
 
-<p>For example, to create a profile for a developer whose email address is ntesla@theramin.com:</p>
+<p>For example, to create a profile for a developer whose email address is <code>ntesla@theramin.com</code>:</p>
 
 <div id="well">
 	<pre>$ curl -H "Content-type:application/json" -X POST -d \
@@ -229,6 +185,7 @@
 	  "lastModifiedBy" : "admin@apigee.com"
 	}</pre>
 </div>
+
 <h2>Registering developer apps</h2>
 <p>Every app that is created on the API Platform is associated with a developer and an API product. When an app is registered on behalf of a developer, the API Platform generates a "credential" (a consumer key and secret pair) that identifies the app. 
 	

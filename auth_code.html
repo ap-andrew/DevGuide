@@ -161,6 +161,8 @@ Environment: test
 	<pre>HTTP/1.1 302 Found Location:login.weatherapp.com?scope=READ&amp;state=foobar&amp;code={auth_code}</pre>
 </div>
 <p>OAuth client apps must support HTTP <code>302</code> redirect responses. In an actual OAuth app, the URL <code>login.weatherapp.com?scope=READ&amp;state=foobar&amp;code={auth_code}</code> would be invoked by a Web browser. The Web browser would redirect to the login page at <code>login.weatherapp.com</code>.</p>
+
+
 <p><b>Developing this login app is part of the API provider's responsibility.</b></p>
 <p>Note the <code>state</code> parameter. This parameter is designed prevent cross-site request forgery attacks and should be unique for every request. While it is not required, it is strongly recommended.</p>
 <p>To retrieve the access token, the login page or pages at <code>login.weatherapp.com&nbsp;</code>makes a POST request to the API proxy.</p>
