@@ -1,0 +1,142 @@
+<p>[toc]</p>
+<p>A most common mechanism used to secure traffic from Apigee to your backend service is Client SSL. Client SSL provides authentication and encryption of all messages flowing over the network from Apigee to your services.</p>
+<h2>Step 1: Generate client credentials</h2>
+<p>To configure client SSL for mutual authentication between Apigee and your backend server, you require a public/private key pair and an X.509 certificate. The certificate can be issued by a certificate authority, or it can be self-signed by the private key that you generate. If you have access to a CA, follow instructions provided by your CA for generating keys and issuing certificates. If you do not have access to a CA, you can generate a self-signed certificate using one of the many publicly available free tools, such as openssl.</p>
+<p>Supported key formats are:</p>
+<ul>
+	<li>PEM</li>
+	<li>DER</li>
+	<li>PKCS12</li>
+        <li>JKS (Can be imported directly without creating keystore--bypassing Step 2, below)</li>
+</ul>
+<p>Apigee supports key sizes up to 2048 bits.</p>
+<h2>Step 2: Create a JAR file containing your keystore</h2>
+<p>Create a JAR file with your key pair, certificate, and a manifest. The JAR file must contain the following files and directories:</p>
+<ul>
+	<li><code>/META-INF/descriptor.properties</code></li>
+	<li><code>myCert.pem</code></li>
+	<li><code>myKey.pem</code> (Passphrase is optional)</li>
+</ul>
+<p>Create a directory called <code>/META-INF</code>. Create a file called <code>descriptor.properties</code> in <code>/META-INF</code> with the following contents:</p>
+<div id="well">
+	<pre>certFile={myCertificate}.pem
+keyFile={myKey}.pem</pre>
+</div>
+<p>Generate the JAR file containing your key pair and certificate:</p>
+<div id="well">
+	<pre>$ jar -cf myKeystore.jar myCert.pem myKey.pem</pre>
+</div>
+<p>Add <code>descriptor.properties</code> to your JAR file:</p>
+<div id="well">
+	<pre>$ jar -uf myKeystore.jar META-INF/descriptor.properties</pre>
+</div>
+<h2>Step 3: Create keystore on the API Platform</h2>
+<p>You must upload the keystore file to an environment in your Apigee organization, and then reference this file in your target endpoint configuration.</p>
+<p>First check your environment for any existing keystores:</p>
+<div id="well">
+	<pre>$ curl -u myname:mypass -X GET https://api.enterprise.apigee.com/v1/o/{org_name}/environments/{env_name}/keystores</pre>
+</div>
+<div id="well">
+	<pre>[ "freetrial" ]</pre>
+</div>
+<p>Check the contents of the keystore. At a minimum, you should see a single server SSL certificate--the default certificate that Apigee provides for free trial accounts.</p>
+<div id="well">
+	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/environments/{env_name}/keystores/freetrial</pre>
+</div>
+<div id="well">
+	<pre>{
+  "certs" : [ "wildcard.apigee.net.crt" ],
+  "keys" : [ "freetrial" ],
+  "name" : "freetrial"
+}</pre>
+</div>
+<p>Create your own keystore in the environment:</p>
+<p>Sample request:</p>
+<div id="well">
+	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/environments/{env_name}/keystores -H "Content-Type: text/xml" -d '&lt;KeyStore name="myKeystore"/&gt;'</pre>
+</div>
+<p>Sample response:</p>
+<div id="well">
+	<pre>{
+  "certs" : [ ],
+  "keys" : [ ],
+  "name" : "myKeystore"
+}
+</pre>
+</div>
+<h2>Step 4: Upload keystore JAR to the API Platform</h2>
+<p>Sample request:</p>
+<div id="well">
+	<pre>$ curl -u myname:mypass -X POST -H "Content-Type: multipart/form-data" -F file="@myKeystore.jar" https://api.enterprise.apigee.com/v1/o/{org_name}/environments/{env_name}/keystores/{myKeystore}/keys?alias={key_alias}&amp;password={key_pass}</pre>
+</div>
+<p>Verify that your keystore uploaded properly:</p>
+<div id="well">
+	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/environments/{env_name}/keystores/myKeystore</pre>
+</div>
+<p>Sample response:</p>
+<div id="well">
+	<pre>{  "certs" : [ "myCertificate" ],
+  "keys" : [ "myKey" ],
+  "name" : "myKeystore"
+}</pre>
+</div>
+<p>You now have a private key available for mutual authentication between the specified environment in your organization on the API Platform and your backend service. If you are using a self-signed certificate instead of a certificate issued by a CA, then you must import the self-signed certificate to the trust store on the target server. To do so, refer to the instructions for the target server where your backend service is deployed.</p>
+<h2>Step 5: Configure TargetEndpoint for client SSL</h2>
+<p>In the TargetEndpoint configuration for your API proxy, add the following elements to the <code>HTTPConnection</code> configuration:</p>
+<pre>&lt;ClientAuthEnabled&gt;true&lt;/ClientAuthEnabled&gt;
+&lt;KeyStore&gt;myKeystore&lt;/KeyStore&gt;
+&lt;KeyAlias&gt;myKey&lt;/KeyAlias&gt;</pre>
+<p>For example:</p>
+<div id="well">
+	<pre>&lt;TargetEndpoint name="default"&gt;
+  &lt;HttpTargetConnection&gt;
+    &lt;SSLInfo&gt;
+      &lt;ClientAuthEnabled&gt;true&lt;/ClientAuthEnabled&gt;
+      &lt;KeyStore&gt;myKeystore&lt;/KeyStore&gt;
+      &lt;KeyAlias&gt;myKey&lt;/KeyAlias&gt;
+    &lt;/SSLInfo&gt;
+    &lt;URL&gt;https://myservice.com&lt;/URL&gt;
+  &lt;/HttpTargetConnection&gt;
+&lt;/TargetEndpoint&gt;</pre>
+</div>
+<p>If no ciphers are specified, then all ciphers available for the JVM will be permitted.</p>
+<p>To restrict ciphers, add the following elements to <code>&lt;SSLInfo&gt;</code>:</p>
+<div -d="well">
+	<pre>&lt;Ciphers&gt;
+	&lt;Cipher&gt;TLS_RSA_WITH_3DES_EDE_CBC_SHA&lt;/Cipher&gt;
+	&lt;Cipher&gt;TLS_RSA_WITH_DES_CBC_SHA&lt;/Cipher&gt;
+&lt;/Ciphers&gt;</pre>
+</div>
+<p>If no protocols are specified, then all protocols available for the JVM will be permitted.</p>
+<p>To restrict protocols, add the following elements to <code>&lt;SSLInfo&gt;</code></p>
+<div -d="well">
+	<pre>&lt;Protocols&gt;
+    &lt;Protocol&gt;TLSv1&lt;/Protocol&gt;
+    &lt;Protocol&gt;SSLv2Hello&lt;/Protocol&gt;
+&lt;/Protocols&gt;</pre>
+	<h2>Step 6: Configure a trust store</h2>
+	<p>To validate the backend server's SSL certificate, create and upload a trust store containing the server's certificate. Name the trust store, for example, <code>myTruststore</code>.</p>
+	<p>First, create an empty trust store in the environment.</p>
+	<pre>$ curl -X POST -H "Content-Type: text/xml" -d \
+'&lt;KeyStore name="myTruststore"/&gt;' \
+https://api.enterprise.apigee.com/v1/o/{org_name}/environments/{env_name}/keystores \
+-u myname:mypass</pre>
+	<p>Then upload the certificate to the trust store you created.</p>
+	<p>Note that in this example, the file that you upload is not a JAR file. Instead, it is a PEM file.</p>
+	<pre>$ curl -X POST -H "Content-Type: multipart/form-data" -F file="@trust.pem" \ "https://api.enterprise.apigee.com/v1/o/{org_name}/environments/{env_name}/keystores/myTruststore/certs?alias= myTruststore-alias" \
+-u myname:mypass </pre>
+	<p>Then, reference the uploaded trust store in <code>SSLInfo</code>:</p>
+	<pre>&lt;TargetEndpoint name="default"&gt;
+  &lt;HttpTargetConnection&gt;
+    &lt;SSLInfo&gt;
+      &lt;ClientAuthEnabled&gt;true&lt;/ClientAuthEnabled&gt;
+      &lt;KeyStore&gt;myKeystore&lt;/KeyStore&gt;
+      &lt;KeyAlias&gt;myKey&lt;/KeyAlias&gt;
+      &lt;TrustStore&gt;myTruststore&lt;/TrustStore&gt;
+    &lt;/SSLInfo&gt;
+    &lt;URL&gt;https ://myservice.com&lt;/URL&gt;
+  &lt;/HttpTargetConnection&gt;
+&lt;/TargetEndpoint&gt;</pre>
+	<p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
+	<p>Back to <a href="/docs/enterprise/content/developer_guide">API Platform Developer Guide</a>.</p>
+</div>
