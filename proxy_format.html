@@ -1,7 +1,7 @@
 <p>[toc]</p>
 <p>The Apigee API platform exposes API management capabilities through two interfaces: a Management UI and a RESTful API. This API Platform Developer Guide demonstrates usage of the API Platform API for local development of API management capabilities.</p>
 <p>As a developer working with the Apigee API Platform, your primary development activities involve configuring API proxies that function as proxies for APIs or backend services. For this reason, it's useful to begin with a complete understanding of the structure of an API proxy.</p>
-<p><strong>For a high-level overview of API proxies, see  [node:10].</strong></p>
+<p><strong>For a high-level overview of API proxies, see [node:10].</strong></p>
 <h2>API proxy structure</h2>
 <p>An API proxy consists of the following configuration:</p>
 <table border="1" cellpadding="1" cellspacing="1" class="table" style="width: 690px;">
@@ -35,7 +35,6 @@
 <h3>API proxy directory structure and contents</h3>
 <p>The components in the table above are defined by configuration files in the following directory structure:</p>
 <p>[[{"type":"media","view_mode":"media_large","fid":"1084","attributes":{"alt":"","class":"media-image","height":"176","typeof":"foaf:Image","width":"200"}}]]</p>
-
 <h2>Configuration files and directory structure of an API proxy</h2>
 <p>This section explain the configuration files and directory structure of an API proxy.</p>
 <ul>
@@ -51,38 +50,34 @@
 <h3><code>/apiproxy/weatherapi.xml</code></h3>
 <p>The base configuration for an API proxy, which defines the name of the API proxy. The name must be unique within an organization.</p>
 <p>Sample configuration:</p>
-<p></p>
+<p>&nbsp;</p>
 <pre>&lt;APIProxy name="weatherapi"&gt;
 &lt;/APIProxy&gt;</pre>
-
-
 <h3>Base Configuration Elements</h3>
-
 <table border="1" cellpadding="1" cellspacing="1" class="table" style="width: 690px;">
-	  <thead>
-		<th>Name</th>
-		<th>Description</th>
-		<th>Default</th>
-		<th>Required?</th>
-     </thead>
-<tbody>
-	
-	
-	<tr><td><b><code>APIProxy</code></b></td><td colspan="3"></td></tr>
-
-	<tr><td><code>name</code></td>
-	<td>The name of the API proxy, which must be unique within an organization.</td>
-	<td>N/A</td>
-	<td>Yes</td></tr>
-	
-
-</tbody>
+	<thead>
+		<tr>
+			<th>Name</th>
+			<th>Description</th>
+			<th>Default</th>
+			<th>Required?</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td><b><code>APIProxy</code></b></td>
+			<td colspan="3">&nbsp;</td>
+		</tr>
+		<tr>
+			<td><code>name</code></td>
+			<td>The name of the API proxy, which must be unique within an organization.</td>
+			<td>N/A</td>
+			<td>Yes</td>
+		</tr>
+	</tbody>
 </table>
-
-
-
 <h2><a name="proxyendpoint"></a>ProxyEndpoint</h2>
-
+<p>[[{"type":"media","view_mode":"media_original","fid":"1122","attributes":{"alt":"","class":"media-image","height":"256","style":"width: 650px; height: 256px; margin: 15px;","typeof":"foaf:Image","width":"650"}}]]</p>
 <h3><code>/apiproxy/proxies/default.xml</code></h3>
 <p>The ProxyEndpoint configuration defines the inbound (client-facing) interface for an API proxy. When you configure a ProxyEndpoint, you are setting up a network configuration that defines how client applications ('apps') should invoke the proxied API.</p>
 <p>The following sample ProxyEndpoint configuration would be stored under <code>/apiproxy/proxies</code>:</p>
@@ -96,74 +91,85 @@
 &nbsp; &lt;/RouteRule&gt;
 &lt;/ProxyEndpoint&gt;</pre>
 <p>The required configuration elements in a basic ProxyEndpoint are:</p>
-
 <h3>ProxyEndpoint Configuration Elements</h3>
-
 <table border="1" cellpadding="1" cellspacing="1" class="table" style="width: 690px;">
-	  <thead>
-		<th>Name</th>
-		<th>Description</th>
-		<th>Default</th>
-		<th>Required?</th>
-     </thead>
-<tbody>
-	
-	<tr><td><b><code>ProxyEndpoint</code></b></td><td colspan="3"></td></tr>
-	
-	<tr><td><code>name</code></td>
-	<td>The name of the ProxyEndpoint. Must be unique within the API proxy configuration, when (in rare cases) multiple ProxyEndpoints are defined.</td>
-	<td>N/A</td>
-	<td>Yes</td></tr>
-	
-	<tr><td><b><code>HTTPProxyConnection</code></b></td><td colspan="3">Defines the network address of the API proxy</td></tr>
-	
-	<tr><td><code>BasePath</code></td>
-	<td>A required string that uniquely identifies the URI path used by the API Platform to route incoming messages to the proper API proxy. The BasePath is a URI fragment (for example <code>/weather</code>) appended to the base URL for an environment (for example, <code>http://apifactory-test.apigee.net</code>) by a requesting client. BasePath must be unique within an environment. Uniqueness is validated by the API Platform when an API proxy is generated or imported.</td>
-	<td>/</td>
-	<td>Yes</td></tr>
-	
-	<tr><td><code>VirtualHost</code></td>
-	<td>Associates an API proxy with specific base URLs for an environment. A VirtualHost is a named configuration that defines one or more URLs for an environment. The named VirtualHosts defined for a ProxyEndpoint determine the domains and ports on which an API proxy is exposed, and, by extension, the URL that apps use to invoke an API proxy. By default, two named VirtualHosts are defined for an environment: <code>default</code> and <code>secure</code>. An organization may also define custom domains. To ensure that an API proxy is available only over HTTPs, for example, set the VirtualHost in the HTTPProxyConnection to <code>secure</code>.</td>
-	<td>default</td>
-	<td>Yes</td></tr>
-	
-	<tr><td><code>Properties</code></td>
-	<td>A set of optional HTTP configuration settings can be defined as properties of a ProxyEndpoint</td>
-	<td>N/A</td>
-	<td>No</td></tr>
-	
-		<tr><td><b><code>RouteRule</code></b></td><td colspan="3">Defines the destination of inbound request messages after processing by the ProxyEndpoint request pipeline. Usually, the RouteRule points to a named TargetEndpoint configuration, but it can also point directly to a URL.</td></tr>
-	
-	<tr><td><code>Name</code></td>
-	<td>Required attribute, which provides a name for the RouteRule.</td>
-	<td>N/A</td>
-	<td>Yes</td></tr>
-	
-	<tr><td><code>Condition</code></td>
-	<td>An optional conditional statement used for dynamic routing at runtime. Conditional RouteRules are useful, for example, to enable content-based routing to support backend versioning.</td>
-	<td>N/A</td>
-	<td>No</td></tr>
-	
-	<tr><td><code>TargetEndpoint</code></td>
-	<td>An optional string that identifies a named TargetEndpoint configuration. A named TargetEndpoint is any TargetEndpoint defined in the same API proxy under the&nbsp;<code>/targets directory</code>). By naming a TargetEndpoint, you indicate where request messages should be forwarded after processing by the ProxyEndpoint request pipeline. Note that this is an optional setting. A ProxyEndpoint may call a URL directly. In some cases, a JavaScript or Java application, functioning in the role of an HTTP client may perform the basic duty of a TargetEndpoint, which is to forward requests to a backend service.</td>
-	<td>N/A</td>
-	<td>No</td></tr>
-	
-	<tr><td>URL</td>
-	<td>An optional string that defines an outbound network address called by the ProxyEndpoint, bypassing any TargetEndpoint configurations that might be stored under <code>/targets</code></td>
-	<td>N/A</td>
-	<td>No</td></tr>
-
-</tbody>
+	<thead>
+		<tr>
+			<th>Name</th>
+			<th>Description</th>
+			<th>Default</th>
+			<th>Required?</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td><b><code>ProxyEndpoint</code></b></td>
+			<td colspan="3">&nbsp;</td>
+		</tr>
+		<tr>
+			<td><code>name</code></td>
+			<td>The name of the ProxyEndpoint. Must be unique within the API proxy configuration, when (in rare cases) multiple ProxyEndpoints are defined.</td>
+			<td>N/A</td>
+			<td>Yes</td>
+		</tr>
+		<tr>
+			<td><b><code>HTTPProxyConnection</code></b></td>
+			<td colspan="3">Defines the network address of the API proxy</td>
+		</tr>
+		<tr>
+			<td><code>BasePath</code></td>
+			<td>A required string that uniquely identifies the URI path used by the API Platform to route incoming messages to the proper API proxy. The BasePath is a URI fragment (for example <code>/weather</code>) appended to the base URL for an environment (for example, <code>http://apifactory-test.apigee.net</code>) by a requesting client. BasePath must be unique within an environment. Uniqueness is validated by the API Platform when an API proxy is generated or imported.</td>
+			<td>/</td>
+			<td>Yes</td>
+		</tr>
+		<tr>
+			<td><code>VirtualHost</code></td>
+			<td>Associates an API proxy with specific base URLs for an environment. A VirtualHost is a named configuration that defines one or more URLs for an environment. The named VirtualHosts defined for a ProxyEndpoint determine the domains and ports on which an API proxy is exposed, and, by extension, the URL that apps use to invoke an API proxy. By default, two named VirtualHosts are defined for an environment: <code>default</code> and <code>secure</code>. An organization may also define custom domains. To ensure that an API proxy is available only over HTTPs, for example, set the VirtualHost in the HTTPProxyConnection to <code>secure</code>.</td>
+			<td>default</td>
+			<td>Yes</td>
+		</tr>
+		<tr>
+			<td><code>Properties</code></td>
+			<td>A set of optional HTTP configuration settings can be defined as properties of a ProxyEndpoint</td>
+			<td>N/A</td>
+			<td>No</td>
+		</tr>
+		<tr>
+			<td><b><code>RouteRule</code></b></td>
+			<td colspan="3">Defines the destination of inbound request messages after processing by the ProxyEndpoint request pipeline. Usually, the RouteRule points to a named TargetEndpoint configuration, but it can also point directly to a URL.</td>
+		</tr>
+		<tr>
+			<td><code>Name</code></td>
+			<td>Required attribute, which provides a name for the RouteRule.</td>
+			<td>N/A</td>
+			<td>Yes</td>
+		</tr>
+		<tr>
+			<td><code>Condition</code></td>
+			<td>An optional conditional statement used for dynamic routing at runtime. Conditional RouteRules are useful, for example, to enable content-based routing to support backend versioning.</td>
+			<td>N/A</td>
+			<td>No</td>
+		</tr>
+		<tr>
+			<td><code>TargetEndpoint</code></td>
+			<td>An optional string that identifies a named TargetEndpoint configuration. A named TargetEndpoint is any TargetEndpoint defined in the same API proxy under the&nbsp;<code>/targets directory</code>). By naming a TargetEndpoint, you indicate where request messages should be forwarded after processing by the ProxyEndpoint request pipeline. Note that this is an optional setting. A ProxyEndpoint may call a URL directly. In some cases, a JavaScript or Java application, functioning in the role of an HTTP client may perform the basic duty of a TargetEndpoint, which is to forward requests to a backend service.</td>
+			<td>N/A</td>
+			<td>No</td>
+		</tr>
+		<tr>
+			<td>URL</td>
+			<td>An optional string that defines an outbound network address called by the ProxyEndpoint, bypassing any TargetEndpoint configurations that might be stored under <code>/targets</code></td>
+			<td>N/A</td>
+			<td>No</td>
+		</tr>
+	</tbody>
 </table>
-
-
 <h3>How to configure RouteRules</h3>
 <p>A named TargetEndpoint refers to a configuration file under <code>/apiproxy/targets</code> to which the RouteRule forwards a request after processing by the ProxyEndpoint.</p>
 <p>For example, the following RouteRule refers to the configuration <code>/apiproxy/targets/myTarget.xml</code>:</p>
 <div id="well">
 	<pre>&lt;RouteRule name="default"&gt;
-	&lt;TargetEndpoint&gt;myTarget&lt;/TargetEndpoint&gt;
+  &lt;TargetEndpoint&gt;myTarget&lt;/TargetEndpoint&gt;
 &lt;/RouteRule&gt;</pre>
 </div>
 <h3>Direct URL Invocation</h3>
@@ -171,7 +177,7 @@
 <p>For example, the following RouteRule makes an HTTP call to <code>http://api.mycompany.com/v2</code>.</p>
 <div id="class">
 	<pre>&lt;RouteRule name="default"&gt;
-	&lt;url&gt;http://api.mycompany.com/v2&lt;/url&gt; 
+  &lt;URL&gt;http://api.mycompany.com/v2&lt;/URL&gt; 
 &lt;/RoueRule&gt;</pre>
 </div>
 <h3>Conditional Routes</h3>
@@ -180,121 +186,131 @@
 <p>For example, the following RouteRule combination first evaluates the inbound request to verify the value of an HTTP header. If the HTTP header <code>routeTo</code> has the value <code>TargetEndpoint1</code>, then the request is forwarded to the TargetEndpoint named <code>TargetEndpoint1</code>. If not, then the inbound request is forwarded to <code>http://api.mycompany.com/v2</code>.</p>
 <div id="well">
 	<pre>&lt;RouteRule name="MyRoute"&gt;
-     &lt;Condition&gt;request.header.routeTo = "TargetEndpoint1"&lt;/Condition&gt;
-     &lt;TargetEndpoint&gt;TargetEndpoint1&lt;/TargetEndpoint&gt;
+  &lt;Condition&gt;request.header.routeTo = "TargetEndpoint1"&lt;/Condition&gt;
+  &lt;TargetEndpoint&gt;TargetEndpoint1&lt;/TargetEndpoint&gt;
 &lt;/RouteRule&gt;
 &lt;RouteRule name="default"&gt;
-     &lt;URL&gt;http://api.mycompany.com/v2&lt;/TargetEndpoint&gt;
+  &lt;URL&gt;http://api.mycompany.com/v2&lt;/TargetEndpoint&gt;
 &lt;/RouteRule&gt;</pre>
 </div>
-
-
 <h2><a name="targetendpoint"></a>TargetEndpoint</h2>
+<p>[[{"type":"media","view_mode":"media_original","fid":"1122","attributes":{"alt":"","class":"media-image","height":"256","style":"width: 650px; height: 256px; margin: 15px;","typeof":"foaf:Image","width":"650"}}]]</p>
 <p>TargetEndpoint is the outbound equivalent of the ProxyEndpoint, and as such functions as an HTTP client to an external service or API. An API proxy can contain zero or more TargetEndpoints. (ProxyEndpoints can be configured to call URLs directly when required.)</p>
 <h3>TargetEndpoint Configuration</h3>
-<p><h3<code>/targets/default.xml</h3</code></p>
+<p><h3<code>/targets/default.xml</h3></code></p>
 <p>The TargetEndpoint defines the outbound connection from the API Platform to a backend service.</p>
-
 <p>Sample TargetEndpoint configuration:</p>
 <pre>&lt;TargetEndpoint name="default"&gt;
   &lt;HTTPTargetConnection&gt;
     &lt;URL&gt;http://weather.yahooapis.com&lt;/URL&gt;
   &lt;/HTTPTargetConnection&gt;
 &lt;/TargetEndpoint&gt;</pre>
-
 <h3>TargetEndpoint Configuration Elements</h3>
-
 <table border="1" cellpadding="1" cellspacing="1" class="table" style="width: 690px;">
-	  <thead>
-		<th>Name</th>
-		<th>Description</th>
-		<th>Default</th>
-		<th>Required?</th>
-     </thead>
-<tbody>
-	
-	<tr><td><b><code>TargetEndpoint</code></b></td><td colspan="3"></td></tr>
-
-	<tr><td><code>name</code></td>
-	<td>The name of the TargetEndpoint, which must be unique within the API proxy configuration. The name of the TargetPoint is used in the ProxyEndpoint RouteRule to direct requests for outbound processing.</td>
-	<td>N/A</td>
-	<td>Yes</td></tr>
-	
-	<tr><td><b><code>HTTPTargetConnection</code></b></td><td colspan="3"></td></tr>
-
-	<tr><td><code>URL</code></td>
-	<td>Defines the network address of the backend service to which the TargetEndpoint forwards request messages.</td>
-	<td>N/A</td>
-	<td>No</td></tr>
-	
-	<tr><td><code>LoadBalancer</code></td>
-	<td>Defines one or more named TargetServer configurations. Named TargetServer configurations can be used for load balancing, by providing, for example, settings for 2 or more physical servers. </td>
-	<td>N/A</td>
-	<td>No</td></tr>
-	
-	<tr><td><code>Properties</code></td>
-	<td>A set of optional HTTP configuration settings can be defined as properties of a TargetEndpoint. See [node:6858]. </td>
-	<td>N/A</td>
-	<td>No</td></tr>
-
-</tbody>
+	<thead>
+		<tr>
+			<th>Name</th>
+			<th>Description</th>
+			<th>Default</th>
+			<th>Required?</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td><b><code>TargetEndpoint</code></b></td>
+			<td colspan="3">&nbsp;</td>
+		</tr>
+		<tr>
+			<td><code>name</code></td>
+			<td>The name of the TargetEndpoint, which must be unique within the API proxy configuration. The name of the TargetPoint is used in the ProxyEndpoint RouteRule to direct requests for outbound processing.</td>
+			<td>N/A</td>
+			<td>Yes</td>
+		</tr>
+		<tr>
+			<td><b><code>HTTPTargetConnection</code></b></td>
+			<td colspan="3">&nbsp;</td>
+		</tr>
+		<tr>
+			<td><code>URL</code></td>
+			<td>Defines the network address of the backend service to which the TargetEndpoint forwards request messages.</td>
+			<td>N/A</td>
+			<td>No</td>
+		</tr>
+		<tr>
+			<td><code>LoadBalancer</code></td>
+			<td>Defines one or more named TargetServer configurations. Named TargetServer configurations can be used for load balancing, by providing, for example, settings for 2 or more physical servers.</td>
+			<td>N/A</td>
+			<td>No</td>
+		</tr>
+		<tr>
+			<td><code>Properties</code></td>
+			<td>A set of optional HTTP configuration settings can be defined as properties of a TargetEndpoint. See [node:6858].</td>
+			<td>N/A</td>
+			<td>No</td>
+		</tr>
+	</tbody>
 </table>
-
 <h2><a name="advancedtargetendpoint"></a>Advanced TargetEndpoint Configuration</h2>
 <p>TargetEndpoints must manage HTTP connections with heterogenous backend infrastructure. For this reason, a number of advanced configuration settings are supported.</p>
-
 <h3>Advanced TargetEndpoint Configuration Elements</h3>
-
 <table border="1" cellpadding="1" cellspacing="1" class="table" style="width: 690px;">
-	  <thead>
-		<th>Name</th>
-		<th>Description</th>
-		<th>Default</th>
-		<th>Required?</th>
-     </thead>
-<tbody>
-	
-	
-	<tr><td><b><code>SSLInfo</code></b></td><td colspan="3"></td></tr>
-	<tr><td><code>Enabled</code></td>
-	<td>Indicates whether SSL is enabled for the Endpoint</td>
-	<td>true</td>
-	<td>Yes</td></tr>
-
-
-	<tr><td><code>TrustStore</code></td>
-	<td>A keystore containing trusted server certificates.</td>
-	<td>N/A</td>
-	<td>No</td></tr>
-	
-	<tr><td><code>ClientAuthEnabled</code></td>
-	<td>A setting that turns on outbound client authentication (2-way SSL)</td>
-	<td>false</td>
-	<td>No</td></tr>
-	
-	<tr><td><code>KeyStore</code></td>
-	<td>A keystore containing private keys used for outbound client authentication</td>
-	<td>N/A</td>
-	<td>Yes (if ClientAuthEnabled is true)</td></tr>
-	
-	<tr><td><code>KeyAlias</code></td>
-	<td>The key alias of the private key used for outbound client authentication</td>
-	<td>N/A</td>
-	<td>Yes (if ClientAuthEnabled is true)</td></tr>
-	
-	<tr><td><code>Ciphers</code></td>
-	<td>Supported ciphers for outbound SSL</td>
-	<td>N/A</td>
-	<td>No</td></tr>
-	
-	<tr><td><code>Protocols</code></td>
-	<td>Supported protocols for outbound SSL</td>
-	<td>N/A</td>
-	<td>No</td></tr>
-
-</tbody>
+	<thead>
+		<tr>
+			<th>Name</th>
+			<th>Description</th>
+			<th>Default</th>
+			<th>Required?</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td><b><code>SSLInfo</code></b></td>
+			<td colspan="3">&nbsp;</td>
+		</tr>
+		<tr>
+			<td><code>Enabled</code></td>
+			<td>Indicates whether SSL is enabled for the Endpoint</td>
+			<td>true</td>
+			<td>Yes</td>
+		</tr>
+		<tr>
+			<td><code>TrustStore</code></td>
+			<td>A keystore containing trusted server certificates.</td>
+			<td>N/A</td>
+			<td>No</td>
+		</tr>
+		<tr>
+			<td><code>ClientAuthEnabled</code></td>
+			<td>A setting that turns on outbound client authentication (2-way SSL)</td>
+			<td>false</td>
+			<td>No</td>
+		</tr>
+		<tr>
+			<td><code>KeyStore</code></td>
+			<td>A keystore containing private keys used for outbound client authentication</td>
+			<td>N/A</td>
+			<td>Yes (if ClientAuthEnabled is true)</td>
+		</tr>
+		<tr>
+			<td><code>KeyAlias</code></td>
+			<td>The key alias of the private key used for outbound client authentication</td>
+			<td>N/A</td>
+			<td>Yes (if ClientAuthEnabled is true)</td>
+		</tr>
+		<tr>
+			<td><code>Ciphers</code></td>
+			<td>Supported ciphers for outbound SSL</td>
+			<td>N/A</td>
+			<td>No</td>
+		</tr>
+		<tr>
+			<td><code>Protocols</code></td>
+			<td>Supported protocols for outbound SSL</td>
+			<td>N/A</td>
+			<td>No</td>
+		</tr>
+	</tbody>
 </table>
-
 <h3>Sample TargetEndpoint with outbound client authentication enabled</h3>
 <div id="well">
 	<pre>&lt;TargetEndpoint name="default"&gt;
@@ -310,95 +326,88 @@
   &lt;/HttpTargetConnection&gt;
 &lt;/TargetEndpoint&gt;</pre>
 </div>
-
 <p>For detailed instructions, refer to [node:4572]</p>
-
 <h3>TargetEndpoint with target load balancing</h3>
-
 <p>TargetEndpoints support load balancing across multiple named TargetServers using three load balancing algorithms.</p>
 <p>For detailed instructions, refer to [node:4562]</p>
-
 <h2><a name="policies"></a>Policies</h2>
-
-<p>The <code>/policies</code> directory in an API proxy contains all policies available to be attached to Flows in the API proxy.</p>
-
-<p>Note: Policies cannot be shared across API proxies. Each API proxy requires its own instance of a policy.</p>
-
+<p>The <code>/policies</code> directory in an API proxy contains all policies available to be attached to FLows in the API proxy.Note: Policies cannot be shared across API proxies. Each API proxy requires its own instance of a policy.</p>
 <h3>Policy Configuration Elements</h3>
-
 <table border="1" cellpadding="1" cellspacing="1" class="table" style="width: 690px;">
-	  <thead>
-		<th>Name</th>
-		<th>Description</th>
-		<th>Default</th>
-		<th>Required?</th>
-     </thead>
-<tbody>
-	
-	
-	<tr><td><b><code>Policy</code></b></td><td colspan="3"></td></tr>
-
-	<tr><td><code>enabled</code></td>
-	<td>Determines whether a policy is enforced or not. If set to false, a policy is 'turned off', and not enforced (even though the policy remains attached to a Flow)</td>
-	<td>true</td>
-	<td>Yes</td></tr>
-	
-	<tr><td><code>continueOnError</code></td>
-	<td>Most policies are expected to return an error when a failure occurs (for example, when a Quota is exceeded). By setting this attribute to true, Flow execution continues on failure.</td>
-	<td>false</td>
-	<td>Yes</td></tr>
-	
-	<tr><td><code>async</code></td>
-	<td>When set to true, Flow processing continues, even though a policy has not returned. Useful for Service Callout policies or scripts that call remote services, enabling the main Flow to execute while waiting for a response from a remote service.</td>
-	<td>false</td>
-	<td>Yes</td></tr>
-	
-	<tr><td><code>name</code></td>
-	<td>The name of the policy, which is referenced in Step elements to attach the policy to a Flow.</td>
-	<td>N/A</td>
-	<td>Yes</td></tr>
-	
-
-</tbody>
+	<thead>
+		<tr>
+			<th>Name</th>
+			<th>Description</th>
+			<th>Default</th>
+			<th>Required?</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td><b><code>Policy</code></b></td>
+			<td colspan="3">&nbsp;</td>
+		</tr>
+		<tr>
+			<td><code>enabled</code></td>
+			<td>Determines whether a policy is enforced or not. If set to false, a policy is 'turned off', and not enforced (even though the policy remains attached to a Flow)</td>
+			<td>true</td>
+			<td>Yes</td>
+		</tr>
+		<tr>
+			<td><code>continueOnError</code></td>
+			<td>Most policies are expected to return an error when a failure occurs (for example, when a Quota is exceeded). By setting this attribute to true, Flow execution continues on failure.</td>
+			<td>false</td>
+			<td>Yes</td>
+		</tr>
+		<tr>
+			<td><code>async</code></td>
+			<td>When set to true, Flow processing continues, even though a policy has not returned. Useful for Service Callout policies or scripts that call remote services, enabling the main Flow to execute while waiting for a response from a remote service.</td>
+			<td>false</td>
+			<td>Yes</td>
+		</tr>
+		<tr>
+			<td><code>name</code></td>
+			<td>The name of the policy, which is referenced in Step elements to attach the policy to a Flow.</td>
+			<td>N/A</td>
+			<td>Yes</td>
+		</tr>
+	</tbody>
 </table>
-
 <h3>Policy Attachment</h3>
+<p>[[{"type":"media","view_mode":"media_original","fid":"1131","attributes":{"alt":"","class":"media-image","height":"366","style":"width: 589px; height: 366px; margin-top: 15px; margin-bottom: 15px;","typeof":"foaf:Image","width":"589"}}]]</p>
+<p>As shown above, API proxy flows execute in the following sequence:</p>
+<p>Policies are attached as processing steps to <i>Flows</i>. The policy's name is used to reference the policy to be enforced as a processing Step. The format of a policy attachment is the following:</p>
 
-<p>Policies are attached as processing steps to <i>flows</i>. The policy's name is used to reference the policy to be enforced as a processing step. The format of a policy attachment is the following:</p>
-
-<div id="well">
 	<pre>&lt;Step&gt;&lt;Name&gt;MyPolicy&lt;/Name&gt;&lt;/Step&gt;</pre>
-</div>
+
 <p>Policies are enforced in the order in which they are attached to a Flow. For example:</p>
-<div id="well">
+
 	<pre>&lt;Step&gt;&lt;Name&gt;FirstPolicy&lt;/Name&gt;&lt;/Step&gt;
 &lt;Step&gt;&lt;Name&gt;SecondPolicy&lt;/Name&gt;&lt;/Step&gt;</pre>
-</div>
-
 
 <h3>Policy Attachment Configuration Elements</h3>
-
 <table border="1" cellpadding="1" cellspacing="1" class="table" style="width: 690px;">
-	  <thead>
-		<th>Name</th>
-		<th>Description</th>
-		<th>Default</th>
-		<th>Required?</th>
-     </thead>
-<tbody>
-	
-	
-	<tr><td><b><code>Step</code></b></td><td colspan="3"></td></tr>
-
-	<tr><td><code>Name</code></td>
-	<td>The name of the policy to be executer by this step definition.</td>
-	<td></td>
-	<td></td></tr>
-	
-
-</tbody>
+	<thead>
+		<tr>
+			<th>Name</th>
+			<th>Description</th>
+			<th>Default</th>
+			<th>Required?</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td><b><code>Step</code></b></td>
+			<td colspan="3">&nbsp;</td>
+		</tr>
+		<tr>
+			<td><code>Name</code></td>
+			<td>The name of the policy to be executed by this step definition.</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+		</tr>
+	</tbody>
 </table>
-
 <h2><a name="flows"></a>Flows</h2>
 <p>ProxyEndpoint and TargetEndpoint define a pipeline for request and response message processing. A processing pipeline consists of a request flow and a response flow. Each request flow and response flow is subdivided into a PreFlow, one or more optional 'conditional' or 'named' flows, and a PostFlow.</p>
 <ul>
@@ -439,50 +448,49 @@
   &lt;/Request&gt;
 &lt;/Flows&gt;</pre>
 </div>
-
-
 <h3>Flow Configuration Elements</h3>
-
 <table border="1" cellpadding="1" cellspacing="1" class="table" style="width: 690px;">
-	  <thead>
-		<th>Name</th>
-		<th>Description</th>
-		<th>Default</th>
-		<th>Required?</th>
-     </thead>
-<tbody>
-	
-	
-	<tr><td><b><code>Flow</code></b></td><td colspan="3">A request or response processing pipeline defined by A ProxyEndpoint or TargetEndpoint</td></tr>
-
-	<tr><td><code>Name</code></td>
-	<td>The unique name of the Flow.</td>
-	<td>N/A</td>
-	<td>Yes</td></tr>
-	
-	<tr><td><code>Condition</code></td>
-	<td>A conditional statement that evaluates on or more variables to evaluate to true or false. All Flows other than the predefined PreFlow and PostFlow types must define a condition for their execution. </td>
-	<td>N/A</td>
-	<td>Yes</td></tr>
-	
-	<tr><td><code>Request</code></td>
-	<td>The pipeline associated with Request message processing</td>
-	<td>N/A</td>
-	<td>No</td></tr>
-	
-	<tr><td><code>Response</code></td>
-	<td>The pipeline associated with Response message processing</td>
-	<td>N/A</td>
-	<td>No</td></tr>
-	
-
-</tbody>
+	<thead>
+		<tr>
+			<th>Name</th>
+			<th>Description</th>
+			<th>Default</th>
+			<th>Required?</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td><b><code>Flow</code></b></td>
+			<td colspan="3">A request or response processing pipeline defined by A ProxyEndpoint or TargetEndpoint</td>
+		</tr>
+		<tr>
+			<td><code>Name</code></td>
+			<td>The unique name of the Flow.</td>
+			<td>N/A</td>
+			<td>Yes</td>
+		</tr>
+		<tr>
+			<td><code>Condition</code></td>
+			<td>A conditional statement that evaluates on or more variables to evaluate to true or false. All Flows other than the predefined PreFlow and PostFlow types must define a condition for their execution.</td>
+			<td>N/A</td>
+			<td>Yes</td>
+		</tr>
+		<tr>
+			<td><code>Request</code></td>
+			<td>The pipeline associated with Request message processing</td>
+			<td>N/A</td>
+			<td>No</td>
+		</tr>
+		<tr>
+			<td><code>Response</code></td>
+			<td>The pipeline associated with Response message processing</td>
+			<td>N/A</td>
+			<td>No</td>
+		</tr>
+	</tbody>
 </table>
-
 <h3>Step processing</h3>
-
-<p>The sequential ordering of conditional Flows is enforced by the API Platform. Conditional Flows execute from top to bottom. The first conditional Flow whose condition evaluates to <code>true</code> is executed, and only one conditional Flow is executed. </p>
-	
+<p>The sequential ordering of conditional Flows is enforced by the API Platform. Conditional Flows execute from top to bottom. The first conditional Flow whose condition evaluates to <code>true</code> is executed, and only one conditional Flow is executed.</p>
 <p>For example, in the following Flow configuration, any inbound request that does not include the path suffix <code>/first</code> or <code>/second</code> will cause the <code>ThirdFlow</code> to execute, enforcing the policy called <code>Return404</code>.</p>
 <div id="well">
 	<pre>&lt;Flows&gt;
@@ -506,30 +514,24 @@
   &lt;/Flow&gt;
 &lt;/Flows&gt;</pre>
 </div>
-
-<h3>A note on 'API resources' </h3>
-<p>A common usage of conditional flows is the definition of 'API resources', as defined by the WADL specification. 
-	
-<p><span class="label label-warning">Warning</span> 'API resources' should not be confused with 'proxy resources'. An API resource uses the definition from the web application definition language (WADL) specification to identify specific RESTful 'resources'. Proxy resources (defined below) define code, scripts, or other files that can be attached to PAI proxy flows by referencing them in policies. </p>
-	
+<h3>A note on 'API resources'</h3>
+<p>A common usage of conditional flows is the definition of 'API resources', as defined by the WADL specification.</p>
+<p><span class="label label-warning">Warning</span> 'API resources' should not be confused with 'proxy resources'. An API resource uses the definition from the web application definition language (WADL) specification to identify specific RESTful 'resources'. Proxy resources (defined below) define code, scripts, or other files that can be attached to PAI proxy flows by referencing them in policies.</p>
 <p>When an API resource is created in the Management UI, a conditional flow for the URI is configured in the API proxy.</p>
-
 <p>A sample API resource configuration:</p>
-
-<pre>&lt;Flow name=&quot;MyAPIResource&quot;&gt;
-  &lt;Condition&gt;proxy.pathsuffix == &quot;/api_resource&quot;&lt;/Condition&gt;
+<pre>&lt;Flow name="MyAPIResource"&gt;
+  &lt;Condition&gt;proxy.pathsuffix == "/api_resource"&lt;/Condition&gt;
   &lt;Request&gt;
 	&lt;Step&gt;&lt;Name&gt;ApiResource&lt;/Name&gt;&lt;/Step&gt;
   &lt;/Request&gt;
 &lt;/Flow&gt;
 </pre>
-
 <p>By defining API resources this way you gain the ability to:</p>
-
-<ul><li>Apply policies to individual URIs</li>
-<li>Obtain operational metrics on specific URIs</li>
-<li>Bundle specific URIs in API policies</li></ul>
-
+<ul>
+	<li>Apply policies to individual URIs</li>
+	<li>Obtain operational metrics on specific URIs</li>
+	<li>Bundle specific URIs in API policies</li>
+</ul>
 <h2><a name="resources"></a>Resources</h2>
 <p>The resources directory in an API proxy contains scripts, code, and transformations that can be attached to flows using policies.</p>
 <p>Four resource types are supported, each of which has its own directory under <code>/resources</code>:</p>
