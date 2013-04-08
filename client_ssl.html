@@ -7,8 +7,9 @@
 	<li>PEM</li>
 	<li>DER</li>
 	<li>PKCS12</li>
+        <li>JKS (Can be imported directly without creating keystore--bypassing Step 2, below)</li>
 </ul>
-<p>JKS keystores are not supported on Apigee API Platform cloud. Apigee supports key sizes up to 2048 bits.</p>
+<p>Apigee supports key sizes up to 2048 bits.</p>
 <h2>Step 2: Create a JAR file containing your keystore</h2>
 <p>Create a JAR file with your key pair, certificate, and a manifest. The JAR file must contain the following files and directories:</p>
 <ul>
@@ -80,13 +81,11 @@ keyFile={myKey}.pem</pre>
 }</pre>
 </div>
 <p>You now have a private key available for mutual authentication between the specified environment in your organization on the API Platform and your backend service. If you are using a self-signed certificate instead of a certificate issued by a CA, then you must import the self-signed certificate to the trust store on the target server. To do so, refer to the instructions for the target server where your backend service is deployed.</p>
-<h2>Step 5: Configure target endpoint for client SSL</h2>
-<p>In the target endpoint configuration for your API proxy, add the following elements to the <code>HTTPConnection</code> configuration:</p>
-<div id="well">
-	<pre>&lt;ClientAuthEnabled&gt;true&lt;/ClientAuthEnabled&gt;
+<h2>Step 5: Configure TargetEndpoint for client SSL</h2>
+<p>In the TargetEndpoint configuration for your API proxy, add the following elements to the <code>HTTPConnection</code> configuration:</p>
+<pre>&lt;ClientAuthEnabled&gt;true&lt;/ClientAuthEnabled&gt;
 &lt;KeyStore&gt;myKeystore&lt;/KeyStore&gt;
 &lt;KeyAlias&gt;myKey&lt;/KeyAlias&gt;</pre>
-</div>
 <p>For example:</p>
 <div id="well">
 	<pre>&lt;TargetEndpoint name="default"&gt;
@@ -115,27 +114,18 @@ keyFile={myKey}.pem</pre>
     &lt;Protocol&gt;TLSv1&lt;/Protocol&gt;
     &lt;Protocol&gt;SSLv2Hello&lt;/Protocol&gt;
 &lt;/Protocols&gt;</pre>
-</div>
-
-Step 6: Configure a TrustStore
-
-Generate TrustStore using Java keytool
-
-keytool -genkey -alias mytrustore 
--dname "CN=IMS Client Truststore, OU=IBM SWG, O=IBM, C=US" 
--keyalg RSA -keypass password -storepass password 
--keystore "/path/to/client.truststore.ks"
-
-keytool -import -v -trustcacerts -alias server 
--file "path/to/server.keystore.cer" -keystore "path/to/client.truststore.ks" 
--keypass password -storepass password
-
-The keytool utility prompts you about whether to import the certificate to your keystore:
-
-Trust this certificate? [no]:
-
-<p>To validate the backend server's SSL certificate, create and upload a truststore containing the server's certificate. Name the truststore, for example, <code>myTruststore</code>. Then, reference the uploaded trust store in <code>SSLInfo</code>:</p>
-<div id="well">
+	<h2>Step 6: Configure a trust store</h2>
+	<p>To validate the backend server's SSL certificate, create and upload a trust store containing the server's certificate. Name the trust store, for example, <code>myTruststore</code>.</p>
+	<p>First, create an empty trust store in the environment.</p>
+	<pre>$ curl -X POST -H "Content-Type: text/xml" -d \
+'&lt;KeyStore name="myTruststore"/&gt;' \
+https://api.enterprise.apigee.com/v1/o/{org_name}/environments/{env_name}/keystores \
+-u myname:mypass</pre>
+	<p>Then upload the certificate to the trust store you created.</p>
+	<p>Note that in this example, the file that you upload is not a JAR file. Instead, it is a PEM file.</p>
+	<pre>$ curl -X POST -H "Content-Type: multipart/form-data" -F file="@trust.pem" \ "https://api.enterprise.apigee.com/v1/o/{org_name}/environments/{env_name}/keystores/myTruststore/certs?alias= myTruststore-alias" \
+-u myname:mypass </pre>
+	<p>Then, reference the uploaded trust store in <code>SSLInfo</code>:</p>
 	<pre>&lt;TargetEndpoint name="default"&gt;
   &lt;HttpTargetConnection&gt;
     &lt;SSLInfo&gt;
@@ -147,8 +137,6 @@ Trust this certificate? [no]:
     &lt;URL&gt;https ://myservice.com&lt;/URL&gt;
   &lt;/HttpTargetConnection&gt;
 &lt;/TargetEndpoint&gt;</pre>
+	<p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
+	<p>Back to <a href="/docs/enterprise/content/developer_guide">API Platform Developer Guide</a>.</p>
 </div>
-
-<p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
-
-<p>Back to <a href="/docs/enterprise/content/developer_guide">API Platform Developer Guide</a>.</p>
