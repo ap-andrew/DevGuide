@@ -10,18 +10,18 @@
 </ul>
 <p>You use these credentials to login to <a href="http://enterprise.apigee.com">enterprise.apigee.com</a> and to access the RESTful API exposed by the Apigee API Platform. If you need an account in an existing organization, please contact your organization administrator.</p>
 <h2>Download sample API proxies, policies, and code</h2>
-<p>The developer topics refer a set of samples that are located on Github.</p>
+<p>The developer topics refer to a set of API Platform samples that are located on Github.</p>
 <p>For detail see [node:4561]</p>
 <p>To obtain the sample files, run:</p>
-<div id="well">
+
 	<pre>$ git clone https://github.com/apigee/api-platform-samples.git</pre>
-</div>
-<p>If you do not have Git, please refer to <a href="https://help.github.com/articles/set-up-git">Github's git setup instructions</a>. If you don't want to install Git, you can browse the files at <a href="https://github.com/apigee/api-platform-samples">https://github.com/apigee/api-platform-samples</a>.</p>
+
+<p>If you do not have Git installed, please refer to <a href="https://help.github.com/articles/set-up-git">Github's git setup instructions</a>. If you don't want to install Git, you can browse the files and download a ZIP from <a href="https://github.com/apigee/api-platform-samples">https://github.com/apigee/api-platform-samples</a>.</p>
 <h3>Python</h3>
-<p>Python is required to run the Apigee deploy tool. Python is present in most Linux environments, on a Mac with XCode installed, on a Windows machine with&nbsp;<a href="http://www.cygwin.com/">Cygwin</a>&nbsp;installed, and in many other places.</p>
-<p>To obtain Python, please refer to the&nbsp;<a href="http://www.python.org/getit/">Python installation instructions</a>.</p>
+<p>Python is required to run the Apigee deploy tool. Python is present in most Linux environments, on a Mac with XCode installed, on a Windows machine with <a href="http://www.cygwin.com/">Cygwin</a> installed, and in many other places.</p>
+<p>To obtain Python, please refer to the <a href="http://www.python.org/getit/">Python installation instructions</a>.</p>
 <h3>An HTTP Client</h3>
-<p>The Developer Guide provides sample HTTP requests using cURL. If you need cURL, you can download&nbsp;it from http://curl.haxx.se.</p>
+<p>The Developer Guide provides sample HTTP requests using cURL. If you need cURL, you can download it from http://curl.haxx.se.</p>
 <p>Note: If you are running Windows, makes sure to download a version of curl that includes the libcurl library.</p>
 <h3>How to use the sample cURL commands</h3>
 <p>The goal of each topic is to enable you to interact with the RESTful API by cutting and pasting simple cURL commands directly into your command-line terminal.</p>
@@ -31,21 +31,42 @@
 	<li><code>mypass</code>: The password for your account in an Apigee account</li>
 	<li><code>myorg</code>: The name of your organization</li>
 </ul>
-<p>Note: Specific values within responses my differ given the differences in username, time values, etc.</p>
+<p><b>Note: </b>Specific values within responses my differ given the differences in username, time values, etc.</p>
+
+<p><b>Note: </b>On Windows, you may need to use a flag to disable the trust check that cURL performs against the SSL certificate presented by the API Platform. You can do this by adding <code>-k</code> to each request you submit via cURL on the command line. This only disables the trust check and does not disable encryption.</p>
+
+<p>For example:</p>
+
+<pre>$ curl -k https://api.enterprise.apigee.com/v1/organizations/{org_name}/apis -u myname:mypass</pre>
+
 <h2>Make a successful API call</h2>
-<p>In this step, you make an API call to the Apigee API Platform. The following curl command can be copied and pasted into a terminal window on your computer.</p>
-<p>This call lists all APIs in your organization: </p>
+
+<p>In this step, you make an API call to the Apigee API Platform. </p>
+
+<p>First, open the terminal on your computer.</p>
+
+<p>This call lists all APIs in your organization. The following cURL command can be copied and pasted into a terminal window on your computer.</p>
 
 <pre>$ curl https://api.enterprise.apigee.com/v1/organizations/{org_name}/apis -u myname:mypass</pre>
+
 <p>For example, if you username is <code>me@mycompany.com</code>, your password is <code>secret</code>, and your account in the organization called <code>apifactory</code>, then the request looks like this:</p>
 <pre>$ curl https://api.enterprise.apigee.com/v1/organizations/apifactory/apis -u me@mycompany.com:secret</pre>
-<p>For brevity the following URL also works:</p>
+
+<p>For brevity, the following URL also works:</p>
+
 <pre>$ curl https://api.enterprise.apigee.com/v1/o/apifactory/apis -u me@mycompany.com:secret</pre>
+
 <p>JSON is the default format for response messages.</p>
+
 <p>If you require XML, you can add an HTTP Accept header to get an XML response instead of JSON:</p>
+
 <pre>$ curl -H "Accept:text/xml" \
 https://api.enterprise.apigee.com/v1/organizations/apifactory/apis -u me@mycompany.com:secret</pre>
+
 <h2>Get help</h2>
+
+<p>For troubleshooting tips, see [node:4536].</p>
+
 <p>If you have any issues with the topic, post them to the at&nbsp;<a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
 <h2>Next steps</h2>
 <p>Now that you understand API Platform basics, refer to the <a href="/docs/enterprise/content/developer_guide">API platform topics</a> to learn how to apply advanced features to your API proxy.</p>
