@@ -1,16 +1,64 @@
 <p>[toc]</p>
-<p>This topic demonstrates how to setup authorization for your APIs using the OAuth 2.0 authorization code grant type for the Simple Proxy in the <a href="https://github.com/apigee/api-platform-samples">API Platform Samples</a> available on Github.</p>
-<p>In [node:819], you configured the Simple Proxy to support OAuth 2.0 client credentials. In this topic, you configure an OAuth proxy that builds on the policies configured in [node:819], but instead of the client credential grant type, it supports OAuth 2.0 'authorization code' grant type.</p>
+<p>This topic demonstrates how to setup authorization for your APIs using the OAuth 2.0 authorization code grant type. 
+	
+<p>The topic references the simpleProxy in the <a href="https://github.com/apigee/api-platform-samples">API Platform Samples</a> available on Github.</p>
 
-<p>This topic also builds on the API product, developer, and app that you set up in [node:427]. The API product provides quota-limited access to requests sent to the API resource <code>/weather</code>. If you have not done so, follow the steps in [node:427] to set up an app to consume your API.</p>
+<p>In [node:819], you configured the simpleProxy to enforce OAuth 2.0 'client credentials'. In this topic, you configure an OAuth proxy that builds on the policies configured in [node:819]. Instead of the client credential grant type, however, the API proxy that you configure in this topic enforces OAuth 2.0 'authorization code' grant type.</p>
 
-<p>Apps that use the "authorization code" grant type obtain access tokens indirectly. These apps redirect the end user's browser to a pre-defined URL that produces an authorization code, which then redirects the app end user's browser to a login Web application for authentication. This grant type is designed for Web apps that communicate directly with the provider API.</p>
+<p>This topic also builds on the API product, developer, and app that you set up in [node:427]. If you have not done so, follow the steps in [node:427] to set up an app to consume your protected API.</p>
+
+<h2>Three-legged OAuth</h2>
+
+<p>The authorization code grant type is sometimes referred to as 'three-legged' OAuth. This name provides a useful visual way to differentiate auth code from client credentials. Unlike the client credentials flow, the auth code flow requires an app to delegate authentication and authorization to a login application developed by the API provider. In other words, another 'leg' or 'hop' is added to flow. The additional leg is accommodated by using a set of redirects.</p>
+
+<p>The auth code grant type is designed primarily for browser-based client apps that communicate directly with the provider API.</p>
+
+<p>The basic three-legged flow is:</p>
+
+<p>First leg:</p>
+<ol><li>User navigates to a broswer-based Web app</li>
+<li>User clicks the 'login' link in the client app</li>
+<li>The login link invokes a URL on the authorization server</li>
+<li>The authorization server redirects the request (along with relevant information) to a login application. (This login application is sometimes referred to as a 'consent app'.)</li>
+<li>The login application collects the app end users username and password. The login application provides a way for the app end user to authorize the app to access the API on the user behalf.</li>
+<li>Once authenticated, the app end user is redirected, along with an auth code, back the app.</li></ol>
+
+<p>Second leg:</p>
+
+<ol><li>The app generates a request for an access token. The request includes the auth code from the first leg, along with the app's consumer key and secret.</li>
+<li>The app sends this request to a token endpoint, whose URL has been provided out-of-band.</li>
+<p>The token endpoint validates the auth code and the app credentials, and, if they are valid, generates an access token.</p>
+<p>The token endpoint returns the access token to the client app.</p></ol>
+
+<p>Third leg:</p>
+
+<ol><li>The app generates a request that includes the access token to the protected API </li>
+<li>The protected API validates the access token and evaluates any 'scope' parameters attached to the request</li>
+<li>If the access token is valid for the request API resource and scope, then the resource is returned to the app.</p></ol>
+	
+<p>The app developer must implement an auth code client capable of generating the three requests.</p>
+
+<p>The API provider must implement:</p>
+<ol><li>A login app</li>
+<li>An authorization server (also called an 'authorization endpoint')</li>
+<li>An access token server (also called an 'token endpoint')</li>
+<li>A validation step to check access tokens against a token store</li></ol>
+
+<p>The API platform enables you to setup 2, 3, and 4 using policies.</p>
+
+<p>The login app must be implemented by the API provider.</p>
 
 <p>For more background on OAuth, please refer to <a href="http://tools.ietf.org/html/draft-ietf-oauth-v2-26">the OAuth 2.0 Specification</a>, or to <a href="http://apigee.com/about/api-best-practices/security-%26-oauth/all">Apigee's best practices for securing APIs with OAuth.</a></p>
 
 
 <h2>Configure Authorization Endpoint</h2>
+
+The 
+
+
 <h4>GenerateAuthCode Policy</h4>
+
+
 <p>Compared with [node:819], you need to add one additional policy : <code>GenerateAuthCode</code>.</p>
 <p>This policy configures the authorization endpoint.</p>
 <p>Create this policy by creating a file called <code>GenerateAuthCode.xml</code> under <code>apiproxy/policies</code> with the following content:</p>
