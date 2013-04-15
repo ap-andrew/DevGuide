@@ -1,21 +1,15 @@
 <p>[toc]</p>
 <p>This topic demonstrates how to setup authorization for your APIs using the OAuth 2.0 authorization code grant type for the Simple Proxy in the <a href="https://github.com/apigee/api-platform-samples">API Platform Samples</a> available on Github.</p>
 <p>In [node:819], you configured the Simple Proxy to support OAuth 2.0 client credentials. In this topic, you configure an OAuth proxy that builds on the policies configured in [node:819], but instead of the client credential grant type, it supports OAuth 2.0 'authorization code' grant type.</p>
+
 <p>This topic also builds on the API product, developer, and app that you set up in [node:427]. The API product provides quota-limited access to requests sent to the API resource <code>/weather</code>. If you have not done so, follow the steps in [node:427] to set up an app to consume your API.</p>
+
 <p>Apps that use the "authorization code" grant type obtain access tokens indirectly. These apps redirect the end user's browser to a pre-defined URL that produces an authorization code, which then redirects the app end user's browser to a login Web application for authentication. This grant type is designed for Web apps that communicate directly with the provider API.</p>
+
 <p>For more background on OAuth, please refer to <a href="http://tools.ietf.org/html/draft-ietf-oauth-v2-26">the OAuth 2.0 Specification</a>, or to <a href="http://apigee.com/about/api-best-practices/security-%26-oauth/all">Apigee's best practices for securing APIs with OAuth.</a></p>
 
 
-<h2>Creating OAuth policies</h2>
-
-
-Configure Token and Authorization Endpoints
-
-Configure Authorization 
-
-
-
-
+<h2>Configure Authorization Endpoint</h2>
 <h4>GenerateAuthCode Policy</h4>
 <p>Compared with [node:819], you need to add one additional policy : <code>GenerateAuthCode</code>.</p>
 <p>This policy configures the authorization endpoint.</p>
@@ -27,6 +21,27 @@ Configure Authorization
   &lt;ExpiresIn&gt;600000&lt;/ExpiresIn&gt;
   &lt;GenerateResponse/&gt;
 &lt;/OAuthV2&gt;</pre>
+
+<h2>Redirect to Login Page</h2>
+
+<p>The authorization endpoint is responsible for redirecting the inbound request to a login app, where the app end user can safely authenticate and authorize the app.</p>
+
+One way to do this is to use a RaiseFault Policy. (You could also implement this functionality using an AssignMessage or ServiceCallout policy, or by implementing an HTTP client in JavaScript, Python, or Java.)
+
+<RaiseFault name="RedirectToLoginApp">
+    <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+    <FaultResponse>
+        <Set>
+            <Headers>
+                <Header name="Location">
+                {login_page_URL}
+                </Header>
+            </Headers>
+            <StatusCode>302</StatusCode>
+            <ReasonPhrase>Login App Redirect</ReasonPhrase>
+        </Set>
+    </FaultResponse>
+</RaiseFault>
 
 
 
