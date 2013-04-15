@@ -1,49 +1,36 @@
-<p>The API Platform exposes a RESTful API for managing API proxies. By learning the API, you can write your own scripts to optimize the development lifecycle of API proxies.</p>
+<h2>Working with APIs</h2>
 
-You also often use the RESTful during development to verify that entities have been created properly, to determine  
+<p>You have now created, deployed and invoked a basic API proxy. In this topic you will explore some RESTful APIs that are exposed by the API Platform to enable API management. These APIs are useful for exploring, debugging, and scripting the API proxy development lifecycle.</p>
+
+All of the API Platform APIs are documented in [the ]node:4972].
 
 <h3>List APIs in your organization</h3>
 
 <pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/apis</pre>
 
-<p><b>Sample Response</b></p>
-<div id="well"><pre>[ "weatherapi" ]</pre></div>	
+<p>Sample Response:</p>
+<pre>[ "weatherapi" ]</pre>
 
 <h3>Get an API</h3>
 
-<p>You can call the GET method on an API proxy to see which 'revisions' of the API proxy exist in your organization..</p>
+<p>You can call the GET method on an API. This call returns a list of all available revisions of the API proxy.</p>
 	
 <pre>$ curl -u myname:mypass -H "Accept: application/json" https://api.enterprise.apigee.com/v1/o/{org_name}/apis/weatherapi</pre>
 	
-<p><b>Sample Response</b></p>
+<p>Sample Response:</p>
 
 <pre>{
   "name" : "weatherapi",
   "revision" : [ "1" ]
 }</pre>
-	
-<h3>List API Revisions</h3>
-
-<p>An API proxy is implemented in a bundle of code and configuration. Each API proxy has a sequentially numbered set of packages. The API platform provides some basic tracking of bundles as you iterate. Every time you modify an API proxy (for example, by attaching a policy to it and then deploying it), the system generates a new revision of the API proxy. </p>
-	
-<p>This provides a lightweight form of revision control, which you should feel free to augment by using your own source-code management system. (In other words, store your latest working revision of an API proxy in your SCM!)</p>
-
-<div id="well"><pre>$ curl -u myname:mypass "Accept: application/json" https://api.enterprise.apigee.com/v1/o/{org_name}/apis/weatherapi</pre></div>
-
-<p><b>Sample Response</b></p>
-
-<div id="well"><pre>{
-  "name" : "weatherapi",
-  "revision" : [ "1" ]
-}</pre></div>
 
 <p>The only detail we get is the name of the API along with a 'revision', which in turn has a number. </p>
 
 <p>There is only one revision because you just created this API. As an API moves through the lifecycle of iterative configuration and deployment, the version number increments by integers.</p>
 
-<p>To obtain the detailed profile of an API configuration, you view a specific revision.</p>
- 
 <h3>Get API Revision</h3>
+
+<p>To obtain the detailed profile of an API configuration, you view a specific revision number.</p>
 
 <p>For example, you can call the GET method on  API proxy revision 1 to get a detailed view.</p>
 
@@ -69,55 +56,52 @@ You also often use the RESTful during development to verify that entities have b
   "type" : "Application"
 }</pre>
 
-<p>You can see here that all of the important pieces of the API are empty. Policies, ProxyEndpoints, TargetEndpoints, and resources, for example, are all empty arrays. We won't delve into these components yet, since you will learn how to configure these components in the next topics. For an in-depth review of the structure of an API proxy, refer to [node:4593]. </p>
+<p>You can see here that all of the important pieces of the API are empty. There are no policies, no Endpoints, no resources. You will add these to your API in the next Developer Guide topics. You can also read about these configuration elements in the [node:8407].)</p>
 
-<h3>Deploying an API proxy to an environment</h3>
+<h3>Deploying an API to an environment</h3>
 
-<p>Now that your API proxy is configured to receive and forward requests properly, you need to deploy it to an environment.</p>
+<p>Now that your API proxy is configured to receive and forward requests properly, you can deploy it to one or more environments. Usually, you iterate on API proxies in 'test' and then, when ready, you deploy an API proxy to 'prod'. You then publish the 'prod' URL to external developers.</p>
 	
-<p>An API proxy cannot be invoked until is has been deployed. You deploy the API <b>revision</b> to an environment. First, check environments in your organization.</p>
+<p><b>Note:</b> An API proxy cannot be invoked until is has been deployed.</p>
+<p>You deploy the API <b>revision</b> to an environment. First, check environments in your organization.</p>
 
 <h3>How to List Environments</h3>
 
-<p>Every organization on the API Platform has at least two environments: 'test' and 'prod'. The distinction between the two environments lies in the base URL that defines them. The goal is to provide you with an area to verify that your API proxy is working properly before you open it up to outside developers. Each environment is really just a unique network address, enabling you segregate traffic between the API proxies that you are working on, and those that are being accessed by apps at runtime.</p>
+<p>Every organization on the API Platform has at least two environments: 'test' and 'prod'. The distinction is arbitrary. The goal is to provide you with an area to verify that your API proxy is working properly before you open it up to outside developers. Each environment is really just a network address, enabling you segregate traffic between the API proxies that you are working on, and those that are being accessed by apps at runtime.</p>
 
-<p><b>View environments in an organization</b></p>
+<h3>View environments in an organization</h3>
 
 <pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/environments</pre>
-<p><b>Sample Response</b></p>
+<p>Sample Response</p>
 
-<div id="well"><pre>[ "test", "prod" ]</pre></div>
+<pre>[ "test", "prod" ]</pre>
 
 <h3>Deploy your API to the Test Environment</h3>
 
-<p>Now, deploy the API to the test environment.</p>
+<p>Now, deploy the API to the test environment</p>
 
-<p>The example request below shows you how to directly call the API to deploy an API proxy. The Python deploy tool, provided in the APi samples on GitHub, wraps this API call, and provides some useful functionality that helps in managing revision numbers and creating valid ZIP files.</p>
+<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/apis/weatherapi/revisions/1/deployments?action=deploy&env=test&basepath=/</pre>
 
-<div id="well"><pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/apis/weatherapi/revisions/1/deployments?action=deploy&env=test&basepath=/</pre></div>
+<p>Sample Response</p>
 
-<p><b>Sample Response</b></p>
-
-<div id="well"><pre>{
+<pre>{
   "aPIProxy" : "weatherapi",
   "environment" : [ test ],
   "name" : "1",
   "organization" : "{org_name}"
-}</pre></div>
+}</pre>
 
-<p>You now have a fully configured API proxy running on the API Platform.</p>
 
 <h3>Explore Deployments</h3>
 
-<p>A "deployment" is a deployed revision of your API proxy. It is often useful to check to see in which environment (and if!) your API is deployed. </p>
+<p>A "deployment" is a deployed revision of your API. It is often useful to check to see in which environment (and if!) your API is deployed. </p>
 
 <p>For example, you might find requests to your API proxy are failing. One troubleshooting step is to ensure that the API is deployed as expected.</p>
 
 <h3>See All Deployments of an API Revision</h3>
-
 <div id="well"><pre>curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/apis/weatherapi/revision/1/deployments</pre></div>
 
-<div id="well"><pre>{
+<pre>{
   "aPIProxy" : "weatherapi",
   "environment" : [ {
     "configuration" : {
@@ -146,31 +130,23 @@ You also often use the RESTful during development to verify that entities have b
   } ],
   "name" : "1",
   "organization" : "org_name"
-}</div></pre>
+}</pre>
 
 <h3>See All Deployments in the Test Environment</h3>
 <pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/environments/test/deployments</pre>
 
 <p>Returns the same result as above for every API deployed in the test environment
 </p>
+
 <h3>See All Deployments in your organization</h3>
-<div id="well"><pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/deployments</pre></div>
+<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/deployments</pre>
 <p>Returns the same result as above for all API proxies deployed in all environments.
 </p>
 
-<p>To get a list of all APIs in an organization, make the following API call:</p>
-
-<div id="class">
-	<pre>$ curl https://api.enterprise.apigee.com/v1/organizations/{org_name}/apis \
--u myname:mypass </pre>
-</div>
-<p>where <code>myname:mypass</code> are the username and password for an account in an Apigee organization.</p>
-<p>This request returns a list of all API proxies in an organization.</p>
 <p>Since the API is RESTful, you can simply use the POST method, along with a JSON or XML payload, against the same resource to create an API proxy.</p>
 
-
 <p>A profile for your API proxy is generated on the API Platform. The default representation of an API proxy is JavaScript object notation (JSON). Below is the default JSON response to the POST request above, which created an API proxy called 'weatherapi'. A description of each element in the profile follows:</p>
-<div id="well">
+
 	<pre>{
   "configurationVersion" : {
     "majorVersion" : 4,
@@ -191,83 +167,29 @@ You also often use the RESTful during development to verify that entities have b
   "targetServers" : [ ],
   "type" : "Application"
 }</pre>
-</div>
 	
 <p><span class="label label-info">Note</span> Keep in mind that the response payload merely contains a representation of an API resource--you can create an API proxy using JSON or XML, and you can also retrieve representations of the API proxy as XML or JSON, depending on your needs.</p>
 
 <p>The API proxy profile that is generated demonstrates the complete structure of an API proxy:</p>
 <ul>
-	<li><span style="font-family:courier new,courier,monospace;">APIProxy revision</span>: The sequentially numbered iteration of the API proxy configuration, as maintained by the API Platform</li>
-	<li><span style="font-family:courier new,courier,monospace;">APIProxy name</span>: The unique name of the API proxy</li>
-	<li><span style="font-family:courier new,courier,monospace;">ConfigurationVersion</span>: API Platform version to which the API proxy configuration conforms</li>
-	<li><span style="font-family:courier new,courier,monospace;">CreatedAt</span>: Time when the API proxy was generated on the API platform, formatted in UNIX time</li>
-	<li><span style="font-family:courier new,courier,monospace;">CreatedBy</span>: Email address of the Apigee user who created the API proxy</li>
-	<li><span style="font-family:courier new,courier,monospace;">DisplayName</span>: A user-friendly name for the API proxy</li>
-	<li><span style="font-family:courier new,courier,monospace;">LastModifiedAt</span>: Time when the API proxy was generated on the API platform, formatted in UNIX time</li>
-	<li><span style="font-family:courier new,courier,monospace;">LastModifiedBy</span>: Email address of the Apigee user who created the API proxy on the API platform</li>
-	<li><span style="font-family:courier new,courier,monospace;">Policies</span>: A list of policies that have been added to this API proxy</li>
-	<li><span style="font-family:courier new,courier,monospace;">ProxyEndpoints</span>: A list of named ProxyEndpoints</li>
-	<li><span style="font-family:courier new,courier,monospace;">Resources</span>: A list of resources (JavaScript, Python, Java, XSLT) available to be executed in this API proxy</li>
-	<li><span style="font-family:courier new,courier,monospace;">TargetServers</span>: A list of named TargetServers (that can be created using the APi Platform API), used in advanced configurations for load balancing purposes</li>
-	<li><span style="font-family:courier new,courier,monospace;">TargetEndpoints</span>: A list of named TargetEndpoints</li>
+	<li><code>APIProxy revision</code>: The sequentially numbered iteration of the API proxy configuration, as maintained by the API Platform</li>
+	<li><code>APIProxy name</code>: The unique name of the API proxy</li>
+	<li><code>ConfigurationVersion</code>: API Platform version to which the API proxy configuration conforms</li>
+	<li><code>CreatedAt</code>: Time when the API proxy was generated on the API platform, formatted in UNIX time</li>
+	<li><code>CreatedBy</code>: Email address of the Apigee user who created the API proxy</li>
+	<li><code>DisplayName</code>: A user-friendly name for the API proxy</li>
+	<li><code>LastModifiedAt</code>: Time when the API proxy was generated on the API platform, formatted in UNIX time</li>
+	<li><code>LastModifiedBy</code>: Email address of the Apigee user who created the API proxy on the API platform</li>
+	<li><code>Policies</code>: A list of policies that have been added to this API proxy</li>
+	<li><code>ProxyEndpoints</code>: A list of named ProxyEndpoints</li>
+	<li><code>Resources</code>: A list of resources (JavaScript, Python, Java, XSLT) available to be executed in this API proxy</li>
+	<li><code>TargetServers</code>: A list of named TargetServers (that can be created using the APi Platform API), used in advanced configurations for load balancing purposes</li>
+	<li><code>TargetEndpoints</code>: A list of named TargetEndpoints</li>
 </ul>
 
-<p>To reiterate, many of the elements of the API proxy configuration created using the simple POST method above are empty. The next steps involve configuring the key components of an API proxy.</p>
+<p>Note that many of the elements of the API proxy configuration created using the simple POST method above are empty. In the following Developer Guide topics, you will learn how to add and configure the key components of an API proxy.</p>
 
-<h2>Working with the Apigee deploy tool</h2>
 
-<p>To support local development of API proxies, Apigee provides an open-source tool written in Python to help you simplify and manage the process of packaging and deploying APIs from your local machine to Apigee. (The [node:2047] provides information on complete set up information.)</p>
+<p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
 
-<p>Apigee’s Python tool enables you to import (upload) and deploy your API in one simple process.</p>
-<p>In the api-platform-samples package, the deploy tool, <code>deploy.py</code>, is available under <code>/tools</code></p>
-
-<p>The command below imports an API proxy called 'weatherapi' to the 'test' environment in an organization specified in <code>org_name</code>.</p>
-<p>Substitute a valid username, password, and Apigee API Platform organization for <code>myname:mypass</code> and <code>org_name</code>. (These are the credentials used to login in to your account on <a href="http://enterprise.apigee.com">enterprise.apigee.com</a>.)</p>
-
-<p>A pointer must be provided to the directory that contains the <code>/apiproxy</code> directory, in this case <code>simpleProxy</code></p>
-
-<p>For example, run:</p>
-<pre>$ python tools/deploy.py -n weatherapi -u myname:mypass -o org_name -e test -p / -d simpleProxy</pre>
-
-<p>This single action zips the API proxy configuration files, pushes them to to the specified organization on the API Platform, and deploys the API proxy  to the specified environment, in the following example, 'test'.</p>
-
-<p>On success the result is:</p>
-<pre>Writing ./simpleProxy/apiproxy/weatherapi.xml to apiproxy/weatherapi.xml
-Writing ./simpleProxy/apiproxy/proxies/default.xml to apiproxy/proxies/default.xml
-Writing ./simpleProxy/apiproxy/targets/default.xml to apiproxy/targets/default.xml
-Imported new proxy version 1
-Environment: test
-  Revision: 1 BasePath = /
-  State: deployed</pre>
-
-<p>The tool has zipped up the API proxy configuration, imported the package to the API Platform, and deployed to the test environment.</p>
-
-<p>At this point, the API proxy can be invoked by client apps.</p>
-
-<h3>Invoke an API proxy</h3>
-
-<p>The proxied URL for an API is defined by the environment where the API proxy is deployed. The proxied URL consists of:</p>
-<ul>
-	<li>Organization name: </li>
-	<li>The environment name: </li>
-	<li>The Apigee proxy base URL (<code>apigee.net</code>, NOT <code>api.enterprise.apigee.com</code>)</li>
-	<li>The base path URI fragment you configure for the API proxy (in the example above, <code>/weather</code>)</li>
-</ul>
-
-<p>The URL for the API proxy in this example is:</p>
-
-<pre>http://{org_name}-test.apigee.net/weather</pre>
-
-<p>For an organization called 'apifactory', the API proxy address is:</p>
-
-<pre>http://apifactory-test.apigee.net/weather</pre>
-
-<p>To invoke an API proxy, clients submit requests to:</p>
-
-<pre>$ curl http://{org_name}-{env_name}.apigee.net/weather/forecastrss?w=12797282</pre>
-
-<p>The API Platform takes the URI path following the base path (as defined in the ProxyEndpoint) and appends the value to the URL defined in the HTTPConnection for the TargetEndpoint. The result would be an outbound call to:</p>
-
-<div id="well"><pre>http://weather.yahooapis.com/forecastrss?w=12797282</pre></div>
-
-<p>The API Platform receives the response and returns the response to the client app.</p>
+<p>Back to <a href="/docs/enterprise/content/developer_guide">API Platform Developer Guide</a>.</p>

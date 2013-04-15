@@ -72,7 +72,10 @@ async="false" name="QuotaPolicy"&gt;
   &lt;/RouteRule&gt;
 &lt;/ProxyEndpoint&gt;</pre>
 
-<p>But you want to change this configuration so that the ProxyEndpoint enforces a Quota policy before anything else happens. (If a developer has exceeded a Quota, you don;t want to waste any computational resources on the request:</p>
+<p>You must modify this configuration so that the ProxyEndpoint enforces a Quota policy (as a processing Step) before the API proxy performs any other processing. If a developer has exceeded a Quota, you don't want to waste any computational resources on additional requests.</p>
+
+<p>To enforce this configuration, you attach a processing Step to the request PreFlow as follows:</p>
+
 <pre>&lt;ProxyEndpoint name="default"&gt;
 &nbsp; &lt;PreFlow&gt;
 &nbsp; &nbsp; &lt;Request&gt;
@@ -88,7 +91,7 @@ async="false" name="QuotaPolicy"&gt;
   &lt;/RouteRule&gt; 
 &lt;/ProxyEndpoint&gt;</pre>
 
-<p>In the ProxyEndpoint configuration above, the Quota policy executes when the ProxyEndpoint receives a request from a client app, and before any additional processing takes place.</p>
+<p>Note that the rest of the ProxyEndpoint configuration remains the same. The only change is that you added the PreFlow, Request, and Step elements. In the ProxyEndpoint configuration above, the Quota policy executes when the ProxyEndpoint receives a request from a client app, and before any additional processing takes place.</p>
 
 <h2><a class="jumplink" name="import_deploy"></a>Importing and deploying changes</h2>
 <p>Whenever you modify API proxy, you must import and deploy. Policy changes do not take effect until the modified configuration files have been imported and deployed.</p>
@@ -111,22 +114,35 @@ Environment: test
 
 <h2><a class="jumplink" name="verify_quota_policy"></a>Verifying policy enforcement</h2>
 
-<p>To verify that a policy is enforced properly, the API must be invoked by an HTTP client. STo verify this Quota configuration, submit multiple request to the API, exceeding the quota limit that you set in the quota policy. (The URI path, configured as the base path setting in the ProxyEndpoint, in the request below is <code>/weather</code>). </p>
+<p>To verify that a policy is enforced properly, the API must be invoked by an HTTP client. To verify this Quota configuration, submit multiple request to the API, exceeding the quota limit that you set in the quota policy. (The URI path, configured as the base path setting in the ProxyEndpoint, in the request below is <code>/weather</code>). </p>
 
 <pre>http://{org_name}-test.apigee.net/weather/forecastrss?w=12797282</pre>
+
 <p>After you submit more than 1 request within a minute:</p>
+
 <pre>{"fault":{"faultstring":"policies.ratelimit.QuotaViolation","detail":{"errorcode":"policies.ratelimit.QuotaViolation"}}}</pre>
+
 <p>Now that you understand how to create and attach a simple Quota policy, you can begin working locally with all of the policies that are provided by Apigee.</p>
+
 <h2>Configuring conditional policy enforcement</h2>
+
 <p>A powerful feature of the API Platform is conditional policy enforcement.</p>
+
 <p>Conditional statements can be added to policy attachments. For example, to add a conditional statement that enforces a quota policy only for XML messages:</p>
-<div id="class"><pre>&lt;Step&gt;
+
+<pre>&lt;Step&gt;
   &lt;Condition&gt;request.header.content-type = "text/xml"&lt;/Condition&gt;
     &lt;Name&gt;QuotaPolicy&lt;/Name&gt;
-&lt;/Step&gt;</pre></div>
+&lt;/Step&gt;</pre>
+
+The configuration above enforces the Quota policy as a processing Step only if the conditional statement evaluates to true. In other words, the Quota is enforced on inbound request messages where the HTTP <code>content-type</code> header is set to <code>text/xml</code>.
+
+<p>Te API Platform evaluates the HTTP <code>content-type</code> header in the request message from the client, and checks to see whether that value equals <code>text/xml</code>. If the condition evaluates to true, the policy is enforced. If not, the policy is bypassed.</p>
+
 <p>Conditions have two components, a <i>variable</i> and a <i>conditional operator</i>.</p>
-<p>The configuration above uses a variable defined by Apigee: <code>request.header.content-type</code></p>.
-<p>It evaluates the <code>content-type</code> header in the request message from the client, and checks to see whether that value equals <code>text/xml</code>. If the condition evaluates to true, the policy is enforced. If not, the policy is bypassed.</p>
+
+<p>The configuration above uses a variable defined by Apigee: <code>request.header.content-type</code>. Many other variables are defined by the API Platform, providing a rich environment in which to implement dynamic, context-driven behavior. You can also define your own custom variables to support dynamic behavior specific to the content of the messages that your apps and API exchange.</p>
+
 <p>For more, refer to the the list of [node:243] and [node:231].</p>
 
 <p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
