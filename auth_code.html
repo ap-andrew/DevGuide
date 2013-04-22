@@ -1,27 +1,89 @@
 <p>[toc]</p>
-<p>This topic demonstrates how to setup authorization for your APIs using the OAuth 2.0 authorization code grant type. 
+<p>This topic demonstrates how to setup authorization for your APIs using the OAuth 2.0 authorization code grant type.</p>
 	
-<p>The topic references the simpleProxy in the <a href="https://github.com/apigee/api-platform-samples">API Platform Samples</a> available on Github.</p>
+<p>The topic references the simpleProxy in the <a href="https://github.com/apigee/api-platform-samples">API Platform Samples</a> available on Github. By following this topic, you will configure the simpleProxy to implement server-side OAuth 2.</p>
 
-<p>In [node:819], you configured the simpleProxy to enforce OAuth 2.0 'client credentials'. In this topic, you configure an OAuth proxy that builds on the policies configured in [node:819]. Instead of the client credential grant type, however, the API proxy that you configure in this topic enforces OAuth 2.0 'authorization code' grant type.</p>
+<p>In [node:819], you configured the simpleProxy to enforce OAuth 2.0 'client credentials'. The API proxy that you configure in this topic enforces OAuth 2.0 'authorization code' grant type, otherwise know as "three-legged OAuth".</p>
 
 <p>This topic also builds on the API product, developer, and app that you set up in [node:427]. If you have not done so, follow the steps in [node:427] to set up an app to consume your protected API.</p>
 
-<h2>Three-legged OAuth</h2>
+<h2>Background: Three-legged OAuth</h2>
 
-<p>The authorization code grant type is sometimes referred to as 'three-legged' OAuth. This name provides a useful visual way to differentiate auth code from client credentials. Unlike the client credentials flow, the auth code flow requires an app to delegate authentication and authorization to a login application developed by the API provider. In other words, another 'leg' or 'hop' is added to flow. The additional leg is accommodated by using a set of redirects.</p>
+<p>The OAuth authorization code grant type is defined in the <a href="http://oauth.net/2/">OAuth 2.0 specification</a>. Some readers of the specification find it difficult to understand. As a result, a lot of commentary and discussion is available on the Internet for the authorization code grant type. In this topic we will focus on how to configure the authorization code grant type on the Apigee API Platform. </p>
 
-<p>The auth code grant type is designed primarily for browser-based client apps that communicate directly with the provider API.</p>
+<p>For Apigee's overview overview of OAuth, see  <a href="http://apigee.com/about/api-best-practices/oauth-big-picture-0">OAuth: The Big Picture</a>.</p>
+
+<p>Authorization code ('auth code' for short) is implemented by API providers who want to enable their users or customers to leverage existing login credentials to authenticate via third-party client apps, without sharing passwords. Therefore, you should consider implementing authorization code support for your API only if you have an independent mechanism for authenticating users of your services. The benefit of auth code is that your current customer base can securely use third-party client apps to consume your services and data. This enables you to delegate app development to the legion of innovative developers who form the basis of the app economy.</p>
+
+<p>From the perspective of the API Platform, the authorization code grant type is supported through the use of policies. Although these policies enable you to configure auth code support without writing any code, you must still implement a Login app that authenticates app end users and that supports the redirects associated with the auth code grant type. The goal of this topic is to clarify specifically what must be implemented by each party in the OAuth dance.</p>
+
+<p>"Three-legged OAuth" is so named because the pattern involves three distinct interactions among cooperating entities. The three transactions are:</p>
+
+<ol><li>Authenticate the app end user, authorize client app, and return an authorization code</li>
+<li>Exchange authorization code for access token</li>
+<li>Use access token to securely invoke protected resource (API)</li></ol>
+	
+<p>There are 5 entities who participate in this 'dance'.</p>
+
+<table border="1" cellpadding="1" cellspacing="1" class="table" style="width: 690px;">
+	<thead>
+		<tr>
+			<th>Name</th>
+			<th>Description</th>
+			<th>Activities</th>
+			<th>Implemented by</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>App end user</td>
+			<td>The human user of the client app</td>
+			<td>Provides username/password to authenticate, authorizes client app to act on her behalf</td>
+			<td>N/A</td>
+		</tr>
+		<tr>
+			<td>Client app</td>
+			<td>The application (sometime called the user-agent) who access protected resource on behalf of the app end user</td>
+			<td>Redirects app end user to authorization server, exchanges auth code for access token, makes request to protected resource (API) using access token</td>
+			<td>App developer. The auth code grant type is designed primarily for browser-based client apps.</td>
+		</tr>
+         <tr>
+			<td>Login/Consent app</td>
+			<td>A web page that provide an interface where app end users authenticate with API provider</td>
+			<td>Validates app end user username/password, optionally displays consent information</td>
+			<td>API provider</td>
+		</tr>
+		<tr>
+			<td>Authorization endpoint</td>
+			<td>Two policies attached to a URI </td>
+			<td>Redirects app end user to Login app, validates client app's consumer key/secret, and redirect_uri</td>
+			<td>API Platform: Redirect policy, OAuthV2 policy</td>
+		</tr>
+		<tr>
+			<td>Token endpoint</td>
+			<td>description</td>
+			<td>N/A</td>
+			<td>API Platform: OAuthV2 policy</td>
+		</tr>
+		<tr>
+			<td>Protected resource</td>
+			<td>description</td>
+			<td>N/A</td>
+			<td>API Platform: OAuthV2 policy</td>
+		</tr>
+</tbody>
+</table>
 
 <p>The basic three-legged flow is:</p>
 
 <p>First leg:</p>
-<ol><li>User navigates to a broswer-based Web app</li>
+<ol><li>App end user navigates to a browser-based Web app</li>
 <li>User clicks the 'login' link in the client app</li>
 <li>The login link invokes a URL on the authorization server</li>
-<li>The authorization server redirects the request (along with relevant information) to a login application. (This login application is sometimes referred to as a 'consent app'.)</li>
-<li>The login application collects the app end users username and password. The login application provides a way for the app end user to authorize the app to access the API on the user behalf.</li>
-<li>Once authenticated, the app end user is redirected, along with an auth code, back the app.</li></ol>
+<li>The authorization endpoint redirects the request (along with relevant information) to the designated Login app.</li>
+<li>The Login app collects the app end users username and password. The Login app provides a way for the app end user to authorize the app to access the API on the user behalf.</li>
+<li>Once authenticated, the app end user is redirected, along with an auth code, back the app.</li>
+<li>The client app handles a call back from the authorization endpoint to obtain the access token from the response. (The authorization endpoint uses the "Callback URL" configured in the profile for the client app to make this callback.)</li></ol>
 
 <p>Second leg:</p>
 
@@ -45,53 +107,157 @@
 <li>A validation step to check access tokens against a token store</li></ol>
 
 <p>The API platform enables you to setup 2, 3, and 4 using policies.</p>
-
-<p>The login app must be implemented by the API provider.</p>
-
-<p>For more background on OAuth, please refer to <a href="http://tools.ietf.org/html/draft-ietf-oauth-v2-26">the OAuth 2.0 Specification</a>, or to <a href="http://apigee.com/about/api-best-practices/security-%26-oauth/all">Apigee's best practices for securing APIs with OAuth.</a></p>
-
-
+  
 <h2>Configure Authorization Endpoint</h2>
 
-The 
+The authorization endpoint is configured on the API Platform by attaching two policies to a URI:
+A redirect policy
+A GenerateAuthCode policy
 
 
 <h4>GenerateAuthCode Policy</h4>
 
+<p>Compared with [node:819], you need to add one additional policy : <code>GenerateAuthCode</code></p>
 
-<p>Compared with [node:819], you need to add one additional policy : <code>GenerateAuthCode</code>.</p>
 <p>This policy configures the authorization endpoint.</p>
-<p>Create this policy by creating a file called <code>GenerateAuthCode.xml</code> under <code>apiproxy/policies</code> with the following content:</p>
+
+<p>Under <code>/apiproxy/policies</code> create a file called <code>GenerateAuthCode.xml</code> with the following content:</p>
 
 	<pre>&lt;OAuthV2 name="GenerateAuthCode"&gt;
   &lt;Operation&gt;GenerateAuthorizationCode&lt;/Operation&gt;
-  &lt;!-- The authorization code expires in 10 minutes --&gt;
   &lt;ExpiresIn&gt;600000&lt;/ExpiresIn&gt;
   &lt;GenerateResponse/&gt;
 &lt;/OAuthV2&gt;</pre>
 
+<h3>Policy settings</h3>
+<table border="1" cellpadding="1" cellspacing="1" class="table" style="width: 690px;">
+	  <thead>
+		<th>Name</th>
+		<th>Description</th>
+		<th>Default</th>
+		<th>Required?</th>
+     </thead>
+<tbody>
+	
+	<tr><td><b><code>OAuthV2</code></b></td><td colspan="3">The policy type</td></tr>
+
+	<tr><td><code>name</code></td>
+	<td>The name of the policy, which is referenced in the API proxy Endpoint configuration.</td>
+	<td>N/A</td>
+	<td>Yes</td></tr>
+	
+		<tr><td><code>Operation</code></td>
+	<td>The operation to be executed by the OAuthV2 policy. The OAUthV2 policy type be configured to enforce several OAuthV2 operations By specifying GenerateAccessToken, you configure the policy to perform the generation of access tokens for apps.</td>
+	<td>N/A</td>
+	<td>Yes</td></tr>
+	
+		<tr><td><code>ExpiresIn</code></td>
+	<td>Time in milliseconds for which access tokens generated by this token endpoint will be valid.</td>
+	<td>N/A</td>
+	<td>Yes</td></tr>
+	
+		<tr><td><code>SupportedGrantTypes</code></td>
+	<td>Defines the grant types that this token endpoint supports. A token endpoint can be configured to more than one grant type. In this case, you can simply configure this setting for <code>client_credentials</code>.</td>
+	<td>N/A</td>
+	<td>Yes</td></tr>
+	
+			<tr><td><code>GrantType</code></td>
+	<td>Specifies the location in the request message where the app should indicate the desired grant type. The location can be set to HTTP header, query parameter, or form parameter.</td>
+	<td>N/A</td>
+	<td>Yes</td></tr>
+	
+			<tr><td><code>GenerateResponse</code></td>
+	<td>When present in the configuration, this element indicates that the policy defines an endpoint, and that no further processing of the request message should take place. The policy itself generates a response and returns it to the requesting client app.</td>
+	<td>N/A</td>
+	<td>Yes</td></tr>
+
+</tbody>
+</table>
+
 <h2>Redirect to Login Page</h2>
 
-<p>The authorization endpoint is responsible for redirecting the inbound request to a login app, where the app end user can safely authenticate and authorize the app.</p>
+<p>The authorization endpoint is responsible for redirecting the inbound request from the client app to the API provider's Login app, where the app end user can safely authenticate and authorize the client app without divulging passwords. This policy serves to redirect requests from the client app to the URL of your Login app, along with relevant information from the client app request.</p>
 
-One way to do this is to use a RaiseFault Policy. (You could also implement this functionality using an AssignMessage or ServiceCallout policy, or by implementing an HTTP client in JavaScript, Python, or Java.)
+<p>One way to configure the redirect is by using a RaiseFault Policy. (You could also implement this functionality using an AssignMessage or ServiceCallout policy, or by implementing an HTTP client in JavaScript, Python, or Java.)</p>
 
-<RaiseFault name="RedirectToLoginApp">
-    <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
-    <FaultResponse>
-        <Set>
-            <Headers>
-                <Header name="Location">
-                {login_page_URL}
-                </Header>
-            </Headers>
-            <StatusCode>302</StatusCode>
-            <ReasonPhrase>Login App Redirect</ReasonPhrase>
-        </Set>
-    </FaultResponse>
-</RaiseFault>
+<p>The following policy assumes that client app includes three query parameters (defined in the OAuth 2 specification) as part of the request:</p>
+<ul><li><code>client_id</code>: The consumer key (API key) of the client app</li>
+<li><code>response_type</code>: The response type requested by the client app (in this case auth code)</li>
+<li><code>scope</code>: Any scopes included by the client app. A <code>scope</code> equates to a 'permission'. The Login app may optionally display the requested scope(s) to the app end user, to enable the user to provide informed consent on the operations requested by the client app. Authorized scopes are checked when the access token is validated.</li></ul>
 
+<p>Those values are obtained by the policy by accessing variables. (Note: All query parameters on a request message are automatically set as variables by the API Platform. You do not need to explicitly set these variables before accessing them in this policy.)</p>
 
+<pre>&lt;RaiseFault name=&quot;RedirectToLoginApp&quot;&gt;
+  &lt;IgnoreUnresolvedVariables&gt;true&lt;/IgnoreUnresolvedVariables&gt;
+  &lt;FaultResponse&gt;
+    &lt;Set&gt;
+    &lt;Headers&gt;
+    &lt;Header name=&quot;Location&quot;&gt;{login_app_URL}?client_id={request.queryparam.client_id}&amp;response_type={request.queryparam.response_type}&amp;scope={request.queryparam.scope}&lt;/Header&gt;
+    &lt;/Headers&gt;
+    &lt;Payload contentType=&quot;text/plain&quot;&gt;{login_app_URL}?client_id={request.queryparam.client_id}&amp;amp;response_type={request.queryparam.response_type}&amp;amp;scope={request.queryparam.scope}
+	    &lt;/Payload&gt;
+    &lt;StatusCode&gt;302&lt;/StatusCode&gt;
+      &lt;ReasonPhrase&gt;Login App Redirect&lt;/ReasonPhrase&gt;
+    &lt;/Set&gt;
+  &lt;/FaultResponse&gt;
+&lt;/RaiseFault&gt;</pre>
+
+<h3>Policy settings</h3>
+<table border="1" cellpadding="1" cellspacing="1" class="table" style="width: 690px;">
+	  <thead>
+		<th>Name</th>
+		<th>Description</th>
+		<th>Default</th>
+		<th>Required?</th>
+     </thead>
+<tbody>
+	
+	
+	<tr><td><b><code>RaiseFault</code></b></td><td colspan="3">The policy type</td></tr>
+
+	<tr><td><code>name</code></td>
+	<td>The name of the policy, which is referenced in the API proxy Endpoint configuration.</td>
+	<td>N/A</td>
+	<td>Yes</td></tr>
+	
+		<tr><td><code>IgnoreUnresolvedVariables</code></td>
+	<td>If a variable does not resolve, this element determines whether the API proxy continues message processing.</td>
+	<td>N/A</td>
+	<td>Yes</td></tr>
+	
+		<tr><td><code>Set</code></td>
+	<td>An element that indicates a value should be created for the FaultResponse that is generated, providing a way to construct a custom message.</td>
+	<td>N/A</td>
+	<td>Yes</td></tr>
+	
+		<tr><td><code>Headers</code></td>
+	<td>Indicates that a set HTTP headers should be created on the FaultResponse. In this case, the HTTP header is <code>Location</code> along with the static value for the URL of the Login app. By including this HTTP header and setting the response code to 302, the Web browser that receives the response will automatically redirect the app end user's browser to the URL of the Login app.</td>
+	<td>N/A</td>
+	<td>Yes</td></tr>
+	
+	<tr><td><code>Payload</code></td>
+	<td>The body of the request message that will be generated by this policy. Set the Content-type HTTP header as an attribute of the element, for example <code>text/xml</code> or <code>application/json</code>. The payload in this case sets query parameters to values provided in the client app request, thereby forwarding these values to the Login app. The Login app must implement support for handling these parameters, and it must include these values in the request message that it generates for a successful authentication and authorization.</td>
+	<td>N/A</td>
+	<td>Yes</td></tr>
+	
+			<tr><td><code>StatusCode</code></td>
+	<td>Sets the HTTP status code for the response to <code>302</code>. A 302 status code causes a Web browser to automatically redirect to the URL specified in the <code>Location</code> header.</td>
+	<td>N/A</td>
+	<td>Yes</td></tr>
+	
+			<tr><td><code>ReasonPhrase</code></td>
+	<td>A human-readable description of the operation indicated by the status code.</td>
+	<td>N/A</td>
+	<td>Yes</td></tr>
+
+</tbody>
+</table>
+
+<p>Remember that the policy above only demonstrates one way of configuring the redirect. You can also enable redirects using JavaScript, Java, or another type of policy such as AssignMessge.</p>
+
+<h2>Configure the token endpoint</h2>
+
+<p>The token endpoint is responsible for validating an authorization code, consumer key/secret, and the <code>redirect_uri</code> associated with the client app. On the API Platform, the <code>redirect_uri</code> is provided at app creation time. IN the app profile it is the value of "Callback URL".</p>
 
 <h4>GenerateAccessToken Policy</h4>
 <p>This is the same policy that is configured for client credentials in [node:819], only in this case the policy is configured to support the authorization code grant type.</p>
