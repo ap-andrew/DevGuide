@@ -1,26 +1,37 @@
 <p>[toc]</p>
-<p>This topic demonstrates the use of conditional statements to customize the behavior of an API proxy. Specifically, this topic explains how to conditionally transform an XML-formatted  response message to JSON format, based on the value of the User-Agent HTTP header associated with the request message.</p>
+<p>This topic shows you how to use the API Platform to dynamically apply features at runtime, without writing any code. Specifically, this topic explains how to transform an XML-formatted response messages into JSON format, based on the type of device making the request.</p>
 
-<p>A common mechanism used to customize responses for mobile devices is the User-Agent HTTP header. This header is included in requests from all apps, so it can be used to identify clients running on mobile devices. You can use generic patterns in these headers to identify classes of mobile devices. (There is a lot of informative discussion on the web on this topic.)</p>
+<p>XML is a great format for structured data. However, some apps, especially those running on mobile devices such as iOS and Android smartphones, need to conserve resources. Also, many apps are written in JavaScript, so they may not have access to an XML parser.</p>
 
-<p>Your base of client devices is likely to change over time, so it's not a good idea to code this logic into the API or backend service itself. It's preferable to decouple this logic and use policies instead. Using policies, you can update your API's behavior over time to accommodate new client types without impacting your internal developers or your consumer apps.</p>
+<p>For these reasons, you may want to transform XML responses into JSON only when the requesting device shows itself to be a mobile device. You can tell whether the requesting app is running on a mobile device by examining the value of the User-Agent HTTP header. You can use generic patterns in these headers to identify classes of mobile devices. (There is a lot of informative discussion on the web on this topic.)</p>
 
-<p>In this topic, you configure an API proxy to evaluate a conditional expression for each request that it receives. The expression identifies mobile devices by evaluating the value of the User-Agent header. If the User-Agent header identifies the client device as an iOS client, then the API proxy &nbsp;returns a JSON-formatted weather report.&nbsp;</p>
+<p>The API Platform reads all of the HTTP headers in the request and makes them available as variables. Your API proxy configuration can make of these values at runtime to selectively execute policies or code.</p>
+
+<p>In this topic, you configure an API proxy to evaluate a conditional expression for each request. The expression identifies mobile devices by evaluating the value of the User-Agent header. If the User-Agent header identifies the client device as an iOS client, then the transforms the XML-formatted weather report into JSON.</p>
 
 <h2>Working with variables and conditions</h2>
 
-<p>Conditional behavior is implemented using a combination of variables, conditional operators, and <a href="http://en.wikipedia.org/wiki/Regular_expression">regular expressions</a>.</p>
+<p>Conditional behavior is implemented by using a combination of variables, conditional operators, and <a href="http://en.wikipedia.org/wiki/Regular_expression">regular expressions</a>.</p>
+
 <p>Two documents provide a reference on variables and conditions supported by the API Platform:</p>
 <ul>
 	<li>[node:243]</li>
 	<li>[node:231]</li>
 </ul>
 <p>For example, to create a condition that evaluates the HTTP verb of a request:</p>
-<div id="well">
+
 	<pre>&lt;Condition&gt;request.verb="GET"&lt;Condition&gt;</pre>
-</div>
+	
+<p>The API Platform uses such a statement to evaluate conditions. The example above evaluates to true if the HTTP verb associated with the request is GET. If the HTTP verb associated with the request is POST, then the statement evaluates to false.</p>
+
+<p>You can attach such a statement to a Flow, a policy Step, or to a RouteRule.</p>
+
+<p>In this topic, you will use such a conditional statement to create a 'conditional Flow', that is, a Flow that executes only when the condition evaluates to true. You can attach as many policies as you want to a conditional Flow. A conditional Flow enables you to craft highly specialized processing rules for request or response messages that meet certain criteria. In this topic, you will create a conditional Flow and attach one policy. </p>
+
+
 <h2>Converting a payload from XML to JSON</h2>
-<p>First, apply a policy to convert the XML-formatted response from the Weather API into JSON.</p>
+
+<p>First, create the policy taht will convert the XML-formatted response from the Weather API into JSON.</p>
 <p>Under<code> apiproxy/policies</code>, create a file called <code>ConvertToJSON.xml</code> with the following contents:</p>
 
 <pre>&lt;XMLToJSON name="ConvertToJSON"&gt;
@@ -32,7 +43,9 @@
 
 <p>The policy configuration above tells the API proxy to take the response message, perform a conversion from XML to JSON with default settings, and then write the result to the response. (If you are converting a request message from XML to JSON, you simply set both of these values to <code>request</code>.) The XMLToJSON policy type determines a set of reasonable defaults, which means that you only need to add configuration elements to craft XML into specific JSON structures. For instruction, refer to [node:31]</p>
 
-<p>Since you want to convert responses from XML to JSON, you need to configure a response Flow to perform the conversion. To convert all response from XML to JSON before they are returned to the client app, configure the following ProxyEndpoint Response Flow.</p>
+<p>Since you want to convert responses from XML to JSON, you need to configure a conditional response Flow to perform the conversion. Let's start by setting up the polisy to convert all response message into XML. (You will apply the conditional in the next step.) </p>
+	
+<p>For example, to convert all response from XML to JSON before they are returned to the client app, configure the following ProxyEndpoint Response Flow.</p>
 
 <pre>&lt;Flows&gt;
   &lt;Flow name="Convert-for-devices"&gt;
@@ -46,11 +59,11 @@
 
 <p>However, your goal is to only convert Weather reports into JSON <i>when the requesting client is a mobile device</i>. To enable such dynamic behavior, you must add a conditional statement to the Flow.</p>
 
-<h2>Creating conditional Flow</h2>
+<h2>Configuring conditional behavior</h2>
 
-<p>Conditional flows are used for conditional execution of logic. Multiple conditional flows can be defined per ProxyEndpoint or TargetEndpoint. If multiple conditional flows are configured in an endpoint, the conditional statements are evaluated sequentially until a condition evaluates to true. </p>
+<p>Conditional Flows are used for conditional execution of logic. Multiple conditional Flow can be defined per ProxyEndpoint or TargetEndpoint. If multiple conditional flows are configured in an endpoint, the conditional statements are evaluated sequentially until a condition evaluates to true.</p>
 	
-<p>The following example shows a single conditional flow named <code>Convert-for-devices</code>, configured in the ProxyEndpoint Response Flow.</p>
+<p>The following example shows a single conditional flow named <code>Convert-for-devices</code>, configured in the ProxyEndpoint Response Flow that you created above. Note that you just add the condition as an element to the entity to which the condition applies. In this example, the condition is a component of the Flow. Therefore, the Flow will execute whenever the statement evaluates to true.</p>
 
 <pre>&lt;Flows&gt;
   &lt;Flow name="Convert-for-devices"&gt;
@@ -85,15 +98,15 @@ Environment: test
 <h2>Testing the conditional flow</h2>
 
 In this sample request, the HTTP User-Agent header is set to <code>Mozilla</code>, causing the conditional statement to evaluate to true and the conditional flow <code >Convert-for-devices</code> to execute.
-<div id="well">
-	<pre>$ curl -H "User-Agent:Mozilla" http://{org_name}-test.apigee.net/weather/forecastrss?w=12797282
 
-or, to pretty print where Python is available:
+	<pre>$ curl -H "User-Agent:Mozilla" http://{org_name}-test.apigee.net/weather/forecastrss?w=12797282</pre>
 
-$ curl -H "User-Agent:Mozilla" http://{org_name}-test.apigee.net/weather/forecastrss?w=12797282 | python -mjson.tool</pre>
-</div>
+<p>or, to pretty print where Python is available:</p>
+
+	<pre>$ curl -H "User-Agent:Mozilla" http://{org_name}-test.apigee.net/weather/forecastrss?w=12797282 | python -mjson.tool</pre>
+
 <p>Sample Response:</p>
-<div id="well">
+
 	<pre>. . .
 
 "yweather_forecast": [
@@ -117,16 +130,17 @@ $ curl -H "User-Agent:Mozilla" http://{org_name}-test.apigee.net/weather/forecas
   }
 
 . . .</pre>
-</div>
+
 <p>A request submitted without the <code>User-Agent</code> header, or with a different value than <code>Mozilla</code>, will result in an XML-formatted response.</p>
-<div id="well">
+
 	<pre>$ curl http://{org_name}-test.apigee.net/weather/forecastrss?w=12797282</pre>
-</div>
+
 <p>The unmodified XML response is returned.</p>
+
 <p>Sample Response:</p>
-<div id="well">
+
 	<pre>&lt;yweather:forecast day="Wed" date="12 Dec 2012" low="36" high="55" text="Showers" code="11" /&gt; &lt;yweather:forecast day="Thu" date="13 Dec 2012" low="38" high="56" text="Sunny" code="32" /&gt;</pre>
-</div>
+
 
 <p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
 

@@ -22,6 +22,11 @@
 		</tr>
 	</thead>
 	<tbody>
+	<tr>
+			<td><a href="#context"><code>context</code></a></td>
+			<td>A wrapper for the message processing pipeline context and the request and response flows that are executed by the proxy and target endpoints.</td>
+			<td>flow, session</td>
+		</tr>
 		<tr>
 			<td><a href="#Request"><code>proxyRequest</code></a></td>
 			<td>An object that represents the inbound proxy request message (from the requesting app to the API Platform)</td>
@@ -42,11 +47,7 @@
 			<td>An object that represents the outbound proxy response message (from the API Platform to the requesting app)</td>
 			<td>headers, content, status</td>
 		</tr>
-		<tr>
-			<td><a href="#context"><code>context</code></a></td>
-			<td>A wrapper for the message processing pipeline context and the request and response flows that are executed by the proxy and target endpoints.</td>
-			<td>flow, session</td>
-		</tr>
+
 	</tbody>
 </table>
 <h2>Proxy and Target Request and Response</h2>
@@ -64,43 +65,43 @@
 <h4>Request Object Properties</h4>
 <p><b><code>headers</code>:</b> HTTP request headers as a mapping of <code>String =&gt; List</code></p>
 <p>Example:</p>
-<pre>proxyRequest.headers['via'];  
-proxyRequest.headers['via'][1];</pre>
+<pre>context.proxyRequest.headers['via'];  
+context.proxyRequest.headers['via'][1];</pre>
 <p><b><code>queryParameters</code>:</b> The query params as a mapping of <code>String =&gt; List</code></p>
 <p>Example:</p>
 <p>This query string:</p>
 <pre>"?city=PaloAlto&amp;city=NewYork"</pre>
 <p>can be accessed as:</p>
-<pre>proxyRequest.queryParams['city'];             // == 'PaloAlto'
-proxyRequest.queryParams['city'][0]           // == 'PaloAlto'
-proxyRequest.queryParams['city'][1];          // == 'NewYork' 
-proxyRequest.queryParams['city'].length();    // == 2  </pre>
+<pre>context.proxyRequest.queryParams['city'];             // == 'PaloAlto'
+context.proxyRequest.queryParams['city'][0]           // == 'PaloAlto'
+context.proxyRequest.queryParams['city'][1];          // == 'NewYork' 
+context.proxyRequest.queryParams['city'].length();    // == 2  </pre>
 <p><b><code>method</code>:</b> The HTTP verb associated with the request</p>
 <div id="well">
 	<pre>"GET" |  "POST" | "PUT" | "DELETE" etc.</pre>
 </div>
 <p><b><code>body</code>:</b> The message body (payload) of the HTTP request</p>
 <p>The request body has the following members:</p>
-<pre>targetRequest.body.asXML;   
-targetRequest.body.asJSON; 
-targetRequest.body.asForm;</pre>
+<pre>context.targetRequest.body.asXML;   
+context.targetRequest.body.asJSON; 
+context.targetRequest.body.asForm;</pre>
 <p>Examples:</p>
 <p>For an XML body:</p>
 <pre>"&lt;customer number='1'&gt;&lt;name&gt;Fred&lt;name/&gt;&lt;customer/&gt;"</pre>
 <p>You can access the elements of the XML object as follows:</p>
-<pre>var name = targetRequest.asXML.name;</pre>
+<pre>var name = context.targetRequest.asXML.name;</pre>
 <p>You can access the attributes of the XML object using the at sign (<code>@</code>) notation.</p>
-<pre>var number = targetRequest.body.asXML.@number;</pre>
+<pre>var number = context.targetRequest.body.asXML.@number;</pre>
 <p>For a JSON request body:</p>
 <div id="well">
 	<pre>{ "a":  1 , "b" : "2" }</pre>
 </div>
-<pre>var a = proxyRequest.body.asJSON.a;    // == 1
-var b = proxyRequest.body.asJSON.b;    // == 2</pre>
+<pre>var a = context.proxyRequest.body.asJSON.a;    // == 1
+var b = context.proxyRequest.body.asJSON.b;    // == 2</pre>
 <p>For form parameters:</p>
 <pre>"vehicle=Car&amp;vehicle=Truck"</pre>
-<pre>v0 = proxyRequest.body.asForm['vehicle'][0]; 
-v1 = proxyRequest.body.asForm['vehicle'][1];</pre>
+<pre>v0 = context.proxyRequest.body.asForm['vehicle'][0]; 
+v1 = context.proxyRequest.body.asForm['vehicle'][1];</pre>
 <p><b><code>url</code>:</b>The complete URL of the request</p>
 <ol>
 	<li>protocol: The protocol of the URL (for example, HTTP, HTTPS)</li>
@@ -112,35 +113,35 @@ v1 = proxyRequest.body.asForm['vehicle'][1];</pre>
 <p>When getting <code>url</code>, a URL is returned in the following format:</p>
 <p><code>protocol://host:port/path?queryParams</code></p>
 <p>Example:</p>
-<pre>targetRequest.url = ‘http://www.example.com/path?q1=1
-targetRequest.protocol =’https’;</pre>
+<pre>context.targetRequest.url = ‘http://www.example.com/path?q1=1
+context.targetRequest.protocol =’https’;</pre>
 <p>results in</p>
-<pre>(targetRequest.url == ‘https://www.example.com/path?q1=1)</pre>
+<pre>(context.targetRequest.url == ‘https://www.example.com/path?q1=1)</pre>
 <h3><a name="Response"></a>proxyResponse and targetResponse</h3>
 <p>The API Platform generates two response objects: one for the ProxyEndpoint and one for the TargetEndpoint.</p>
 <p>(The response object has a value of <code>undefined</code> until the targetRequest PreFlow executes.)</p>
 <p><b><code>headers</code>:</b> The HTTP headers of the response message as a mapping of <code>String =&gt; List</code></p>
 <p>Example:</p>
-<pre>var date = targetResponse.headers['Date'];</pre>
+<pre>var date = context.targetResponse.headers['Date'];</pre>
 <p><b><code>content</code>:</b> The body of the response message.</p>
 <p>Response content has the following members:</p>
-<pre>targetResponse.content.asXML;  
-targetResponse.content.asJSON;</pre>
+<pre>context.targetResponse.content.asXML;  
+context.targetResponse.content.asJSON;</pre>
 <p>Examples:</p>
 <p>For an XML response:</p>
 <pre>"&lt;customer number='1'&gt;&lt;name&gt;Fred&lt;name/&gt;&lt;customer/&gt;"</pre>
 <p>You can access the elements of the XML object as follows:</p>
-<pre>var name = proxyResponse.content.asXML.name;</pre>
+<pre>var name = context.proxyResponse.content.asXML.name;</pre>
 <p>You can access the attributes of the XML object using the at sign (<code>@</code>) notation.</p>
-<pre>var number = proxyResponse.content.asXML.@number;</pre>
+<pre>var number = context.proxyResponse.content.asXML.@number;</pre>
 <p>For JSON response:</p>
 <pre> "{ "a": "1" , "b": "2" }"</pre>
-<pre>var a = targetResponse.content.asJSON.a;    // == 1
-var b = targetResponse.content.asJSON.b;    // == 2</pre>
+<pre>var a = context.targetResponse.content.asJSON.a;    // == 1
+var b = context.targetResponse.content.asJSON.b;    // == 2</pre>
 <p><b><code>status</code>: </b> The status code with status message as a property</p>
 <p>Example:</p>
-<pre>var status = targetResponse.content.status;        // 200
-var msg = targetResponse.content.status.message;   // "OK"</pre>
+<pre>var status = context.targetResponse.content.status;        // 200
+var msg = context.targetResponse.content.status.message;   // "OK"</pre>
 <h2><a name="context">Context</a></h2>
 <p>A <code>context</code> object is created for each request/response transaction executed by the API Platform processing pipeline. The <code>context</code> object exposes methods to get, set, and remove variables related to each transaction.</p>
 <p>Variables can be thought of as properties specific to a transaction. The time of day, the locale of the requesting client, the user-agent of the requesting client, and the URL of the target service are all examples of variables that are available in the <code>context</code>. Therefore, <code>context</code> is useful for building logic that relies on these properties to execute custom behavior.</p>
@@ -190,21 +191,21 @@ var value = context.session[‘key’];  // 123</pre>
 <h2>Headers, Query Parameters, and Form Variables</h2>
 <p>Headers, Query Parameters and Form variables all share a common format: a name/value pair that maps one string to another string.</p>
 <p>The format:</p>
-<pre>proxyResponse.headers[‘foo’] = ‘bar’;</pre>
+<pre>context.proxyResponse.headers[‘foo’] = ‘bar’;</pre>
 <p>The name in a name/value pair is always a string, but the value may be either a string or a list of strings.</p>
 <p>If the value is a list, then the members of the list can be accessed by the array operator</p>
-<pre>targetResponse.headers[‘foo’][0] = ‘bar’;</pre>
-<p>in practice <code>targetResponse.headers[‘foo’]&nbsp;</code>is <code>response.headers[‘foo’][0];</code></p>
+<pre>context.targetResponse.headers[‘foo’][0] = ‘bar’;</pre>
+<p>in practice <code>context.targetResponse.headers[‘foo’]&nbsp;</code>is <code>response.headers[‘foo’][0];</code></p>
 <p>For example if the following HTTP headers are set in an HTTP response:</p>
 <pre>Content-Type: application/json
 Via: 1.0 fred
 Via: 1.1 example.com</pre>
-<pre>targetResponse.headers[‘Content-Type’]      // “application/json”
-targetResponse.headers[‘Content-Type’][0]   // “application/json”
-targetResponse.headers[‘Content-Type’][1]   // undefined</pre>
-<pre>targetResponse.headers[‘Via’]        // “1.0 fred”
-targetResponse.headers[‘Via’][0]     // “1.0 fred”
-targetResponse.headers[‘Via’][1]     // “1.1 example.com”</pre>
+<pre>context.targetResponse.headers[‘Content-Type’]      // “application/json”
+context.targetResponse.headers[‘Content-Type’][0]   // “application/json”
+context.targetResponse.headers[‘Content-Type’][1]   // undefined</pre>
+<pre>context.targetResponse.headers[‘Via’]        // “1.0 fred”
+context.targetResponse.headers[‘Via’][0]     // “1.0 fred”
+context.targetResponse.headers[‘Via’][1]     // “1.1 example.com”</pre>
 <h2>HTTP Client</h2>
 <p>The JavaScript HTTP Client can be used to make multiple parallel, asynchronous HTTP requests to any URL. This makes it useful for developing composite services, as well as for consolidating multiple API calls into a single method. You can use the HTTP client as an alternative to the Service Callout policy.</p>
 <p>For a detailed walkthrough of a composite service built with the HTTP Client, see [node:3975]</p>

@@ -40,7 +40,7 @@
 	
 	<tr><td><code>response.streaming.enabled</code></td><td>false</td><td>When true, HTTP response payloads are not read into buffer.  The response payload streams as-is to the client. The response payload will not be available for policy enforcement.</td></tr>
 	
-	<tr><td><code>additional.success.code</code></td><td>N/A</td><td>By default, the API Platform treats HTTP code 4XX or 5XX as errors, and it treats HTTP code 1XX, 2XX, 3XX as success. This property enables explicit definition of success codes, for example, <code>2XX, 1XX, 505</code> treats any 100, 200 and 505 HTTP response codes as success.</td></tr>
+	<tr><td><code>success.codes</code></td><td>N/A</td><td>By default, the API Platform treats HTTP code 4XX or 5XX as errors, and it treats HTTP code 1XX, 2XX, 3XX as success. This property enables explicit definition of success codes, for example, <code>2XX, 1XX, 505</code> treats any 100, 200 and 505 HTTP response codes as success.</td></tr>
 	
 	<tr><td><code>compression.algorithm</code></td><td>N/A</td><td>By default, the API Platform forwards requests to the target using the same compression type as the client request. If the request is received from client using, for example, gzip compression, then the API Platform forwards the request to target using gzip compression. If the response received from target uses deflate, then the API Platform forwards the response to the response to the client using deflate. Supported values are:
 		<ul><li>gzip: always send message using gzip compression</li>
@@ -58,5 +58,48 @@
 		<tr><td><code>retain.queryparams.enabled</code></td><td>true</td><td>By default, the API Platform always retains all query parameters on outbound requests. When set to <code>true</code>, all query parameters present on the inbound request are set on the outbound request to the target service.</td></tr>
 		
 		<tr><td><code>retain.queryparams</code></td><td>N/A</td><td>Defines specific query parameters to set on the outbound request. For example, to include the query parameter <code>apikey</code> from the request message, set <code>retain.queryparams</code> to <code>apikey</code>. Multiple query parameters are specified as a comma-separated list, for example, <code>apikey,environment</code>. This property overrides <code>retain.queryparams.enabled</code>.</td></tr>
+</tbody>
+</table>
+
+<h2>ProxyEndpoint Transport Properties</h2>
+
+<p>ProxyEndpoint HTTPTargetConnection elements define a set of HTTP transport properties. These properties can be used to set transport-level configurations.</p>
+
+<p>Properties are set on ProxyEndpoint HTTPProxyConnection elements as follows:</p>
+
+<pre>&lt;ProxyEndpoint name="default"&gt;
+  &lt;HTTPProxyConnection&gt;
+    &lt;URL&gt;http://weather.yahooapis.com&lt;/URL&gt;
+    &lt;Properties&gt;
+      &lt;Property name=&quot;allow.http10&quot;&gt;true&lt;/Property&gt;
+      &lt;Property name=&quot;request.streaming.enabled&quot;&gt;true&lt;/Property&gt;
+    &lt;/Properties&gt;
+  &lt;/HTTPProxyConnection&gt;
+&lt;/ProxyEndpoint&gt;</pre>
+
+<h2>ProxyEndpoint Transport Property Specification</h2>
+
+<table class="table" style="width: 690px;" width="690">
+<thead><th>Property Name</th><th>Default Value</th><th>Description</th></thead>
+
+<tbody>
+<tr><td><code>allow.http10</code></td><td>true</td><td> If this is true and the client app sends a 1.0 request, the target is also sent a 1.0 request. If false, then an HTTP 1.1 request is sent to target.</td></tr>
+
+<tr><td><code>allow.http11</code></td><td>true</td><td> If this is true and the client app sends a 1.1 request, the target is also sent a 1.1 request. If false, then an HTTP 1.0 request is sent to target.</td></tr>
+
+<tr><td><code>allow.http.method.*</code></td><td>OPTIONS, GET, HEAD, POST, PUT, DELETE, TRACE, PATCH</td><td>BY default, all HTTP methods are allowed. Use this setting to disable any HTTP method by setting the value for the property name, for example, name="allow.http.method.POST" to false. For example, <pre>&lt;Property name=&quot;allow.http.method.PUT&quot;&gt;false&lt;/Property&gt;</pre> <p>If the incoming request's method is not allowed, then the HTTP status code 405, "Method Not Allowed" will be returned, along with an Allow header whose value is the list of all methods that are allowed.</p></td></tr>
+
+<tr><td><code>X-Forwarded-For</code></td><td>false</td><td>When set to true, the virtual host's PI address is added to the outbound request as the value of the HTTP <code>X-Forwarded-For</code> header.</td></tr>
+
+<tr><td><code>allow.POST.without.content.length</code></td><td>false</td><td>When set to false, if the request method is POST and is not chunked, not compressed and the content-length header is missing, then the HTTP response code 411 "Length Required" is returned. When set to true, for the same scenario, the content-length is assumed to be zero, and the request is processed without parsing the payload.</td></tr>
+
+<tr><td><code>allow.PUT.without.content.length</code></td><td>false</td><td> When set to false case : If the request method is PUT  and is not chunked, not compressed and the content-length header is missing, then the HTTP response code 411 "Length Required" is returned. When set to true, for the same scenario, the content-length is assumed to be zero, and the request is processed without parsing the payload.</td></tr>
+
+<tr><td><code>request.streaming.enabled</code></td><td>false</td><td> By default, HTTP streaming is disabled; the HTTP request payload is written to a buffer in memory before processing by the API proxy request pipeline. When set to true, the request payload is streamed without modification to the target, bypassing the API proxy request pipeline.</td></tr>
+
+<tr><td><code>response.streaming.enabled</code></td><td>false</td><td> By default, HTTP streaming is disabled; the HTTP response payload is written to a buffer in memory before processing by the API proxy response pipeline. When set to true, the response payload is streamed without modification to the client app, bypassing the API proxy response pipeline.</td></tr>
+
+<tr><td><code>compression.algorithm</code></td><td>N/A</td><td> By default, the API Platform honors the compression type set for any message received. For example, where a client submits a request that uses gzip compression, the API Platform forwards the request to target using gzip compression. You can configure compression algorithms to be explicitly applied by setting this property on the TargetEndpoint or ProxyEndpoint. Supported values are <code>gzip</code>, <code>deflate</code>, and <code>none</code>. Use <code>none</code> to disable the default algorithm matching behavior of the API Platform.</td></tr>
+
 </tbody>
 </table>

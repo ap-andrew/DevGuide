@@ -17,19 +17,33 @@
 
 <p>Place the following policy under <code>apiproxy/policies</code> directory:</p>
 
-<div id="well"><pre>&lt;VerifyAPIKey name=&quot;APIKeyValidation&quot;&gt;
+<pre>&lt;VerifyAPIKey name=&quot;APIKeyValidation&quot;&gt;
   &lt;APIKey&gt;request.queryparameter.apikey&lt;/APIKey&gt;
 &lt;/VerifyAPIKey&gt;</pre>
-</div>
+
+<p>API proxies automatically passthrough all HTTP headers and query parameters that are present on the request. Therefore, after the API key key has been validated, it's a good idea to strip it from the message so that the API key is not sent over the wire to the backend service. You can do that using a policy of type AssignMessage as follows:</p>
+
+<pre>&lt;AssignMessage name=&quot;StripApiKey&quot;&gt;
+    &lt;DisplayName&gt;Remove Query Param&lt;/DisplayName&gt;
+    &lt;Remove&gt;
+        &lt;QueryParams&gt;
+            &lt;QueryParam name=&quot;apikey&quot;/&gt;
+        &lt;/QueryParams&gt;
+    &lt;/Remove&gt;
+    &lt;IgnoreUnresolvedVariables&gt;true&lt;/IgnoreUnresolvedVariables&gt;
+    &lt;AssignTo createNew=&quot;false&quot; transport=&quot;http&quot; type=&quot;request&quot;&gt;&lt;/AssignTo&gt;
+&lt;/AssignMessage&gt;
+</pre>
 
 <h2>Policy attachment</h2>
-<p>The policy must be attached to an API proxy Flow as a processing step. By applying the policy to the request PreFlow, API keys are verified on every request received by the API proxy from a client app.</p>
+<p>The policies must be attached to an API proxy Flow as processing Steps. By applying the policy to the request PreFlow, API keys are verified on every request received by the API proxy from a client app. After verification, the API key is stripped from the outbound request.</p>
 	
-<p>Attach the policy to the ProxyEndpoint as follows:</p>
+<p>Attach the policies to the ProxyEndpoint as follows:</p>
 <div id="well">
 	<pre>&lt;ProxyEndpoint name="default"&gt;&lt;PreFlow&gt;
     &lt;Request&gt;
       &lt;Step&gt;&lt;Name&gt;ValidateAPIKey&lt;/Name&gt;&lt;/Step&gt;
+      &lt;Step&gt;&lt;Name&gt;StripApiKey&lt;/Name&gt;&lt;/Step&gt;
     &lt;/Request&gt;
   &lt;/PreFlow&gt;
 <!-- Remainder of ProxyEndpoint configuration --></pre>
@@ -47,11 +61,11 @@
 
 <p>Substitute a valid username and password for <code>myname:mypass</code> for an organization on the Apigee API Platform, along with the name of the organization as <code>myorg</code>.</p>
 
-<div id="well">
+
 	<pre>$ python tools/deploy.py -n weatherapi -u myname:mypass -h https://api.enterprise.apigee.com -o myorg -e test -p / -d simpleProxy</pre>
-</div>
+
 <p>On import, you will see the following output. (Note that revision numbers may vary for your API proxy.)</p>
-<div id="well">
+
 	<pre>Writing simpleProxy/apiproxy/weatherapi.xml to apiproxy/weatherapi.xml
 Writing simpleProxy/apiproxy/policies/ValidateAPIKey.xml to apiproxy/policies/ValidateAPIKey.xml
 Writing simpleProxy/apiproxy/proxies/default.xml to apiproxy/proxies/default.xml
@@ -61,23 +75,22 @@ Undeploying revision 2 in same environment and path:
 Environment: test
   Revision: 3 BasePath = /
   State: deployed</pre>
-</div>
+
 <h2>Submitting a request with a valid API key</h2>
 
-If you are using the API Platform samples on Github, run:
+If you are using the API Platform samples on GitHub, run:
 
 <pre>$ sh invoke.sh</pre>
 
 <p>To directly invoke the API proxy using curl, use the following examples. </p>
 
-You may have forgotten your API key. As as admin in your organization, you can retrieve any app's API key as follows:
+<p>You may have forgotten the API key for an app. As as admin in your organization, you can retrieve any app's API key as follows:</p>
 
 <p>As an admin for your organization, you can retrieve the consumer key for an app:</p>
 <pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{myorg}/developers/{developer_email}/apps/{app_name}</pre>
 </div>
 
 <p>The app profile that is returned for this call provides the consumer key and secret. The consumer key value is the value you use for the API key in your request to the protected API.</p>
-
 
 <p>For example, a request that does not include an API key results in an authorization failure.</p>
 <div id="well">

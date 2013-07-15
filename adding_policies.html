@@ -135,9 +135,19 @@ Environment: test
     &lt;Name&gt;QuotaPolicy&lt;/Name&gt;
 &lt;/Step&gt;</pre>
 
-The configuration above enforces the Quota policy as a processing Step only if the conditional statement evaluates to true. In other words, the Quota is enforced on inbound request messages where the HTTP <code>content-type</code> header is set to <code>text/xml</code>.
+<p>The configuration above enforces the Quota policy as a processing Step only if the conditional statement evaluates to true. In other words, the Quota is enforced on inbound request messages where the HTTP <code>content-type</code> header is set to <code>text/xml</code>.</p>
 
-<p>Te API Platform evaluates the HTTP <code>content-type</code> header in the request message from the client, and checks to see whether that value equals <code>text/xml</code>. If the condition evaluates to true, the policy is enforced. If not, the policy is bypassed.</p>
+<p>The API Platform evaluates the HTTP <code>content-type</code> header in the request message from the client, and checks to see whether that value equals <code>text/xml</code>. If the condition evaluates to true, the policy is enforced. If not, the policy is bypassed.</p>
+
+<p>The API Platform automatically makes all HTTP headers and query parameters available as variables. For example, the following request message to an API:</p>
+
+<p>$ curl http://apifactory-test.apigee.net/weather/forecastrss?w=12797282&apikey=h789srfhuih -H "User-Agent:Mozilla/5.0"</p>
+
+<p>Results in the following variables being set:</p>
+
+<pre>request.queryParam.w=12797282
+request.queryParam.apikey=h789srfhuih
+request.header.User-Agent=User-Agent:Mozilla/5.0</pre>
 
 <p>Conditions have two components, a <i>variable</i> and a <i>conditional operator</i>.</p>
 

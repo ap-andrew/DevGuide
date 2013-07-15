@@ -1,10 +1,20 @@
-<h2>Working with APIs</h2>
+<p>[toc]</p>
 
-<p>You have now created, deployed and invoked a basic API proxy. In this topic you will explore some RESTful APIs that are exposed by the API Platform to enable API management. These APIs are useful for exploring, debugging, and scripting the API proxy development lifecycle.</p>
+<p>You have now created, deployed and invoked a basic API proxy. In this topic you will explore the RESTful APIs that are exposed by the API Platform to enable API proxy management. These APIs are useful for exploring, debugging, and scripting the API proxy development lifecycle.</p>
 
-All of the API Platform APIs are documented in [the ]node:4972].
+<p>Every organization has a unique software development lifecycle (SDLC). It can be important to synchronize API proxy deployment with the deployment of backend services. </p>
+	
+<p>The API demonstrated in this topic can be used to integrate API proxy management into your organization's SDLC. A common usage of this API is to write scripts or code that deploys new API proxies, or that migrate API proxies from test into prod, as part of a larger automated process that also deploys or migrates other applications.</p>
+
+<p>The API makes no assumptions about your SDLC (or anyone else's, for that matter). Rather, it exposes atomic functions that can be coordinated by your development team to automate and optimize your API lifecycle.</p>
+
+<p>All of the API Platform APIs are documented in [node:4972].</p>
+
+<h2>Interacting with the API</h2>
 
 <h3>List APIs in your organization</h3>
+
+<p>You can begin by listing all of the API proxies in your organization.</p>
 
 <pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/apis</pre>
 
@@ -29,6 +39,14 @@ All of the API Platform APIs are documented in [the ]node:4972].
 <p>There is only one revision because you just created this API. As an API moves through the lifecycle of iterative configuration and deployment, the version number increments by integers.</p>
 
 <h3>Get API Revision</h3>
+
+<p><span class="label label-info">Note</span> Don't confuse the <i>version</i> of an API with the <i>revision</i> of an API proxy. The two numbers are unrelated, and the revision number of an API proxy is totally opaque to apps that consume your API.</p> 
+	
+<p>The API version (for example, <code>api.company.com/v1</code>) should change very infrequently. When you do increment the API version, it signifies to developers that there has been a significant change in the signature of the API. </p>
+
+<p>The API proxy revision is merely an incremented number associated with an API proxy configuration. The API Platform maintains revisions of your configurations so that you can revert a configuration when something goes wrong. By default, an API proxy's revision is automatically incremented every time you deploy an API proxy. This behavior can be overridden in the Management UI and in the API.</p>
+
+<p>See <a href="http://apigee.com/docs/enterprise/content/add-apis#-a-class-jumplink-name-set-root-id-set-root-a-a-class-jumplink-name-api-versions-id-api-versions-a-api-versions">Versioning an API</a> for guidance and instruction on incrementing the interface version of the API that you expose to external developers.</p>
 
 <p>To obtain the detailed profile of an API configuration, you view a specific revision number.</p>
 
@@ -56,7 +74,7 @@ All of the API Platform APIs are documented in [the ]node:4972].
   "type" : "Application"
 }</pre>
 
-<p>You can see here that all of the important pieces of the API are empty. There are no policies, no Endpoints, no resources. You will add these to your API in the next Developer Guide topics. You can also read about these configuration elements in the [node:8407].)</p>
+<p>You can see here that all of the important pieces of the API are empty. There are no policies, no Endpoints, no resources. You will add these to your API in the next Developer Guide topics. You can also read about these configuration elements in the [node:8407].</p>
 
 <h3>Deploying an API to an environment</h3>
 
@@ -94,9 +112,9 @@ All of the API Platform APIs are documented in [the ]node:4972].
 
 <h3>Explore Deployments</h3>
 
-<p>A "deployment" is a deployed revision of your API. It is often useful to check to see in which environment (and if!) your API is deployed. </p>
+<p>A "deployment" is a deployed revision of your API proxy. An API proxy that is in the deployed state is accessible over the network. It is often useful to check to see in which environment (and if!) your API is deployed. </p>
 
-<p>For example, you might find requests to your API proxy are failing. One troubleshooting step is to ensure that the API is deployed as expected.</p>
+<p>For example, you might find requests to your API proxy are failing. One troubleshooting step is to ensure that the API proxy is deployed as expected.</p>
 
 <h3>See All Deployments of an API Revision</h3>
 <div id="well"><pre>curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/apis/weatherapi/revision/1/deployments</pre></div>
@@ -189,7 +207,114 @@ All of the API Platform APIs are documented in [the ]node:4972].
 
 <p>Note that many of the elements of the API proxy configuration created using the simple POST method above are empty. In the following Developer Guide topics, you will learn how to add and configure the key components of an API proxy.</p>
 
+<p>You can also read about these configuration elements in the [node:8407].</p>
+
+<h2>Scripting against the API</h2>
+
+<p>The [node:4561], available on GitHub provide shell scripts that wrap the Apigee deploy tool. If for some reason you cannot use the Python deploy tool, then you can call the API directly. Both approaches are demonstrated in the sample scripts below.</p>
+
+<h3>Wrapping the Deploy Tool</h3>
+
+<p>First, make sure the <a href="https://github.com/apigee/api-platform-samples/tree/master/tools">Python deploy tool</a> is available in your local environment. </p>
+	
+<p>Then create a file to hold your credentials. The deployment scripts that you write will import these settings, helping you to centrally manage the credentials for your account. In the API Platform sample, this file is called <a href="https://github.com/apigee/api-platform-samples/tree/master/setup"><code>setenv.sh</code></a>.</p>
+
+<pre>#!/bin/bash
+
+org="Your ORG on enterprise.apigee.com"
+username="Your USERNAME on enterprise.apigee.com"
+
+# While testing, it's not necessary to change the setting below
+env="test"
+# Change the value below only if you have an on-premise deployment
+url="https://api.enterprise.apigee.com"
+# Change the value below only if you have a custom domain
+api_domain="apigee.net"
+
+export org=$org
+export username=$username
+export env=$env
+export url=$url
+export api_domain=$api_domain</pre>
+
+<p>The file above makes all of your settings available to the shell script that wrap the deploy tool.</p>
+
+<p>Now create a shell script that imports those settings and uses them to call the deploy tool. (You can see an example <a href="https://github.com/apigee/api-platform-samples/tree/master/setup">here</a>.)
+</p>
+<pre>#!/bin/bash
+
+source path/to/setenv.sh
+
+echo "Enter your password for the Apigee Enterprise organization $org, followed by [ENTER]:"
+
+read -s password
+
+echo Deploying $proxy to $env on $url using $username and $org
+
+path/to/deploy.py -n {api_name} -u $username:$password -o $org -h $url -e $env -p / -d path/to/apiproxy</pre>
+
+<p>To make your life really easy, also create a script to invoke and test the API, as follows:</p>
+
+<pre>#!/bin/bash
+
+echo Using org and environment configured in /setup/setenv.sh
+
+source /path/to/setenv.sh
+
+set -x
+
+curl "http://$org-$env.apigee.net/{api_basepath}"</pre>
+
+<h3>Directly invoking the API</h3>
+
+<p>It can be useful to write simple shell scripts that automate the process of uploading and deploying API proxies.</p>
+
+<p>The script below directly invokes the Platform API. It undeploys the existing revision of the API proxy that you are updating, creates a ZIP file from the <code>/apiproxy</code> directory containing your proxy configuration files, and then uploads, imports, and deploys the configuration.</p>
+
+<pre>#!/bin/bash
+
+#This sets the name of the API proxy and the basepath where the API will be available
+api=api
+	
+source /path/to/setenv.sh
+
+echo Delete the DS_store file on OSX
+
+echo find . -name .DS_Store -print0 | xargs -0 rm -rf
+find . -name .DS_Store -print0 | xargs -0 rm -rf
+
+echo "Enter your password for the Apigee Enterprise organization $org, followed by [ENTER]:"
+
+read -s password
+
+echo Undeploy and delete the previous revision
+
+curl -k -u $username:$password "$url/v1/o/$org/apis/$api/revisions/1/deployments?action=undeploy&env=$env" -X POST -H "Content-Type: application/octet-stream"
+
+curl -k -u $username:$password -X DELETE "$url/v1/o/$org/apis/$api/revisions/1"
+
+rm -rf $api.zip
+
+echo Create the API proxy bundle and deploy
+
+zip -r $api.zip apiproxy
+
+echo Import the new revision to $env environment 
+
+curl -k -v -u $username:$password "$url/v1/o/$org/apis?action=import&name=$api" -T $api.zip -H "Content-Type: application/octet-stream" -X POST
+
+echo Deploy the new revision to $env environment 
+
+curl -k -u $username:$password "$url/v1/o/$org/apis/$apirevisions/1/deployments?action=deploy&env=$env" -X POST -H "Content-Type: application/octet-stream"</pre>
+
+<h2>Get help</h2>
 
 <p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
+
+<h2>Next steps</h2>
+
+[Node:427]
+
+
 
 <p>Back to <a href="/docs/enterprise/content/developer_guide">API Platform Developer Guide</a>.</p>

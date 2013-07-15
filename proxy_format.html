@@ -130,7 +130,7 @@
 		</tr>
 		<tr>
 			<td><code>Properties</code></td>
-			<td>A set of optional HTTP configuration settings can be defined as properties of a ProxyEndpoint</td>
+			<td>A set of optional HTTP configuration settings can be defined as properties of a ProxyEndpoint. See [node:6858].</td>
 			<td>N/A</td>
 			<td>No</td>
 		</tr>
@@ -146,7 +146,7 @@
 		</tr>
 		<tr>
 			<td><code>Condition</code></td>
-			<td>An optional conditional statement used for dynamic routing at runtime. Conditional RouteRules are useful, for example, to enable content-based routing to support backend versioning.</td>
+			<td>An optional conditional statement used for dynamic routing at runtime. Conditional RouteRules are useful, for example, to enable content-based routing to support backend versioning.</td>  	
 			<td>N/A</td>
 			<td>No</td>
 		</tr>
@@ -238,7 +238,7 @@
 		</tr>
 		<tr>
 			<td><code>LoadBalancer</code></td>
-			<td>Defines one or more named TargetServer configurations. Named TargetServer configurations can be used for load balancing, by providing, for example, settings for 2 or more physical servers.</td>
+			<td>Defines one or more named TargetServer configurations. Named TargetServer configurations can be used for load balancing, by providing, for example, settings for 2 or more physical servers. See [node:4562].</td>
 			<td>N/A</td>
 			<td>No</td>
 		</tr>
@@ -516,7 +516,7 @@
 </div>
 <h3>A note on 'API resources'</h3>
 <p>A common usage of conditional flows is the definition of 'API resources', as defined by the WADL specification.</p>
-<p><span class="label label-warning">Warning</span> 'API resources' should not be confused with 'proxy resources'. An API resource uses the definition from the web application definition language (WADL) specification to identify specific RESTful 'resources'. Proxy resources (defined below) define code, scripts, or other files that can be attached to PAI proxy flows by referencing them in policies.</p>
+<p><span class="label label-warning">Warning</span> 'API resources' should not be confused with 'proxy resources'. An API resource uses the definition from the web application definition language (WADL) specification to identify specific RESTful 'resources'. Proxy resources (defined below) define code, scripts, or other files that can be attached to API proxy flows by referencing them in policies.</p>
 <p>When an API resource is created in the Management UI, a conditional flow for the URI is configured in the API proxy.</p>
 <p>A sample API resource configuration:</p>
 <pre>&lt;Flow name="MyAPIResource"&gt;
