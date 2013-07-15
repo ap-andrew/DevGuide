@@ -1,0 +1,92 @@
+<h2>Scripting against the API</h2>
+
+<h3>Wrapping the Deploy Tool</h3>
+
+<p>First create a file to hold your credentials. The deployment scripts that you write will import these settings, helping you to centrally manage the credentials for your account. In the API Platform sample, this file is called <code>setenv.sh</code>.</p>
+
+<pre>#!/bin/bash
+
+org="Your ORG on enterprise.apigee.com"
+username="Your USERNAME on enterprise.apigee.com"
+
+# While testing, it's not necessary to change the setting below
+env="test"
+# Change the value below only if you have an on-premise deployment
+url="https://api.enterprise.apigee.com"
+# Change the value below only if you have an on-premise deployment
+api_domain="apigee.net"
+
+export org=$org
+export username=$username
+export env=$env
+export url=$url
+export api_domain=$api_domain</pre>
+
+<p>The file above makes all of your settings available to the shell script that wrap the deploy tool.</p>
+
+<p>Now create a shell script that imports those settings and uses them to call the deploy tool.
+</p>
+<pre>#!/bin/bash
+
+source path/to/setenv.sh
+
+echo "Enter your password for the Apigee Enterprise organization $org, followed by [ENTER]:"
+
+read -s password
+
+echo Deploying $proxy to $env on $url using $username and $org
+
+path/to/deploy.py -n {api_name} -u $username:$password -o $org -h $url -e $env -p / -d path/to/apiproxy</pre>
+
+<p>To make your life really easy, also create a script to invoke and test the API, as follows:</p>
+
+<pre>#!/bin/bash
+
+echo Using org and environment configured in /setup/setenv.sh
+
+source /path/to/setenv.sh
+
+set -x
+
+curl "http://$org-$env.apigee.net/{api_basepath}"</pre>
+
+<h3>Directly invoking the API</h3>
+
+<p>It can be useful to write simple shell scripts that automate the process of uploading and deploying API proxies.</p>
+
+<p>The script below </p>
+
+<pre>#!/bin/bash
+	
+source /path/to/setenv.sh
+
+echo Delete the DS_store file if we're on OSX
+
+echo find . -name .DS_Store -print0 | xargs -0 rm -rf
+find . -name .DS_Store -print0 | xargs -0 rm -rf
+
+read -s password
+
+echo Undeploy and delete the previous revision
+
+curl -k -u $username:$password "$url/v1/o/$org/apis/$api/revisions/1/deployments?action=undeploy&env=$env" -X POST -H "Content-Type: application/octet-stream"
+
+curl -k -u $username:$password -X DELETE "$url/v1/o/$org/apis/$api/revisions/1"
+
+rm -rf $api.zip
+
+echo Create the API proxy bundle and deploy
+
+zip -r $api.zip apiproxy
+
+echo Import the new revision to $env environment 
+
+curl -k -v -u $username:$password "$url/v1/o/$org/apis?action=import&name=$api" -T $api.zip -H "Content-Type: application/octet-stream" -X POST
+
+echo Deploy the new revision to $env environment 
+
+curl -k -u $username:$password "$url/v1/o/$org/apis/$apirevisions/1/deployments?action=deploy&env=$env" -X POST -H "Content-Type: application/octet-stream"</pre>
+
+<p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
+
+<p>Back to <a href="/docs/enterprise/content/developer_guide">API Platform Developer Guide</a>.</p>

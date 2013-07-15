@@ -1,0 +1,107 @@
+<p>[toc]</p>
+
+<p>API proxies that run on the API Platform are stateless. They enforce policies and execute scripts and code, but the environment in which they run is populated with context that is specific to each request/response transaction.</p>
+
+<p>To provide API proxies with access to data over multiple transactions, the API Platform provides a persistence layer that enables API proxies to store data. The API Platform's persistence layer consists of L1 and L2 caches and a NoSQL key/value store. These caches and the data store work together to optimize availability and performance.</p>
+	
+<p>As a developer you can access this persistence layer without knowing the details of its implementation. Instead, you use a set of policies to interact with the API Platform's persistence layer at runtime. The API Platform defines three policy types that enable you to configure persistence for API proxies using configuration instead of code.</p>
+
+The API Platform also exposes RESTful APIs that enable you to manage the 
+
+<p>The API Platform supports three persistence scenarios:</p>
+
+<ul><li>A cache for serving duplicates of stored static response messages</li>
+<li>A general purpose caching mechanism for persisting any arbitrary objects used by your API proxies</li>
+<li>A highly performant NoSQL key/value store for simple data sets used by your API proxies</li></ul>
+
+<h2>To Cache or to Store?</h2>
+
+<p>The decision to use the cache or the key/value store is a simple one:</p>
+
+<p>If the data that you need to store is not structured or is short-lived, then use the cache.</p>
+
+<p>Examples of situations where you would use the cache are:</p>
+<ul><li>Storage of tokens, such as SessionID's or OAuth access tokens used for outbound requests to backend services</li>
+<li>Simple caching of static response messages</li></ul>
+
+<p>Response caching is a dedicated application of the caching mechanism that is fully implemented in the ResponseCache policy. IN other words, ResponseCaching requires no coding on your part.</p>
+
+<p>A consideration for response caching is that responses larger than 256KB are not distributed across the API Platform infrastructure. This is done to optimize performance. Therefore, if you have a organization on the cloud version of the API Platform and you configure response caching, you may see calls to your backend even though the response has already been cached on one server running in the API Platform cloud.</p>
+
+<p>Instructions for configuring response caching can be found in [node:26].</p>
+
+<p>Caching is more general purpose, enabling you to persists any objects that your API proxies require over multiple request/response sessions. The API Platform provides policies for populating, retrieving, and flushing the cache at runtime. The interaction mechanism that links the API proxies with the underlying cache is variables. You can use policies or code in your API proxies to populate and retrieve cached objects by interacting with the variables that you define in caching policies. The API Platform also exposes a RESTful API for managing Cache resources.</p>
+
+<p>Instructions for working with the cache can be found in [node:259].</p>
+
+<p>If the data you need to store is structured or is long-lived, then use the key/value map.</p>
+
+<p>Examples of situations where you would use the key/value store are:</p>
+
+<p><li>A map of IP addresses to country codes</li>
+<li>A list of IP addresses for whitelisting/blacklisting</li>
+<li>A mapping of long URLs to corresponding shortened URLs</li></p>
+
+<p>The API Platform provides a set of policies for interacting with the key/value store at runtime. The API Platform also exposes a RESTful API for managing the contents of the key/value store. The API enables you, for example, to perform bulk operations to populate the key/value store with large data sets.</p>
+
+
+
+For example, if you needed to have rapid access to information about plants, you would create a keyvaluemap store for each plant. in this example you can see that a key/value map is used for <i>entities</i>, and not for <i>collections</i>. 
+
+<pre>curl -H "Content-Type:application/json" -X POST -d \
+'{
+  "entry" : [ {
+    "name" : "Common Name",
+    "value" : "Okra"
+    },{
+    "name" : "Latin Name",
+    "value" : "Abelmoschus esculentus"
+  }, {
+    "name" : "Family",
+    "value" : "Malvaceae"
+  }, {
+    "name" : "Habit",
+    "value" : "Annual" } ],
+  "name" : "okra"
+}' \
+-u myname:mypass https://api.enterprise.apigee.com/v1/o/{apifactory}org_name}/keyvaluemaps</pre>
+
+<p>However, you probably would not want to go to the trouble of creating that many key/value maps, and you would look to a solution such as App Services for storing this type of data.</p>
+
+<p>Therefore, key/value maps work better for single entities that have many properties. For example:</p>
+
+<pre>curl -H "Content-Type:application/json" -X POST -d \
+'{
+  "entry" : [ {
+    "name" : "development",
+    "value" : "dev.apifactory.com"
+  }, {
+    "name" : "production",
+    "value" : "prod.apifactory.com" } ],
+  "name" : "URLs"
+}' \
+-u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/keyvaluemaps</pre>
+
+<p>The result is a key/value map that can be retrieved as JSON or XML for use at runtime by policies or code that you write.</p>
+
+<p>You can add entries to the key/value map but using the PUT verb. You only need to include the entries to be added:</p>
+
+<pre>curl -H "Content-Type:application/json" -X PUT -d \
+'{
+  "entry" : [ {
+    "name" : "staging",
+    "value" : "stage.apifactory.com"
+  } ],
+  "name" : "URLs"
+}' \
+-u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/keyvaluemaps</pre>
+
+
+<p>Instructions for working with key/value maps can be found in [node:249].</p>
+
+<h2>Get help</h2>
+
+Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>
+
+<h2>Next steps</h2>
+

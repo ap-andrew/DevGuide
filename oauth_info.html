@@ -1,0 +1,41 @@
+<GetOAuthV2Info name="GetClientAttributes">
+    <ClientId ref="{variable name}"/>
+</GetOAuthV2Info>
+
+<GetOAuthV2Info name="GetClientAttributes">
+    <ClientId>{client id}</ClientId>
+</GetOAuthV2Info>
+
+<GetOAuthV2Info name="GetTokenAttributes">
+    <AccessToken ref="{variable name}"/>
+</GetOAuthV2Info>
+
+<GetOAuthV2Info name="GetTokenAttributes">
+    <AccessToken>{access token}</AccessToken>
+</GetOAuthV2Info>
+
+oauthv2accesstoken.{policy_name}.access_token
+oauthv2accesstoken.{policy_name}.scope
+oauthv2accesstoken.{policy_name}.refresh_token
+oauthv2accesstoken.{policy_name}.accesstoken.{custom_attribute_name}
+oauthv2accesstoken.{policy_name}.developer.id
+oauthv2accesstoken.{policy_name}.developer.app.name
+oauthv2accesstoken.{policy_name}.expires_in
+oauthv2accesstoken.{policy_name}.status
+
+
+<GetOAuthV2Info name="GetAuthCodeAttributes">
+    <AuthorizationCode ref="{variable name}"/>
+</GetOAuthV2Info>
+
+<GetOAuthV2Info name="GetAuthCodeAttributes">
+    <AuthorizationCode>{authorization code}</AuthorizationCode>
+</GetOAuthV2Info>
+
+<GetOAuthV2Info name="GetTokenAttributes">
+    <RefreshToken ref="{variable name}"/>
+</GetOAuthV2Info>
+
+<GetOAuthV2Info name="GetTokenAttributes">
+    <RefreshToken>{refresh token}</RefreshToken>
+</GetOAuthV2Info>
