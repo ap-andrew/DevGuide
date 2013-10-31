@@ -1,0 +1,43 @@
+<h2>Provisioning automation clients in your organization</h2>
+
+<p>Sometimes you need to create cron jobs or shell scripts that call the Platform API. Any scripts that consume the API should have highly restricted capabilities. 
+	
+<p>For example, you can create a role that is only capable of reading reports, but not of creating or modifying reports. You can also create a role that enables a user to deploy API proxies to the test environment, but not to deploy them to the prod environment.</p>
+
+<p>You can do this by following these steps:</p>
+	
+<ol><li>Define a role restrictive set of permissions against a specific resource</li>
+<li>Create a user scoped to your organization (sometimes called an "org user")</li>
+<li>Associate the org user with the restrictive role you defined in Step 1</li>
+<li>Use the credentials for the org user in programs that consume the Management API</li></ol>
+
+<h2>Users</h2>
+
+<p>The API Platform supports two types of users:</p>
+
+<p><b>System-level users:</b> Users created at the base level of the AIP Platform, who can be part of any organization. When you set up a free trial account on the API Platform, your account is a 'system-level' account. Therefore, your account is scoped to:</p>
+
+<pre>api.enterprise.apigee.com/v1/o/{your_email}</pre>
+
+<p><b>Organization-level users:</b> Org level users can only be part of one organization, and Apigee single-sign on capabilities between Apigee products does not apply.</p>
+
+Org-scoped users are NOT covered by SSO, since they don't exist outside the 4G org. This presents problems, since there is no login flow for org-scoped users (similarly no password reset or access to other products).
+
+We have (or will have customers) who are unwilling to share their users with other customers. They do not want Apigee users. Further, if one of the orgs have a different password requirement than others, then that organization's users will have to be org scoped unless we force everyone to update their password. 
+
+@Marsh - Org scoped users can login, have password reset etc, expect that it will not work from accounts.apigee.com.
+@Michell - If you do a post under /o/orgname/users, it will be org scoped. 
+
+ that large complicated accounts in our cloud would like to do things like:
+Reset their users' passwords
+
+Password reset can be accomplished by the web flow. An admin could even trigger this, though he/she would need access to the email address to which it's registered to complete the  flow. 
+
+
+Apply complex password complexity rules 
+
+We do have a mechanism that should provide some control over which of our various password rules an org can apply to their users. This allows some level of complexity without forcing it on our entire user-base.
+
+> Password reset can be accomplished by the web flow. An admin could even trigger this, though he/she would need access to the email address to which it's registered to complete the  flow. 
+
+So that to me says that an "org administrator" can't force a user of "their" org to have his or her password reset due to abuse or being fired or whatever. Perhaps just being able to remove the user from the org is enough but it's worth considering.

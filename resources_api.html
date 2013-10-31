@@ -1,0 +1,161 @@
+[toc]
+
+
+<p>Many Policy types defined by the API Platform rely on 'resources'. Resources are the files that implement the code or configuration to be executed by a Policy when it is attached to an API proxy. In some cases, as with JavaScript and JavaCallout, a Policy simply defines an attachment point in an API proxy where some code should execute. Such a Policy is a pointer to a <i>resource</i>.</p>
+
+<p>These resources can be stored in three locations in an organization. Although all the the examples in the Developer Guide store resources and Policies in the API proxy package, the API Platform also provides repositories for these resources at the organization and the environment level. By storing resources at the organization or the environment level, you enable re-use and sharing of code and configuration across the API proxies deployed in your organization and across different environments.</p>
+
+<h2>Resource types</h2>
+
+<p>Resource repositories support the following resource types:</p>
+
+<ul><li><code>jsc</code>: compiled JavaScript, referenced by policies of type Javascript</li>
+<li><code>java</code>: Java classes, referenced by policies of type JavaCallout</li>
+<li><code>py</code>: Python scripts, referenced by policies of type Python</li>
+<li><code>wsdl</code>: WSDL files, referenced by policies of type MessageValidation</li>
+<li><code>xsd</code>: XML schemas, referenced by policies of type MessageValidation</li>
+<li><code>xsl</code>: XSLT transformations, referenced by policies of type XSL</li>
+</ul>
+
+<p>The repositories are available at the following URIs:</p>
+
+<pre>/organizations/{org_name}/resourcefiles
+/organizations/{org_name}/environments/{environment_name}/resourcefiles
+/organizations/{org_name}/apis/{api_name}/revisions/{revision_number}/resources</pre>
+
+<p>For example, all JavaScript files available across an organization are stored under:</p>
+
+<pre>/organizations/{org_name}/resourcefiles/jsc</pre>
+
+<p>JavaScript stored in the <code>/organizations</code> collection is available to any API proxy running in any environment.</p>
+
+<p>You can list all available resources by calling GET on the collection:</p>
+
+<pre class="terminal">$ curl https://api.enterprise.apigee.com/v1/organizations/{org_name}/resourcefiles/{resource_type}</pre>
+
+<p>The following request lists all JavaScript resources at the organization level:</p>
+
+<pre class="terminal">$ curl https://api.enterprise.apigee.com/v1/organizations/myorg/resourcefiles/jsc</pre>
+
+<p>The following request lists all JavaScript resources at the environment level, in the environment called <code>prod</code>:</p>
+
+<pre class="terminal">$ curl https://api.enterprise.apigee.com/v1/organizations/myorg/environments/prod/resourcefiles/jsc</pre>
+
+
+<p>The following request lists all JavaScript resources in an API proxy revision (the most specific level):</p>
+
+<pre class="terminal">$ curl https://api.enterprise.apigee.com/v1/organizations/myorg/apis/weatherapi/revisions/6/resourcefiles/jsc</pre>
+
+<p>Each request returns a list of resource names.</p>
+
+<p>Sample response:</p>
+ 
+<pre>&lt;List&gt;
+  &lt;Item&gt;JavaScriptMashUp&lt;/Item&gt;
+  &lt;Item&gt;JavaScriptClient&lt;/Item&gt;
+&lt;/List&gt;</pre>
+
+<h2>Populating resource repositories</h2>
+
+<p>Let's assume that you have a simple snippet of JavaScript that you need to make available to API proxies across your organization. The following sample JavaScript sets the HTTP request path to the value of the <code>proxy.basepath</code> variable. It's just one example of a resource that you might need to put in the repository.</p>
+
+<pre>request.setHeader("RequestPath", flow.getVariable("proxy.basepath"));</pre>
+
+<p>To create a resource, you call the POST method, submitting the body of the resource file, and identifying the resource's <code>name</code> and <code>type</code> as query parameters.</p>
+
+<p>To make the JavaScript available to API proxies running in any environment in your organization:</p>
+
+<pre class="terminal">$ curl -X POST -H "Content-type:application/octet-stream" -d \
+'request.setHeader("RequestPath", flow.getVariable("proxy.basepath"));' \
+https://api.enterprise.apigee.com/v1/organizations/myorg/resourcefiles?"name=pathSetter&type=js" \
+-u myname:mypass</pre>
+
+<p>Sample response:</p>
+
+<pre>{
+  "name" : "pathSetter",
+  "type" : "js"
+}
+</pre>
+
+<p>You can also upload resources as files from your local machine as follows:</p>
+
+<pre class="terminal">$ curl -X POST -d @pathSetter.js \
+https://api.enterprise.apigee.com/v1/organizations/myorg/resourcefiles?"name=pathSetter&type=js" \
+-u myname:mypass</pre>
+
+<p>The JavaScript resource named <code>pathSetter</code> is now available to be referenced by policies of type JavaScript running in any environment.</p>
+
+<p>For example, to attach the JavaScript to the Request PostFlow, create a policy called <code>PathSetterPolicy.xml</code> that references the file <code>pathSetter.js</code>:</p>
+
+	<pre>&lt;Javascript name='PathSetterPolicy' timeLimit='200'&gt;
+    &lt;ResourceURL&gt;jsc://pathSetter.js&lt;/ResourceURL&gt;
+&lt;/Javascript&gt;</pre>
+
+<p>Then reference the policy in the Endpoint configuration:</p>
+
+<pre>&lt;PostFlow&gt;
+  &lt;Request&gt;
+    &lt;Step&gt;&lt;Name&gt;PathSetterPolicy&lt;/Name&gt;&lt;/Step&gt;
+  &lt;/Request&gt;
+&lt;PostFlow&gt;</pre>
+
+<h2>Resource name resolution</h2>
+
+<p>The API Platform resolves resource names from the most specific to the most general scope. Resource names are resolved "up the chain", from the API proxy level, to the environment level, to the organization level.</p>
+
+<p>Let's say that you have populated the same resource in two different repositories--the organization and the environment:</p>
+
+<pre class="terminal">$ curl -X POST -H "Content-type:application/octet-stream" -d \
+'request.setHeader("RequestPath", flow.getVariable("proxy.basepath"));' \
+https://api.enterprise.apigee.com/v1/organizations/myorg/resourcefiles?"name=pathSetter&type=jsc" \
+-u myname:mypass</pre>
+
+<pre class="terminal">$ curl -X POST -H "Content-type:application/octet-stream" -d \
+'request.setHeader("RequestPath", flow.getVariable("proxy.basepath"));' \
+https://api.enterprise.apigee.com/v1/organizations/myorg/environment/prod/resourcefiles?"name=pathSetter&type=jsc" \
+-u myname:mypass</pre>
+
+<p>Let's take a scenario where the same resource is available in two repositories, at the organization level and at the environment level:</p>
+
+<pre>https://api.enterprise.apigee.com/v1/organizations/myorg/resourcefiles/jsc/pathSetter
+https://api.enterprise.apigee.com/v1/organizations/myorg/environment/prod/resourcefiles/jsc/pathSetter</pre>
+
+<p>Now imagine that an API proxy configured with the following Policy:</p>
+
+	<pre>&lt;Javascript name='PathSetterPolicy' timeLimit='200'&gt;
+    &lt;ResourceURL&gt;js://pathSetter.js&lt;/ResourceURL&gt;
+&lt;/Javascript&gt;</pre>
+
+<div class ="tipstricks"><p>The policy reference cannot explicitly resolve to a repository. The first resource who name matches the resource name in the policy is resolved.</p></div>
+
+<p>So, when the API proxy is deployed in the environment <code>prod</code>, the Policy will resolve the <code>pathSetter.js</code> resource:</p>
+
+<pre>/organizations/myorg/environment/prod/resourcefiles/jsc/pathSetter</pre>
+
+When deployed in the environment <code>test</code>, the Policy will resolve:
+
+<pre>/organizations/myorg/resourcefiles/jsc/pathSetter</pre>
+
+<h2>Retrieving resources</h2>
+
+<p>You can view a resource body by calling the GET method on it:</p>
+
+<pre class="terminal">$ curl -X GET -H "Accept:application/json"
+https://api.enterprise.apigee.com/v1/organizations/myorg/resourcefiles/jsc/pathSetter" \
+-u myname:mypass</pre>
+
+<p>Sample response:</p>
+
+<pre>request.setHeader("RequestPath", flow.getVariable("proxy.basepath"));</pre>
+
+<h2>Get help</h2>
+
+<p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
+
+<h2>Next steps</h2>
+
+[node:4133]
+
+<p>Back to <a href="/docs/enterprise/content/developer_guide">API Proxy Developer Guide</a>.</p>
+

@@ -15,14 +15,14 @@
 	<li>Create, edit, and delete users</li>
 	<li>Create, edit, and delete user roles</li>
 	<li>Create, edit, and delete RBAC resources</li>
-	<li>Define permissions (GET, PUT, DELETE) on RBAC resources</li>
+	<li>Define permissions (GET, POST, DELETE) on RBAC resources</li>
 	<li>Provision users with user roles</li>
 	<li>Revoke user roles</li>
 </ul>
 <h3>Users</h3>
 <p>Users are provisioned with user roles by organization administrators.</p>
 
-<p>User roles in turn provide users with permissions (GET, PUT/POST, DELETE) on RBAC resources.</p>
+<p>User roles in turn provide users with permissions (GET, POST, DELETE) on RBAC resources. Note that POST covers both PUT and POST verbs.</p>
 
 <h3>RBAC Resources</h3>
 
@@ -54,7 +54,7 @@
 
 <p>RBAC permissions can be scoped to RBAC resource collections or individual members of a resource collection. For example, permissions for a role can set on all API products, or they can be set on an individual API product. Any permission for a role is inherited by all members of that collection, unless that permission has been explicitly overridden for any member of the resource collection.</p> 
 
-<p>For example, if the organization administrator configures the GET permission for the 'testing' role on an individual API product, then the new permission overrides any inherited GET/PUT permission for the 'testing' role that may exist for the API product resource collection.</p>
+<p>For example, if the organization administrator configures the GET permission for the 'testing' role on an individual API product, then the new permission overrides any inherited GET/POST permission for the 'testing' role that may exist for the API product resource collection.</p>
 
 <h2>Define RBAC Resources</h2>
 
@@ -192,7 +192,7 @@
 
 <p>The permissions that can be set on collections are GET and PUT. The permissions that can be set on individual members of a collection are GET, PUT, and DELETE. For the 'development' role, we add GET and PUT permissions on APIs. GET enables users to view any APIs, including API proxy configuration files, associated policies, Javascript, XSLT files, and so on. The PUT permission on APIs enables developers to create, modify, import, export, deploy and undeploy API proxies.</p>
 
-<pre>curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/userroles/development/permissions -H "Content-type:application/json" -X POST -d'{"path" : "/applications","permissions" : [ "put", "get" ]}'</pre>
+<pre>curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/userroles/development/permissions -H "Content-type:application/json" -X POST -d'{"path" : "/applications","permissions" : [ "post", "get" ]}'</pre>
 
 <h3>Create a role: testing</h3>
 <p>Create a 'testing' role to enable quality engineers to view API proxies and their contents (including, for example, policies).</p>
@@ -240,7 +240,7 @@
 <pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/resources -H "Content-type:application/json" -X POST -d'\
 { "displayName" : "rbacTestApi", "path" : "/applications/rbacTestApi"}'</pre>
 
-	<p>In the same way that you created permissions for classes of RBAC resources, you create permissions for individual resources and provision those permissions to named roles. Permissions set for individual RBAC resources always override permissions for RBAC resource collections. If a user in a role that has GET and PUT permissions for APIs, but only GET permission for a specific API, then the permissions for the individual RBAC resource take precedence, and the user has only GET permissions on the specific API, regardless of permissions set for the RBAC resource collection.</p>
+	<p>In the same way that you created permissions for classes of RBAC resources, you create permissions for individual resources and provision those permissions to named roles. Permissions set for individual RBAC resources always override permissions for RBAC resource collections. If a user in a role that has GET and POST permissions for APIs, but only GET permission for a specific API, then the permissions for the individual RBAC resource take precedence, and the user has only GET permissions on the specific API, regardless of permissions set for the RBAC resource collection.</p>
 	
 <h3>Get user roles for a user</h3>
 	
@@ -254,4 +254,4 @@
 
 <h2>Next steps</h2>
 
-<p>Back to <a href="/docs/enterprise/content/developer_guide">API Platform Developer Guide</a>.</p>
+<p>Back to <a href="/docs/enterprise/content/developer_guide">API Proxy Developer Guide</a>.</p>

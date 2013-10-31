@@ -103,7 +103,7 @@ keyFile={myKey}.pem</pre>
 <p>For example:</p>
 
 	<pre>&lt;TargetEndpoint name="default"&gt;
-  &lt;HttpTargetConnection&gt;
+  &lt;HTTPTargetConnection&gt;
     &lt;SSLInfo&gt;
       &lt;Enabled&gt;true&lt;/Enabled&gt;
       &lt;ClientAuthEnabled&gt;true&lt;/ClientAuthEnabled&gt;
@@ -111,7 +111,7 @@ keyFile={myKey}.pem</pre>
       &lt;KeyAlias&gt;myKey&lt;/KeyAlias&gt;
     &lt;/SSLInfo&gt;
     &lt;URL&gt;https://myservice.com&lt;/URL&gt;
-  &lt;/HttpTargetConnection&gt;
+  &lt;/HTTPTargetConnection&gt;
 &lt;/TargetEndpoint&gt;</pre>
 
 <p>If no ciphers are specified, then all ciphers available for the JVM will be permitted.</p>
@@ -151,7 +151,7 @@ https://api.enterprise.apigee.com/v1/o/{org_name}/environments/{env_name}/keysto
 	<p>Then, reference the uploaded trust store by its alias in <code>SSLInfo</code>:</p>
 	
 	<pre>&lt;TargetEndpoint name="default"&gt;
-  &lt;HttpTargetConnection&gt;
+  &lt;HTTPTargetConnection&gt;
     &lt;SSLInfo&gt;
       &lt;Enabled&gt;true&lt;/Enabled&gt;
       &lt;ClientAuthEnabled&gt;true&lt;/ClientAuthEnabled&gt;
@@ -160,10 +160,10 @@ https://api.enterprise.apigee.com/v1/o/{org_name}/environments/{env_name}/keysto
       &lt;TrustStore&gt;myTruststore&lt;/TrustStore&gt;
     &lt;/SSLInfo&gt;
     &lt;URL&gt;https://myservice.com&lt;/URL&gt;
-  &lt;/HttpTargetConnection&gt;
+  &lt;/HTTPTargetConnection&gt;
 &lt;/TargetEndpoint&gt;</pre>
 
 	<p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
 	
-	<p>Back to <a href="/docs/enterprise/content/developer_guide">API Platform Developer Guide</a>.</p>
+	<p>Back to <a href="/docs/enterprise/content/developer_guide">API Proxy Developer Guide</a>.</p>
 </div>

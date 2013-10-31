@@ -3,23 +3,23 @@
 
 <p>API key validation is the simplest form of app-based security that you can configure for an API. Apps simply present an API key, and the API Platform checks to see that the API key is in an approved state.</p>
 
-<p>API keys go by many names. You can see them referred to as 'API keys', 'app keys', and 'consumer keys'. All of these names are synonymous.</p>
+<div class="tipstricks">API keys go by many names. You may see them referred to as 'API keys', 'app keys', and 'consumer keys'. All of these names are synonymous.</div>
 
-<p><span class="label label-info">Prerequisite</span> API Key validation requires a valid API product configuration. To access a protected resource using an API key, the request must be made with an API Key approved for (at least one) API product. The topic [node:427] demonstrates how to set up API resources.</p>
-
-<p><span class="label label-success">Sample Code</span> This topic covers API Key-based authorization for your APIs and references the Simple Proxy in the <a href="https://github.com/apigee/api-platform-samples">API Platform Samples</a> available on Github.</p>
+<div class="sample-github">A working sample API proxy that enforces API key validation is available in the <a href="https://github.com/apigee/api-platform-samples">API Platform Samples</a> available on Github.</div>
 
 <h2>Policy configuration</h2>
 
 <p>API keys are verified using policies of type ValidateAPIKey. The only required setting for a ValidateAPIKey policy is the expected location of the API key in the client request. API keys can be located in a query parameter, a form parameter, or an HTTP header.</p>
 
-<p>For example, the policy configuration below defines the expected key location as a query parameter named <code>apikey</code>. A successful request must present the apikey as a query parameter appended to the request, for example,<code>?apikey={ValueofAPIKey}</code>.</p>
+<p>For example, the policy configuration below defines the expected key location as a query parameter named <code>apikey</code>. A successful request must present the API key as a query parameter appended to the request, for example,<code>?apikey=Y7yeiuhcbKJHD790</code>.</p>
 
-<p>Place the following policy under <code>apiproxy/policies</code> directory:</p>
+<p>To validate API keys, create the following policy:</p>
 
 <pre>&lt;VerifyAPIKey name=&quot;APIKeyValidation&quot;&gt;
   &lt;APIKey&gt;request.queryparameter.apikey&lt;/APIKey&gt;
 &lt;/VerifyAPIKey&gt;</pre>
+
+<p>This policy can be attached to any API that you need to protect.</p>
 
 <p>API proxies automatically passthrough all HTTP headers and query parameters that are present on the request. Therefore, after the API key key has been validated, it's a good idea to strip it from the message so that the API key is not sent over the wire to the backend service. You can do that using a policy of type AssignMessage as follows:</p>
 
@@ -38,7 +38,7 @@
 <h2>Policy attachment</h2>
 <p>The policies must be attached to an API proxy Flow as processing Steps. By applying the policy to the request PreFlow, API keys are verified on every request received by the API proxy from a client app. After verification, the API key is stripped from the outbound request.</p>
 	
-<p>Attach the policies to the ProxyEndpoint as follows:</p>
+<p>Attach the policies to the ProxyEndpoint of the API proxy to be protected as follows:</p>
 <div id="well">
 	<pre>&lt;ProxyEndpoint name="default"&gt;&lt;PreFlow&gt;
     &lt;Request&gt;
@@ -49,73 +49,47 @@
 <!-- Remainder of ProxyEndpoint configuration --></pre>
 </div>
 
-<h2>Importing and deploying the API proxy</h2>
-
-<p>For changes to take effect, you must import and deploy the modified API proxy.</p>
-
-<p>If using the API Platform samples on GitHub, run:</p>
-
-<pre>$ sh deploy.sh</pre>
-
-<p>You can also call the deploy tool directly.</p> 
-
-<p>Substitute a valid username and password for <code>myname:mypass</code> for an organization on the Apigee API Platform, along with the name of the organization as <code>myorg</code>.</p>
-
-
-	<pre>$ python tools/deploy.py -n weatherapi -u myname:mypass -h https://api.enterprise.apigee.com -o myorg -e test -p / -d simpleProxy</pre>
-
-<p>On import, you will see the following output. (Note that revision numbers may vary for your API proxy.)</p>
-
-	<pre>Writing simpleProxy/apiproxy/weatherapi.xml to apiproxy/weatherapi.xml
-Writing simpleProxy/apiproxy/policies/ValidateAPIKey.xml to apiproxy/policies/ValidateAPIKey.xml
-Writing simpleProxy/apiproxy/proxies/default.xml to apiproxy/proxies/default.xml
-Writing simpleProxy/apiproxy/targets/default.xml to apiproxy/targets/default.xml
-Imported new proxy version 3
-Undeploying revision 2 in same environment and path:
-Environment: test
-  Revision: 3 BasePath = /
-  State: deployed</pre>
+<p>After you attach the policy, deploy the API proxy.</p>
 
 <h2>Submitting a request with a valid API key</h2>
 
-If you are using the API Platform samples on GitHub, run:
-
-<pre>$ sh invoke.sh</pre>
-
-<p>To directly invoke the API proxy using curl, use the following examples. </p>
-
 <p>You may have forgotten the API key for an app. As as admin in your organization, you can retrieve any app's API key as follows:</p>
 
-<p>As an admin for your organization, you can retrieve the consumer key for an app:</p>
 <pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{myorg}/developers/{developer_email}/apps/{app_name}</pre>
 </div>
 
-<p>The app profile that is returned for this call provides the consumer key and secret. The consumer key value is the value you use for the API key in your request to the protected API.</p>
+<div class="tipstricks">Remember to substitute your organization for <code>{myorg}</code> and your username and password for <code>myname:mypass</code>.</div>
+
+<p>The app profile that is returned for this call provides the consumer key (API key) and secret. The consumer key value is the value you use for the API key in your request to the protected API.</p>
 
 <p>For example, a request that does not include an API key results in an authorization failure.</p>
-<div id="well">
+
 	<pre>$ curl http://{org_name}-test.apigee.net/weather/forecastrss?w=12797282</pre>
-</div>
+
 <p>The failure message indicates that the policy checked for an API key but did not find a valid key:</p>
-<div id="well">
+
 	<pre>OAuth Failure : Could not resolve the app key with variable request.queryparam.apikey</pre>
-</div>
+
 <p>When the consumer key for the app is included as a query parameter, the expected result is successful authorization:</p>
-<div id="well">
+
 	<pre>$ curl http://{org_name}-test.apigee.net/weather/forecastrss?w=12797282&amp;"apikey=PulSCqMnXGchW0pC0s5o9ngHVTWMeLqk"</pre>
-</div>
+
 <p>The expected result is a successful response from the weather service.</p>
 <p>Modifying the value of the API key value in the request results in an authorization failure:</p>
-<div id="well">
+
 	<pre>$ curl http://{org_name}-test.apigee.net/weather?forecastrss?w=12797282&amp;"apikey=PulSCqMnXGchW0"</pre>
-</div>
+
 <p>Results in:</p>
-<div id="well">
+
 	<pre>OAuth Failure : Consumer Key is Invalid</pre>
+	
 	<p>As an admin for your organization, you can retrieve the consumer key for an app:</p>
+	
 	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{myorg}/developers/{developer_email}/apps/{app_name}</pre>
 </div>
 
+<h2>Get help</h2>
+
 <p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
 
-<p>Back to <a href="/docs/enterprise/content/developer_guide">API Platform Developer Guide</a>.</p>
+

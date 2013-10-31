@@ -1,8 +1,8 @@
 <p>[toc]</p>
 <h2>What's here?</h2>
-<p>The API Platform Developer Guide is designed to get you up and and running with local development of API proxies that deploy and scale on the Apigee API Platform. 
+<p>The API Proxy Developer Guide is designed to get you up and and running with local development of API proxies that deploy and scale on the Apigee API Platform. 
 	
-<p>The focus of development on the API Platform is the API proxy. An API proxy is an application that runs on the Apigee API Platform and which serves as a proxy for one or more backend services or APIs. Every API proxy exposes a new API that can be consumed by apps.</p>
+<p>The focus of development on the API Platform is the API proxy. An API proxy is an application that runs on the Apigee API Platform and which serves as a proxy for one or more backend services or APIs. Every API proxy that you deploy on the API Platform exposes a new API that can be consumed by apps.</p>
 
 <pre>For an overview of how the API Platform can help you as a developer, <a href="http://www.youtube.com/watch?feature=player_embedded&v=3W6JSgGoO_o"><b>Watch the video</b></a>.</pre>
 
@@ -46,10 +46,20 @@
 	<li>How to configure environment settings for your organization on the API Platform</li>
 </ul>
 
+<h2>But I am an app developer!</h2>
+
+<p>If you are an app developer, it may not be immediately obvious how the API Platform can help you. But, consider this. Your apps consume APIs. What if you were able to customize the behavior of the APIs that your app consumes?</p>
+	
+<p>For example, you might be disappointed that an API you want to consume only supports XML and not JSON. Using the API Platform, you can create an API proxy that converts responses from XML to JSON on the fly. Problem solved.</p>
+
+<p>Another benefit is that you can offload app logic to the API Platform. For example, if you are combining data from multiple APIs in your app, you could move this logic to the API Platform. By writing some fairly simple JavaScript, you can create lightweight applications that run on the API Platform, thereby offloading the processing and network calls from your app.</p>
+	
+<p>By configuring an API proxy, you can return the result of multiple API calls as a single, highly optimized response to your app. You can even share your work on the API Platform with other app developers by publishing your API--all without the hassle actually building, deploying, and hosting APIs on your own.</p>
+
 <h2>Get help</h2>
 
 <p>If you have any issues with the topic, post them to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
 
-<h2>Next Steps</h2>
+<h2>Next steps</h2>
 
-[node:8403]
+<p>The next step is to follow the [node:8403] instructions to obtain the proper resources and to start developing API proxies.</p>

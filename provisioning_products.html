@@ -1,24 +1,34 @@
 <p>[toc]</p>
-<p>This topic covers the definition of API products, which enable developers to create apps that consume APIs using API keys and OAuth access tokens.</p>
-<h2>Overview</h2>
-<p>An API product is a list of API resources (URIs) and rate-limiting (quota) settings. 
-<p>API Products form the basis of access control on the API Platform. To use an API managed by the API Platform, a developer must acquire a consumer key (also known as an 'API key') or an OAuth access token that is approved to use an API product.</p>
+
+
+<p>This topic covers the definition of API products, which enable developers to create apps that consume APIs using API keys and OAuth access tokens. API products are designed to enable you to 'bundle' RESTful resources and then publish those bundles to different groups of developers. For example, you may need to publish one set of API resources to your partner developers, while you publish another bundle of resources to external developers. API products enable you to perform this bundling on-the-fly, without requiring any changes to your APIs themselves. An additional benefit is that developer access can 'upgraded' and 'downgraded' without requiring developers to obtain new consumer keys for their apps.</p>
+
+<div class="counterpart">This topic demonstrates provisioning using the Platform API. You can also provision API products, developers, and apps using the <a href="http://enterprise.apigee.com">Management UI</a>. For instructions on using the Management UI, see [node:99].</div>
+
+<p>API Products form the basis of access control on the API Platform. To use an API managed by the API Platform, a developer must acquire a consumer key (also known as an 'API key') or an OAuth access token that is approved to use the API resources bundled into an API product.</p>
 
 <h2>Configuring API products</h2>
 
 <p>You can configure API products using the Management UI or the Platform API. The API enables you to create and manage API products programatically.</p>
 
+<div class="tipstricks">Any time you create an API proxy, the API Platform generates an associated 'default' API product specifically for that proxy. You can just use the default API products if you do not require Quotas or finer-grained access control.</div>
+
 <p>To set up a minimal API product, POST a payload to the <code>/apiproducts</code> resource in your organization.</p>
 
-(Remember to change the values for <code>myname</code>, <code>mypass</code>, and <code>org_name</code> to match the settings for your account on enterprise.apigee.com.)
+<p>The following request creates an API product called <code>weather_free</code>. The API product provides access to all API resources exposed by the API proxy called <code>weatherapi</code> that is deployed in the <code>test</code> environment. The approval type is set to <code>auto</code>--any request for access will be approved.</p>
 
-<pre>$ curl -H "Content-Type:application/json" -X POST -d \
- '{"approvalType": "auto", 
+<div class="tipstricks"><p>Remember to change the values for <code>myname</code>, <code>mypass</code>, and <code>org_name</code> to match the settings for your account on <a href="http://http://enterprise.apigee.com">http://enterprise.apigee.com.</a></div>
+
+<pre class="terminal">$ curl -H "Content-Type:application/json" -X POST -d \
+'{
+  "approvalType": "auto", 
   "displayName": "Free API Product",
   "name": "weather_free",
   "proxies": [ "weatherapi" ],
-  "environments": [ "test" ]}' \
--u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/apiproducts</pre>
+  "environments": [ "test" ]
+}' \
+https://api.http://enterprise.apigee.com/v1/o/{org_name}/apiproducts \
+-u myname:mypass </pre>
 
 <p>Sample response:</p>
 
@@ -39,12 +49,9 @@
 
 <p>You have now set up a very basic API product that can be used to restrict access to the API proxy named <code>weatherapi</code> running in the environment called <code>test</code>.</p>
 
-<p>When you add a security policy to the API proxy called weatherapi running in test, the security policy will check the API key or access token presented by the app. If the API key or access token is not approved, then the request is rejected.</p>
+<p>The API product created above implements the most basic scenario--it authorizes requests to an API proxy in an environment. The authorization it defines is not fine grained. Instead, it is coarse-grained. It defines an API product that enables an authorized app to access any API resources exposed by the API proxy running in the test environment. API products expose additional configuration settings that enable you to customize access control to your APIs for different developer groups. For example you can create two API products that provide access to different API proxies. You can also create two API products that provide access to the same API proxies, but with different associated Quota settings. The result would be API products that provide access to the same API resources, but which provide developers with a choice of two different service plans.</p>
 
-
-<p>The API product created above implements the most basic scenario--authorizing request to an API proxy in an environments. However, API products expose a additional configuration settings that enable you to enforce dynamic access control over APIs, including defining dynamic Quota settings.</p>
-
-<h2>API Product configuration settings</h2>
+<h2>API product configuration settings</h2>
 
 <p>API products expose the following configuration options:</p>
 
@@ -107,12 +114,12 @@
 </table>
 
 
-<div id="well">
-	<pre>$ curl -H "Content-Type:application/json" -X POST -d \
- '{"apiResources": [ "/forecastrss" ], 
+	<pre class="terminal">$ curl -H "Content-Type:application/json" -X POST -d \
+ '{
+  "apiResources": [ "/forecastrss" ], 
   "approvalType": "auto", 
   "attributes":
-    [{"name": "myAttribute", "value": "myValue"}],
+    [ {"name": "myAttribute", "value": "myValue"} ],
   "description": "Free API Product",
   "displayName": "Free API Product",
   "name": "weather_free",
@@ -122,8 +129,8 @@
   "quota": "10",
   "quotaInterval": "2",
   "quotaTimeUnit": "hour" }' \
--u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/apiproducts</pre>
-</div>
+-u myname:mypass https://api.http://enterprise.apigee.com/v1/o/{org_name}/apiproducts</pre>
+
 <p>Sample Response</p>
 
 	<pre>{
@@ -148,31 +155,36 @@
   "quotaTimeUnit": "hour"}'
 }</pre>
 
+<h3>A note on scopes</h3>
+
+<p>A scope is a concept drawn from OAuth and maps roughly to the concept of a 'permission'. On the API Platform, scopes are completely optional. You can use scopes to achieve finer-grained authorization. Every consumer key issued to an app is associated with a 'master scope'. The master scope is the set of all scopes in all API products for this the app has been approved. For apps approved to consume multiple API products, the master scope is the union of all scopes defined in the API products for which the consumer key has been approved.</p>
+
 <h2>Creating developer profiles</h2>
 
 <p>All apps belong to either developer or companies. Therefore, to create an app, you first need to create a developer. You can create a developer using the Management UI or using the API.</p>
 	
 <p>Developers are registered in an organization by creating a profile. Note that the developer email that is included in the profile is used as the unique key for the developer throughout the API Platform. Arbitrary attributes can be added to the developer profile as needed. The attributes are not interpreted by the API Platform, but can be of use in custom analytics, custom policy enforcement, and so on.</p>
 
-<p>For example, to create a profile for a developer whose email address is <code>ntesla@theramin.com</code>:</p>
+<p>For example, to create a profile for a developer whose email address is <code>ntesla@theremin.com</code>:</p>
 
-<div id="well">
-	<pre>$ curl -H "Content-type:application/json" -X POST -d \
-      '{"email" : "ntesla@theramin.com", 
-        "firstName" : "Nikola", 
-        "lastName" : "Tesla", 
-        "userName" : "theramin", 
-        "attributes" : [ { "name" : "project_type", "value" : "public"} ] }' \
--u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/developers</pre>
-</div>
+
+<pre  class="terminal">$ curl -H "Content-type:application/json" -X POST -d \
+'{"email" : "ntesla@theremin.com", 
+  "firstName" : "Nikola", 
+  "lastName" : "Tesla", 
+  "userName" : "theremin", 
+  "attributes" : [ { "name" : "project_type", "value" : "public"} ] 
+}' \
+https://api.http://enterprise.apigee.com/v1/o/{org_name}/developers \
+-u myname:mypass </pre>
 
 <p>Sample Response</p>
 <div id="well">
 	<pre>{
-	  "email" : "ntesla@theramin.com",
+	  "email" : "ntesla@theremin.com",
 	  "firstName" : "Nikola",
 	  "lastName" : "Tesla",
-	  "userName" : "theramin",
+	  "userName" : "theremin",
 	  "organizationName" : "{org_name}",
 	  "status" : "active",
 	  "attributes" : [ {
@@ -190,15 +202,21 @@
 <p>Every app that is created on the API Platform is associated with a developer and an API product. When an app is registered on behalf of a developer, the API Platform generates a "credential" (a consumer key and secret pair) that identifies the app. 
 	
 <p>This credential is 'bound' (in a loose way) to at least one API product. For example, when you create an app in the API Platform Management UI, there is an option to associate the app with an API product.</p>
-<div id="well">
-	<pre>$ curl -H "Content-type:application/json" -X POST -d \
-      '{"apiProducts": [ "weather_free"], 
-        "callbackUrl" : "login.weatherapp.com", 
-        "name" : "weatherapp"}' \
--u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/developers/ntesla@theramin.com/apps</pre>
-</div>
+
+The following request creates an app for the developer you created above: ntesla@theremin.com. When creating an app you define a name for the app, a callbackUrl, and a list of one or more API products:
+
+<pre class="terminal">$ curl -H "Content-type:application/json" -X POST -d \
+'{
+  "apiProducts": [ "weather_free"], 
+  "callbackUrl" : "login.weatherapp.com", 
+  "name" : "weatherapp"}' \
+https://api.http://enterprise.apigee.com/v1/o/{org_name}/developers/ntesla@theremin.com/apps \
+-u myname:mypass </pre>
+
+<div class="tipstricks"><p>The callbackUrl is used by some OAuth grant types (such as authorization code) to validate redirect requests from the app. If you use OAuth, then this value must be set to the same value as the <code>redirect_uri</code> used to make OAuth requests.</p></div>
+
 <p>Sample Response</p>
-<div id="well">
+
 	<pre>{
   "callbackUrl" : "login.weatherapp.com",
   "createdAt" : 1343190620890,
@@ -221,15 +239,19 @@
 </div>
 
 <h2>Managing consumer keys for apps</h2>
+
 <h4>Get the consumer key (the API Key) for the app</h4>
+
 <p>The credentials for an app, (API product, consumer key and secret) are returned as part of the app profile. An administrator of an organization can retrieve the consumer key at any time.</p>
-<p>The app profile displays the value of the consumer key and secret, the status of the consumer key, as well as any API product associations for the key.</p>
-<div id="well">
-	<pre>$ curl -H "Accept: application/json" \
--u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/developers/ntesla@theramin.com/apps/weatherapp/keys/HQg0nCZ54adKobpqEJaE8FefGkdKFc2J</pre>
-</div>
+
+<p>The app profile displays the value of the consumer key and secret, the status of the consumer key, as well as any API product associations for the key. As an admin, you can retrieve the consumer key profile at any time using the GET method:</p>
+
+<pre class="terminal">$ curl -X GET -H "Accept: application/json" \
+https://api.http://enterprise.apigee.com/v1/o/{org_name}/developers/ntesla@theremin.com/apps/weatherapp/keys/HQg0nCZ54adKobpqEJaE8FefGkdKFc2J \
+-u myname:mypass</pre>
+
 <p>Sample Response</p>
-<div id="well">
+
 	<pre>{
   "apiProducts" : [ {
     "apiproduct" : "weather_free",
@@ -240,39 +262,58 @@
   "consumerSecret" : "1eluIIdWG3JGDjE0",
   "status" : "approved"
 }</pre>
-</div>
+
+
 <h2>Approving consumer keys</h2>
-<p>Consumer keys must be explicitly approved when API products have key approval set to <code>manual</code>. Keys can be explicitly approved using this method call:</p>
-<div id="well">
-	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/developers/ntesla@theramin.com/apps/weatherapp/keys/HQg0nCZ54adKobpqEJaE8FefGkdKFc2J?action=approve</pre>
-</div>
+
+<p>Setting approval type to manual enables you to control which developers can access the resources protected by API products. When API products have key approval set to <code>manual</code>, consumer keys must be explicitly approved. Keys can be explicitly approved using the following method call:</p>
+
+<pre class="terminal">$ curl -X POST -H "Conent-type:appilcation/octet-stream" \ https://api.http://enterprise.apigee.com/v1/o/{org_name}/developers/ntesla@theremin.com/apps/weatherapp/keys/HQg0nCZ54adKobpqEJaE8FefGkdKFc2J?"action=approve" \
+ -u myname:mypass</pre>
+
 <p>Sample Response</p>
-<div id="well">
-	<pre>{
-	  "apiProducts" : [ {
-	    "apiproduct" : "weather_free",
-	    "status" : "approved"
-	  } ],
-	  "attributes" : [ ],
-	  "consumerKey" : "HQg0nCZ54adKobpqEJaE8FefGkdKFc2J",
-	  "consumerSecret" : "1eluIIdWG3JGDjE0",
-	  "status" : "approved"
-	}</pre>
-</div>
+
+<pre>{
+  "apiProducts" : [ {
+  "apiproduct" : "weather_free",
+  "status" : "approved"
+} ],
+  "attributes" : [ ],
+  "consumerKey" : "HQg0nCZ54adKobpqEJaE8FefGkdKFc2J",
+  "consumerSecret" : "1eluIIdWG3JGDjE0",
+  "status" : "approved"
+}</pre>
+
+<div class="bestpractice"><p>Ease developer adoption by creating 'introductory' API products that provide minimal Quota settings and access only to non-sensitive proxies and API resources. For the introductory API product, set approval to <code>auto</code>. For full-featured API products, set approval to <code>manual</code>. You can 'promote' apps from the introductory to the production API products by using the <a href="http://enterprise.apigee.com">Management UI</a>, or by using the API call to approve the same consumer key for the production API product. This prevents developers from having to get new consumer keys when they want to 'upgrade' their apps from introductory to production API products.</p></div>
+
 <h2>Approving API products for consumer keys</h2>
-<p>The <i>association</i> of an API product with a key also has a status. A consumer key can be 'approved' in general, but not approved specifically for an API product. For API access to be successful, the consumer key must be approved, <i>and</i> the consumer key must be approved for the proper API product. The association of a consumer key with an API product can be approved as follows:</p>
-<div id="well">
-	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/developers/ntesla@theramin.com/apps/weatherapp/keys/HQg0nCZ54adKobpqEJaE8FefGkdKFc2J/apiproducts/weather_free?"action=approve"</pre>
-</div>
-<p>API products settings are enforced by matching policies. <strong>Until those policies are set up, API products and quotas are not enforced by the API Platform.</strong></p>
+
+<p>The <i>association</i> of an API product with a consumer key also has a status. A consumer key can be 'approved' in general, but not approved for a particular API product. For API access to be successful, the consumer key must be approved, <i>and</i> the consumer key must be approved for the appropriate API product. The association of a consumer key with an API product can be approved as follows:</p>
+
+<pre class="terminal">$ curl -X POST -H "Content-type:application/octet-stream" \ https://api.http://enterprise.apigee.com/v1/o/{org_name}/developers/ntesla@theremin.com/apps/weatherapp/keys/HQg0nCZ54adKobpqEJaE8FefGkdKFc2J/apiproducts/weather_free?"action=approve" \
+-u myname:mypass</pre>
+
+<h2>Revoking API products for consumer keys</h2>
+
+<p>There are many reasons why you may need to revoke a consumer key's association with an API product. You may need to remove an API product from a consumer key due to non-payment by the developer, an expired trial period, or When an app is promoted from one API product to another.</p>
+
+<p>To revoke the association of a consumer key with an API product, use the following method, using the action revoke against the consumer key of the develop app: </p>
+
+<pre class="terminal">$ curl -X POST -H "Content-type:application/octet-stream" \ https://api.http://enterprise.apigee.com/v1/o/{org_name}/developers/ntesla@theremin.com/apps/weatherapp/keys/HQg0nCZ54adKobpqEJaE8FefGkdKFc2J/apiproducts/weather_free?"action=revoke" \
+-u myname:mypass</pre>
+
+<h2>Enforcing API product settings</h2>
+
+<div class="tipstricks"><p>API product settings are enforced by matching policies, such as VerifyAPIKey, OAuthV2, and Quota. Until those policies are attached to API proxies, API products and quotas will not be enforced by the API Platform.</p></div>
+
 <p>For API products to be enforced, one of the following policy types must be attached to the API proxy flow:</p>
 <ul>
 	<li>VerifyAPIKey: Takes a reference to an API key, verifies that it represents a valid app, and matches the API product</li>
 	<li>OAuthV1, “VerifyAccessToken” operation: Verifies the signature, validates an OAuth 1.0a access token and “consumer key”, and matches the app to the API product</li>
 	<li>OAuthV2, “VerifyAccessToken” operation: Verifies that the OAuth 2.0 access token is valid, matches the token to the app, verifies that the app is valid, and then matches the app to an API product</li>
-	<li>GetAPIProduct: Enables policies to use API product metadata without verifying a token</li>
+	<li>GetAPIProduct: Enables policies to use API product metadata without necessarily verifying a token</li>
 </ul>
-<p>Once policies and API products are configured the following process is executed by the API platform:</p>
+<p>Once policies and API products are configured, the following process is executed by the API platform:</p>
 <ol>
 	<li>A request is received by the API platform and routed to the appropriate API proxy</li>
 	<li>A policy is executed that verifies the API key or OAuth access token presented by the client</li>
@@ -280,9 +321,14 @@
 	<li>The API Platform resolves the list (if any) of API products associated with the app</li>
 	<li>The first API product that matches is used to populate Quota variables</li>
 	<li>If no API product matches the API key or access token, then the request is rejected</li>
-	<li>The API Platform enforces URI-based access control (environment, API proxy, and URI path) along with Quota settings</li>
+	<li>The API Platform enforces URI-based access control (environment, API proxy, and URI path) based on the API product settings, along with Quota settings</li>
 </ol>
 
+<h2>Next steps</h2>
+
 <p>To learn how to configure security and Quota policies to enforce the settings provisioned in this topic, see [node:3972]</p>
+
+<h2>Get help</h2>
+
 <p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
-<p>Back to <a href="/docs/enterprise/content/developer_guide">API Platform Developer Guide</a>.</p>
+<p>Back to <a href="/docs/enterprise/content/developer_guide">API Proxy Developer Guide</a>.</p>

@@ -1,7 +1,6 @@
 <p>[toc]</p>
 
-
-<p>Apigee API proxies are implemented as 'bundles' of configuration files, including policies, and (optionally) custom scripts and code. The configurations files define a processing pipeline for requests and responses that flow from clients apps to 'backend services'.</p>
+<p>API proxies are implemented as 'bundles' of configuration files, including policies, and (optionally) custom scripts and code. The configurations files define a processing pipeline for requests and responses that flow from clients apps to 'backend services'.</p>
 
 <p>A backend service in this context refers to any Web service or API that exposed over HTTP. Often, a single API proxy invokes more than one backend service. API proxies are useful for implementing intermediary services that compose data and capabilities from multiple sources to expose innovative and unified APIs to app developers, without requiring development teams to modify any application code.</p>
 
@@ -11,9 +10,9 @@
 	
 <p>You can create and develop API proxies using the Management UI, or using development tools on your local machine. API proxies developed locally can be imported and deployed on the API Platform for runtime testing and production.</p>
 
-<p>Developing API proxies is an iterative process. You should plan to modify, deploy, and test API proxies frequently as you go along. Apigee provides tools to assist in this process.</p>
+<p>Developing API proxies is an iterative process. You should plan to modify, deploy, and test API proxies frequently as you go along. Apigee provides tools to assist in this process. See [node:8403].</p>
 
-<h2>Creating an API proxy</h2>
+<h2>Building an API proxy</h2>
 
 <table border="1" cellpadding="1" cellspacing="1" class="table" style="width: 500px; background-color: #f5f5f5;">
 	<tbody>
@@ -24,14 +23,17 @@
 	</tbody>
 </table>
 
-<p>In the following steps, you create a simple API proxy that acts as a facade to the Yahoo Weather API. You will first directly invoke the Yahoo Weather API. Then you will import and deploy a simple API proxy that is provided as a sample on Github. </p>
+<p>In the following steps, you build a simple API proxy that acts as a facade to the Yahoo! Weather API. You will first directly invoke the Yahoo Weather API. Then you will import and deploy a simple API proxy. The fully-functional API proxy is provided as a sample on Github.</p>
 
-<h3>Step 1: Invoke the Weather API directly</h3>
+(If you have not done so, take a few minutes and go through the [node:8403] instructions.)
+
+<h2>Step 1: Invoke the Weather API directly</h2>
 
 <p>In this example, you create an API proxy for Yahoo's Weather API. </p>
 	
 <p>Begin by invoking the API directly:</p>
-<pre>$ curl http://weather.yahooapis.com/forecastrss?w=12797282</pre>
+
+<div class="terminal">$ curl http://weather.yahooapis.com/forecastrss?w=12797282</div>
 
 <p><b>Sample Response</b></p>
 <pre>&lt;title&gt;Yahoo! Weather - Palo Alto, CA&lt;/title&gt;
@@ -45,62 +47,83 @@
 &lt;yweather:atmosphere humidity="73"  visibility=""  pressure="30.02"  rising="0" /&gt;
 &lt;yweather:astronomy sunrise="6:18 am"   sunset="8:08 pm"/&gt;</pre>
 
-
+<h2>Step 2: Examine the API proxy</h2>
 
 <p>This step refers to the simpleProxy available in the API Platform samples distribution. Refer to [node:4561] for details and downloading instructions.</p>
 
-<p>The simpleProxy is the most basic API proxy supported on the API Platform. It defines:</p>
+<p>The simpleProxy is the most basic API proxy supported on the API Platform. It defines the three basic pieces of information that every API proxy needs:</p>
+
 <ul><li>A name for the API: <code>weatherapi</code></li>
-<li>A target URL: <code>http://weather.yahooapis.com</code> (which the API platform uses to consume the Yahoo Weather API)</li>
-<li>A proxy URL: <code>weather</code> (which client apps use to consume your API)</li></ul>
+<li>A target URL: <code>http://weather.yahooapis.com</code> (which the API platform uses to consume the Yahoo! Weather API)</li>
+<li>A proxy URL fragment: <code>/weather</code> (which client apps use to consume your API)</li></ul>
 
 <p>Such API proxies are commonly referred to as "passthrough" proxies, since they merely forward requests and return responses without manipulating them.</p>
 
 <p>If you have not done so, download the API platform samples:</p>
 
-<pre>$ git clone https://github.com/apigee/api-platform-samples.git</pre>
+<div class="terminal">$ git clone https://github.com/apigee/api-platform-samples.git</div>
 
-<p>Navigate to the distribution contents:</p>
+<p>Navigate to the distribution contents in your local git or download directory:</p>
 
-<pre>$ cd api-platform-samples</pre>
+<div class="terminal">$ cd api-platform-samples</div>
 
-<p>Under <code>api-platform-samples</code> note the directory called <code>simpleProxy</code>. 
+<p>Under <code>/api-platform-samples</code> note the directory called <code>simpleProxy</code>. 
 
-<pre>$ cd simpleProxy</pre>
+<div class="terminal">$ cd simpleProxy</div>
 
-<p>Under <code>simpleProxy</code> note the directory called <code>apiproxy</code>.
+<p>Under <code>/simpleProxy</code> note the directory called <code>/apiproxy</code>.
 
-<p>The <code>apiproxy</code> directory contains the complete, fully functional definition of an API proxy. API proxy configuration files are always stored under a directory call <code>apiproxy</code>, and they define a directory structure that you must use in all API proxies.</p>
+<p>The <code>/apiproxy</code> directory contains the complete, fully functional definition of an API proxy. API proxy configuration files are always stored under a directory call <code>/apiproxy</code>, and they define a directory structure that you must use in all API proxies.</p>
 
-<p>You don't need this level of detail to get up and running, but keep in mind that you can always refer to the [node:8407] for an explanation of configuration elements.</p>
+<p>You can always refer to the [node:8407] for an explanation of APi proxy configuration elements. (You do not, however, require this level of detail to get up-and-running.)</p>
 	
-<p>For now, you can explore the configuration files to get a sense of what makes up an API proxy. (You don't need to change anything for the sample to work.)</p>
+<p>For now, you can explore the configuration files to get a sense of what makes up an API proxy. (Remember, you don't need to change anything for the sample to work.)</p>
 
-<h2>Deploying an API proxy</h2>
+<h2>Step 3: Deploy the API proxy</h2>
+
+<p>The process of deploying an API proxy involves:</p>
+<ol><li>Packaging the contents of the <code>/apiproxy</code> directory in a ZIP file</li>
+<li>Importing the ZIP file to your organization on the API platform</li>
+<li>Deploying the API proxy to an environment (either 'test' or 'prod') in your organization</li></ol>
+
+<p>Again, this is a process that you will repeat many times as your iterate on the development of API proxies.</p>
 
 <p>You have several options for importing and deploying API proxies to your organization on the API Platform:</p>
 
-<ul><li>The 'Upload Revision' feature in the API detail view of the <a href'enterprise.apigee.com'>Management UI</a>.</li>
-<li>A direct API call to the RESTful API exposed by the API Platform. See [node:9820].</li>
+<ul><li>The 'Upload Revision' feature in the API detail view of the <a href="http://enterprise.apigee.com">Management UI</a>.</li>
+	
+<li>A direct API call to the RESTful API exposed by the API Platform. See [node:8405].</li>
 
 <li>The Apigee Python deploy tool</li>
 
 <li>A shell script that calls the Apigee Python deploy tool (<code>deploy.sh</code>)</li></ul>
 
-<p>Note that the Apigee Python deploy tool calls the RESTful API exposed by the API platform. The deploy tool provides some important ease-of-use functions to make your life easier as you iteratively develop API proxies. It creates a valid ZIP file, performs some simple revision management, and deploys your API proxy to an environment--all in one step.</p>
+<h2>Running the Apigee Python deploy tool</h2>
 
-<p>For the paths in the command below to work, the deploy tool must be run from the base directory in the API Platform samples distribution. You provide a pointer to the directory that contains the <code>/apiproxy</code> directory, in this case <code>simpleProxy</code>.</p>
+<p>The Apigee Python deploy tool is a client that interacts with the Platform API to import and deploy API proxies. The tool is available as part of the API Platform Samples distribution on GitHub. See [node:4561].</p>
 
-<p><b>Note:</b> The <code>-d</code> flag must point to the directory that contains the <code>apiproxy</code> directory.</p>
-
+<p>Use Apigee’s Python tool to import (upload) and deploy your API in one simple process.</p>
+<p>The deploy tool must be run from the base directory in the distribution. You provide a pointer to the directory that contains the <code>/apiproxy</code> directory, in this case <code>simpleProxy</code></p>
 <p>Substitute your username, password, and Apigee organization in the following command for <code>myname:mypass</code> and <code>myorg</code>.</p>
 
 <p>For example, from the base directory of <code>api-platform-samples</code>, run:</p>
 
-<pre>$ python tools/deploy.py -n weatherapi -u myname:mypass -o myorg -e test -p / -d simpleProxy</pre>
+<div class="terminal">$ python tools/deploy.py -n weatherapi -u myname:mypass -o myorg -e test -p / -d simpleProxy</div>
+
+<p>The flags are:</p>
+
+<ul><li><code>-n</code>: The name of your API proxy</li>
+<li><code>-u</code>: The username and password for your account in an organization on the API Platform</li>
+<li><code>-o</code>: The name of the organization in which you have an account</li>
+<li><code>-e</code>: The environment to which the API proxy should be deployed (<code>test</code> or <code>prod</code>)</li>
+<li><code>-p</code>: The path to the directory that contains the <code>/apiproxy</code> directory</ul></li>
 
 <p>This single action zips your files, pushes them to your organization on Apigee, and deploys them to the specified environment.</p>
-<p>On success you see:</p>
+
+<p>The deploy tools automatically discovers the current revision of your API proxy, undeploys the existing revision, and deploys an incremented revision of the API proxy.</p>
+
+<p>On success you see, for example:</p>
+
 <pre>Writing ./simpleProxy/apiproxy/weatherapi.xml to apiproxy/weatherapi.xml
 Writing ./simpleProxy/apiproxy/proxies/default.xml to apiproxy/proxies/default.xml
 Writing ./simpleProxy/apiproxy/targets/default.xml to apiproxy/targets/default.xml
@@ -111,7 +134,31 @@ Environment: test
 
 <p>The tool has zipped up your files, imported the package to Apigee, and deployed to the 'test' environment in your Apigee organization.</p>
 
-<p>Your API is ready to be invoked.</p>
+<h2>Running deploy shell scripts</h2>
+
+<p>The easiest approach is to run the deploy script provided with the sample API proxy. The shell scripts wrap the Apigee Python deploy tool.</p>
+
+<p>From the <code>/simplyProxy</code> directory run:</p>
+
+<div class="terminal">$ sh deploy.sh</div>
+
+<p>You should see:</p>
+
+<div class="terminal">Enter your password for user {myname} in the Apigee Enterprise organization {org_name}, followed by [ENTER]:</div>
+
+<p>Enter your password, press ENTER.</p>
+
+<div class="terminal">Deploying to test on https://api.enterprise.apigee.com using {myname} on enterprise.apigee.com and {org_name} on enterprise.apigee.com</div>
+
+<p>If you see the following:</p>
+
+<div class="terminal">Enter your password for user Your USERNAME on enterprise.apigee.com in the Apigee Enterprise organization Your ORG on enterprise.apigee.com, followed by [ENTER]:</div>
+
+<p>it means that you need to modify the <code>/setup/setenv.sh</code> file in the platform samples distribution. For instructions, refer to the README or to [node:8403].</p>
+
+<p>On success, the deploy tool ZIPs up the files under <code>/apiproxy,</code> imports the package to your organization on the API Platform, and then deploys the API proxy to the 'test' environment.</p>
+
+<p>Your API proxy is ready to be invoked.</p>
 
 <h2>Invoking an API proxy</h2>
 
@@ -169,4 +216,4 @@ Environment: test
 
 <p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
 
-<p>Back to <a href="/docs/enterprise/content/developer_guide">API Platform Developer Guide</a>.</p>
+<p>Back to <a href="/docs/enterprise/content/developer_guide">API Proxy Developer Guide</a>.</p>

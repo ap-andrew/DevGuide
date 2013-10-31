@@ -123,7 +123,7 @@ Environment: test
 
 <p>If the JavaScript executes properly, you will get the following response:</p>
 
-<pre>&lt; X-Apigee-Test-Header-1: Test-Header 1 Value 0
+		<pre>&lt; X-Apigee-Test-Header-1: Test-Header 1 Value 0
 &lt; X-Apigee-Test-Header-2: Test-Header 2 Value 0
 &lt; X-Apigee-Test-Header-2: Test-Header 2 Value 1
 &lt; Content-Length: 27
@@ -132,96 +132,62 @@ This is your code on Apigee!</pre>
 
 <p>You can now modify the JavaScript to try new things, redeploy the API proxy, and verify the results by submitting the same request.</p>
 
-<h2>Working with variables</h2>
+<h2>Generating a JSON Response</h2>
 
-<p>To implement dynamic behavior using JavaScript, you will typically find your self working with variables. JavaScript on the API Platform is used for setting and getting of variables. You will usually get variables on incoming request and response messages, and you'll often set variables on outbound request and response messages.</p>
+<p>In this example, you work with JavaScript that generates a response message.</p>
 
-<p>To use a simple example, let's look at JavaScript that gets the value of a Flow variable, and then set that value as a custom HTTP header on the proxyResponse message. These kinds of operations can be useful for debugging.</p>
+<p>The following JavaScript sample generates a static JSON response to a request.</p>
 
-<p>The variable <code>proxy.url</code> is a 'pre-defined variable', one of many defined by the API Platform. You don't have to do any configuration to make these variables available. They are an affordance that provides a context for every API proxy transaction.</p>
+<h3>Creating the JavaScript resource</h3>
 
-<pre>context.proxyResponse.setVariable("header.X-Apigee-Demo-ProxyUrl", context.flow.getVariable("proxy.url"));</pre>
+<p>In this example, the JavaScript resource is referenced in a file called <code>generateResponse.js</code> under <code>/apiproxy/resources/jsc</code> with the following contents:</p>
 
-<p>If you needed to set this HTTP header on the outbound request message, that is, the message form the API proxy to your backend service, you could do the following:</p>
+<pre>context.proxyResponse.content=''; 
+context.proxyResponse.headers['Content-Type']='application/json'; 
+var json = context.proxyResponse.content.asJSON;
 
-<pre>context.targetRequest.setVariable("header.X-Apigee-Demo-ProxyUrl", context.flow.getVariable("proxy.url"));</pre>
-
-<h2>Working with custom variables</h2>
-
-<p>The Policy below parses the request URI path and populates one custom variables: <code>WOEID.location</code>.</p>
-
-<pre>&lt;ExtractVariables name=&quot;extractId&quot;&gt;
-	&lt;URIPath&gt;
-		&lt;Pattern ignoreCase=&quot;true&quot;&gt;/WOEID/{location}&lt;/Pattern&gt;
-	&lt;/URIPath&gt;
-	&lt;IgnoreUnresolvedVariables&gt;false&lt;/IgnoreUnresolvedVariables&gt;
-	&lt;VariablePrefix&gt;WOEID&lt;/VariablePrefix&gt;
-&lt;/ExtractVariables&gt;</pre>
-
-<p>When the following request is received</p>
-
-<pre>http://{org-name}-test.apigee.net/WEOID/2467861</pre>
-
-<p>the following custom variable is populated:</p>
-
-<pre>WOEID.location=2467861</pre>
-
-<p>You could then use that value to rewrite the variable that governs the target URL. In the following JavaScript, </p>
-
-<pre>context.setVariable("target.url", "http://weather.yahooapis.com/forecastrss?w="+context.getVariable("WOEID.location"));</pre>
-
-<p>More commonly, though, when writing JavaScript you will be working with message content, whether JSON or XML. Again, you use the ExtractVariables policy type to pull data from message content and populate variables.</p>
-
-The Policy below parses the response message and populates two custom variables: <code>response.latutude</code> and <code>response.longitude</code>.
-
-<ExtractVariables name="ParseResponse">
-  <Source>response</Source>
-  <VariablePrefix>response</VariablePrefix>
-  <JSONPayload>
-    <Variable name="latitude">
-       <JSONPath>$.results[0].geometry.location.lat</JSONPath>
-    </Variable>
-    <Variable name="longitude">
-       <JSONPath>$.results[0].geometry.location.lng</JSONPath>
-    </Variable>
-  </JSONPayload>
-</ExtractVariables>
+json.country = 'us';
+json.postalcode = '95123'
+json.elevation = 'Very High';</pre>
 
 
-<h2>Dynamically setting the target URL</h2>
 
-<p>A common usage of JavaScript is to set the target URL for outbound requests. You might need to set the outbound URL dynamically based on payload content or on other contextual information.</p>
+<h3>Creating a policy that references the JavaScript resource</h3>
 
-<p>In this example, you write JavaScript that sets a variable based on the value of another variable that it gets. Continuing with the reference example that proxies the Yahoo! weather API, we can write JavaScript to set the value of <code>target.url</code> based on the <code>path.uri</code>. The effect of this JavaScript is to extract the WEOID query parameter from the request, and then to set it as the target URL for the outbound request.</p>
+<p>In this example, the JavaScript resource is referenced in a file called <code>generateResponse.xml</code> under <code>/apiproxy/policies</code> with the following contents:</p>
 
-<p>This logic is implemented in the following JavaScript:</p>
+<pre>&lt;Javascript name='generateResponse' timeLimit='200'&gt;
+&nbsp;&nbsp;&nbsp; &lt;ResourceURL&gt;jsc://generateResponse.js&lt;/ResourceURL&gt;
+&lt;/Javascript&gt;</pre>
 
-<pre>context.setVariable("target.url", "http://weather.yahooapis.com/forecastrss?w="+context.getVariable("path.uri"));</pre>
+<h3>Attaching the JavaScript policy to the ProxyEndpoint response PostFlow</h3>
 
-<pre>&lt;ProxyEndpoint name=&quot;default&quot;&gt;
-  &lt;PreFlow name=&quot;PreFlow&quot;&gt;
-    &lt;Request&gt;
+<p>To execute this policy, the ProxyEndpoint, <code>/apiproxy/proxies/default.xml</code>, should be configured as follows:</p>
+
+			<pre>&lt;ProxyEndpoint name="default"&gt;
+  &lt;PostFlow&gt;
+    &lt;Response&gt;
       &lt;Step&gt;
-        &lt;Name&gt;ExtractId&lt;/Name&gt;
+        &lt;Name&gt;generateResponse&lt;/Name&gt;
       &lt;/Step&gt;
-    &lt;/Request&gt;
-  &lt;/PreFlow&gt;
+    &lt;/Response&gt;
+  &lt;/PostFlow&gt;
   &lt;HTTPProxyConnection&gt;
-    &lt;BasePath&gt;/yahoo&lt;/BasePath&gt;
+    &lt;BasePath&gt;/weather&lt;/BasePath&gt;
     &lt;VirtualHost&gt;default&lt;/VirtualHost&gt;
   &lt;/HTTPProxyConnection&gt;
-  &lt;RouteRule name=&quot;YahooRoute&quot;&gt;
-    &lt;TargetEndpoint&gt;default&lt;/TargetEndpoint&gt;
+  &lt;RouteRule name="default"&gt;
+     &lt;TargetEndpoint&gt;default&lt;/TargetEndpoint&gt;
   &lt;/RouteRule&gt;
 &lt;/ProxyEndpoint&gt;</pre>
 
-<h2>Script errors</h2>
+<h3>Testing the JavaScript</h3>
 
+<pre>$ curl http://{org_name}-test.apigee.net/weather</pre>
 
+<pre>{"country":"us","postalcode":"95123","elevation":"1200"}</pre>
 
-<pre>{"fault":{"faultstring":"Execution of rewriteTargetUrl failed with error: Javascript runtime error: \"TypeError: Cannot find function getVariable in object TARGET_REQ_FLOW. (rewriteTargetUrl_js#1). at line 1 \"","detail":{"errorcode":"steps.javascript.ScriptExecutionFailed"}}}</pre>
-
-
+</div>
 <p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
 <p>Back to <a href="/docs/enterprise/content/developer_guide">API Proxy Developer Guide</a>.</p>
 

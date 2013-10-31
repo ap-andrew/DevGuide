@@ -414,7 +414,7 @@ Environment: test
 
 <p>Your Login app then calls:</p>
 
-<pre>$ curl  "http://myorg-test.apigee.net/oauth/authorizationcode?response_type=code&amp;client_id={consumer_key}&amp;scope=READ&amp;state=foobar"</pre>
+<pre>$ curl  "http://myorg-test.apigee.net/oauth/authorizationcode?response_type=auth_code&amp;client_id={consumer_key}&amp;scope=READ&amp;state=foobar"</pre>
 
 <p>This command returns an authorization code, along with an HTTP 302 redirect response whose <code>Location</code> value is populated using the <code>callback_url</code> on file for the requesting app:</p>
 
@@ -438,4 +438,4 @@ Environment: test
 <pre>$ curl -H "Authorization: Bearer I29OwHlGRi1AkbBCIRLLMC5efFgu" https://{org_name}-test.apigee.net/weather/forecastrss?w=12797282&amp;</pre>
 
 <p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
-<p>Back to <a href="/docs/enterprise/content/developer_guide">API Platform Developer Guide</a>.</p>
+<p>Back to <a href="/docs/enterprise/content/developer_guide">API Proxy Developer Guide</a>.</p>

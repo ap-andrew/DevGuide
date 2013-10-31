@@ -1,98 +1,153 @@
 <p>[toc]</p>
-<p>One way that Apigee enhances the availability of your API is by providing built-in support for load balancing and failover across multiple backend server instances.&nbsp;</p>
-<h2>CReating target servers in an environment</h2>
-<p>To configure load balancing and failover, you create two or more named 'target servers' that you then reference in the HTTP Connection element in a target endpoint configuration.&nbsp;</p>
-<p>A target server definition consists of a name, a host and a port, with an additional element to indicate whether the target server is enabled or disabled.</p>
-<h3>Sample Target Server Configuration:</h3>
-<div id="well">
-	<pre>&lt;TargetServer name="target1"&gt;
+
+<p>Apigee enhances the availability of your API by providing built-in support for load balancing and failover across multiple backend server instances.</p>
+
+<p>TargetServers decouple concrete endpoint URLs from API proxy configurations. You can configure TargetEndpoints multiple TargetServers, which are in turn referenced by name in a TargetEndpoint HTTPConnection.</p>
+
+<p>This is enables your API proxies to call different backend endpoints based on the environment in which they are deployed, rather than having to modify the TargetEndpoint configuration when an API proxy is deployed to production.</p>
+
+<h2>Creating TargetServers in an environment</h2>
+
+<p>A TargetServer definition consists of a name, a host and a port, with an additional element to indicate whether the TargetServer  is enabled or disabled.</p>
+
+<h3>Sample TargetServer Configuration:</h3>
+
+	<pre>&lt;TargetServer  name="target1"&gt;
   &lt;Host&gt;1.mybackendservice.com&lt;/Host&gt;
   &lt;Port&gt;80&lt;/Port&gt;
   &lt;IsEnabled&gt;true&lt;/IsEnabled&gt;
-&lt;/TargetServer&gt;</pre>
-</div>
-<p>To create a target server in an environment:</p>
-<div id="well">
-	<pre>$ curl -H "Content-Type:text/xml" -X POST -d \
-'&lt;targetserver name="target2"&gt;
-  &lt;host&gt;2.mybackendservice.com&lt;/host&gt;
-  &lt;port&gt;80&lt;/port&gt;
-  &lt;isenabled&gt;true&lt;/isenabled&gt;
- &lt;/targetserver&gt;' \
--u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/environments/test/targetservers</pre>
-</div>
+&lt;/TargetServer &gt;</pre>
+
+<h3>TargetEndpoint Configuration Elements</h3>
+<table border="1" cellpadding="1" cellspacing="1" class="table" style="width: 690px;">
+	<thead>
+		<tr>
+			<th>Name</th>
+			<th>Description</th>
+			<th>Default</th>
+			<th>Required?</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td><b><code>name</code></b></td>
+			<td>The name of the TargetServer configuration. The name must be unique within the environment.</td>
+			<td>N/A</td>
+			<td> Yes</td>
+		</tr>
+		
+				<tr>
+			<td><b><code>Host</code></b></td>
+			<td>The host URL of the backend service.</td>
+			<td>N/A</td>
+			<td>Yes</td>
+		</tr>
+		
+				<tr>
+			<td><b><code>Port</code></b></td>
+			<td>The port on which the backend service is listening</td>
+			<td>N/A</td>
+			<td>Yes</td>
+		</tr>
+		
+				<tr>
+			<td><b><code>IsEnabled</code></b></td>
+			<td>A boolean that indicates whether the TargetServer configuration is enabled or disabled. This enables you to take TargetServers out of rotation without modifying the API proxy configuration.</td>
+			<td><code>true</code></td>
+			<td>Yes</td>
+		</tr>
+</tbody>
+</table>
+
+<p>To create a TargetServer in an environment:</p>
+
+	<pre class="terminal">$ curl -H "Content-Type:text/xml" -X POST -d \
+'&lt;TargetServer name=&quot;target1&quot;&gt;
+   &lt;Host&gt;1.mybackendservice.com&lt;/Host&gt;
+   &lt;Port&gt;80&lt;/Port&gt;
+   &lt;IsEnabled&gt;true&lt;/IsEnabled&gt;
+ &lt;/TargetServer&gt;' \
+-u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/environments/test/TargetServers</pre>
+
 <p>Sample Response:</p>
-<div id="well">
+
 	<pre>{
   "host" : "1.mybackendservice.com",
   "isEnabled" : true,
   "name" : "target1",
   "port" : 80
 }</pre>
-</div>
-<p>Create a second target server:</p>
-<div id="well">
-	<pre>$ curl&nbsp;-H "Content-type:text/xml" -X POST -d \
-'&lt;targetserver name="target2"&gt;
-  &lt;host&gt;2.mybackendservice.com&lt;/host&gt;
-  &lt;port&gt;80&lt;/port&gt;
-  &lt;isenabled&gt;true&lt;/isenabled&gt;
-&lt;/targetserver&gt;' \
+
+<p>After you create the first TargetServer, then create a second TargetServer. By defining two TargetServers, you provide two URLs that a TargetEndpoint can use for loadbalancing:</p>
+
+	<pre class="terminal">$ curl -H "Content-type:text/xml" -X POST -d \
+'&lt;TargetServer  name="target2"&gt;
+  &lt;Host&gt;2.mybackendservice.com&lt;/Host&gt;
+  &lt;Port&gt;80&lt;/Port&gt;
+  &lt;IsEnabled&gt;true&lt;/IsEnabled&gt;
+&lt;/TargetServer &gt;' \
 -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/environments/test/targetservers</pre>
-</div>
+
 <p>Sample Response:</p>
-<div id="well">
+
 	<pre>{
   "host" : "2.mybackendservice.com",
   "isEnabled" : true,
   "name" : "target2",
   "port" : 80
 }</pre>
-</div>
-<p>Retrieve a list of target servers in an environment:</p>
-<div id="well">
-	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/environments/test/targetservers</pre>
-</div>
+
+<p>Retrieve a list of TargetServers in an environment:</p>
+
+<pre class="terminal">$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/environments/test/targetservers</pre>
+
 <p>Sample response:</p>
-<div id="well">
+
 	<pre>[ "target2", "target1" ]</pre>
-</div>
-<p>There are now two target servers available for use by APi proxies deployed in the test environment. To load balance traffic across these target servers, you configure the HTTP connection an API proxy's target endpoint to use the target servers.</p>
-<p>There is no limit on the number of target servers that you can set up in an environment or reference from a target endpoint.</p>
-<h2>Configuring a TargetEndpoint to load balance across named target Servers</h2>
-<p>Now that you have two target servers available, you can modify the target endpoint HTTP connection setting to reference those two target servers by name.</p>
+
+<p>There are now two TargetServers available for use by APi proxies deployed in the test environment. To load balance traffic across these TargetServers, you configure the HTTP connection an API proxy's target endpoint to use the TargetServers.</p>
+
+<p>There is no limit on the number of TargetServers that you can set up in an environment or reference from a TargetEndpoint's HTTPConnection.</p>
+
+<h2>Configuring a TargetEndpoint to load balance across named TargetServers</h2>
+<p>Now that you have two TargetServers available, you can modify the target endpoint HTTP connection setting to reference those two TargetServers by name.</p>
 <pre>&lt;TargetEndpoint name="default"&gt;
-    &lt;HttpTargetConnection&gt;
+    &lt;HTTPTargetConnection&gt;
         &lt;LoadBalancer&gt;
             &lt;Server name="target1" /&gt;
             &lt;Server name="target2" /&gt;
         &lt;/LoadBalancer&gt;
-    &lt;/HttpTargetConnection&gt;
+    &lt;/HTTPTargetConnection&gt;
 &lt;/TargetEndpoint&gt;</pre>
-<p>The configuration above is the most basic load balancing configuration possible. The load balancer supports three load balcing algorithms, Round Robin, Weighted, and Least Connection. Round Robin is the default algorithm. Since no algorithm is specified in the configuration above, outbound requests from the API proxy to the backend servers will alternate, one for one, between target1 and target 2.&nbsp;</p>
-<h2>Step 3: Set load balancer options</h2>
-<p>You can tune availability by using options for load balancing and failover at the load balancer and target server level.</p>
-<p>Available options for LoadBalancerss are:</p>
-<p>&nbsp;</p>
+<p>The configuration above is the most basic load balancing configuration possible. The load balancer supports three load balancing algorithms, Round Robin, Weighted, and Least Connection. Round Robin is the default algorithm. Since no algorithm is specified in the configuration above, outbound requests from the API proxy to the backend servers will alternate, one for one, between target1 and target 2.&nbsp;</p>
+
+<p><b>Retries are triggered by I/O exceptions and HTTP time outs. Retries are not triggered by HTTP error codes (4xx, 5xx).</b></p>
+
+<h2>Setting load balancer options</h2>
+
+<p>You can tune availability by using options for load balancing and failover at the load balancer and TargetServer  level.</p>
+<p>Available options for LoadBalancers are:</p>
+
 <h3>Algorithm</h3>
-<p>Sets the algorithm used by LoadBalancer</p>
-<h4>Round Robin</h4>
-<p>The default algorithm, forwards request to each target server in the order in which the servers are listed in the target endpoint HTTP connection.</p>
+<p>Sets the algorithm used by LoadBalancer. The available algorithms are <code>RoundRobin</code>, <code>Weighted</code>, and <code>MaximumFailures</code>, each of which is documented below.</p>
+
+<h4>Round robin</h4>
+<p>The default algorithm, <p>RoundRobin</p> forwards request to each TargetServer  in the order in which the servers are listed in the target endpoint HTTP connection.</p>
 <p>For example:</p>
 <pre>&lt;TargetEndpoint name="default"&gt;
-  &lt;HttpTargetConnection&gt;
+  &lt;HTTPTargetConnection&gt;
       &lt;LoadBalancer&gt;
         &lt;Algorithm&gt;RoundRobin&lt;/Algorithm&gt;
         &lt;Server name="target1" /&gt;
         &lt;Server name="target2" /&gt;
       &lt;/LoadBalancer&gt;
-  &lt;/HttpTargetConnection&gt;
+  &lt;/HTTPTargetConnection&gt;
 &lt;/TargetEndpoint&gt;</pre>
-<p>&nbsp;</p>
+
 <h4>Weighted</h4>
-<p>The weighted load balancing algorithm enables you to configure proportional traffic loads for your target servers. The weighted LoadBalancer distributes request to your target servers in direct proportion to each target server's weight. Therefore, the weighted algorithm requires you to set a<span style="font-family: 'courier new', courier, monospace;">&lt;weight&gt;</span> attribute for each target server.&nbsp;For example:</p>
+<p>The weighted load balancing algorithm enables you to configure proportional traffic loads for your TargetServers. The weighted LoadBalancer distributes request to your TargetServers in direct proportion to each TargetServer 's weight. Therefore, the weighted algorithm requires you to set a <code>weight</code> attribute for each TargetServer . For example:</p>
 <pre>&lt;TargetEndpoint name="default"&gt;
-  &lt;HttpTargetConnection&gt;
+  &lt;HTTPTargetConnection&gt;
       &lt;LoadBalancer&gt;
         &lt;Algorithm&gt;Weighted&lt;/Algorithm&gt;
         &lt;Server name="target1"&gt;
@@ -102,53 +157,278 @@
           &lt;Weight&gt;2&lt;/Weight&gt;
         &lt;/Server&gt;
       &lt;/LoadBalancer&gt;
-  &lt;/HttpTargetConnection&gt;
+  &lt;/HTTPTargetConnection&gt;
 &lt;/TargetEndpoint&gt;</pre>
+
 <p>In this example, 2 requests will be routed to target2 for every 1 request routed to target1.</p>
+
 <h4>Least Connection</h4>
-<p>LoadBalancers configured to use the least connection algorithm route outbound requests to the target server with fewest open HTTP connections.</p>
+
+<p>LoadBalancers configured to use the least connection algorithm route outbound requests to the TargetServer  with fewest open HTTP connections.</p>
 <pre>&lt;TargetEndpoint name="default"&gt;
-  &lt;HttpTargetConnection&gt;
+  &lt;HTTPTargetConnection&gt;
       &lt;LoadBalancer&gt;
         &lt;Algorithm&gt;LeastConnection&lt;/Algorithm&gt;
         &lt;Server name="target1" /&gt;
         &lt;Server name="target2" /&gt;
       &lt;/LoadBalancer&gt;
-  &lt;/HttpTargetConnection&gt;
+  &lt;/HTTPTargetConnection&gt;
 &lt;/TargetEndpoint&gt;</pre>
-<h3>Maximum Faliures</h3>
-<p>The maximum number of failed requests from the API proxy to the target server that results in the request being redirected to another target server. As configured below, target1 will be removed from rotation after 5 failed requests.</p>
+<h3>Maximum failures</h3>
+<p>The maximum number of failed requests from the API proxy to the TargetServer that results in the request being redirected to another TargetServer . As configured below, target1 will be removed from rotation after 5 failed requests.</p>
 <pre>&lt;TargetEndpoint name="default"&gt;
-  &lt;HttpTargetConnection&gt;
+  &lt;HTTPTargetConnection&gt;
       &lt;LoadBalancer&gt;
         &lt;Algorithm&gt;RoundRobin&lt;/Algorithm&gt;
         &lt;Server name="target1" /&gt;
            &lt;MaxFailures&gt;5&lt;/MaxFailures&gt;
         &lt;Server name="target2" /&gt;
       &lt;/LoadBalancer&gt;
-  &lt;/HttpTargetConnection&gt;
+  &lt;/HTTPTargetConnection&gt;
 &lt;/TargetEndpoint&gt;</pre>
+
+<div class="warning">If you configure MaxFailures without also configuring a HealthMonitor, then eventually all of your TargetServers will be removed from rotation. If you configure MaxFailures, always configure an associated HealthMonitor.</div>
+
 <h3>Retry</h3>
-<p>A boolean, retry defines whether whether a target server is retired after a failure. By default, this is set to true. If set to false, a failure by the target server results in a failure for the transaction, with a failure result returned to the requesting client app.</p>
-<p><span style="font-family:courier new,courier,monospace;">&lt;RetryEnabled&gt;true&lt;/RetryEnabled&gt;</span></p>
+
+<p>Retry the request once to a different server after an I/O error (not an HTTP status code 500).</p>
+
+<pre>&lt;RetryEnabled&gt;true&lt;/RetryEnabled&gt;</pre>
+
 <h3>Fallback</h3>
-<p>One (and only one) target server can be set as the 'fallback' server. The fallback target server is not included in load balancing routines until all other target servers are identified as unavailable by the load balancer. When the load balancer determines that all target serversare unavailable, all traffic is routed to the fallback server. For example:</p>
+<p>One (and only one) TargetServer can be set as the 'fallback' server. The fallback TargetServer is not included in load balancing routines until all other TargetServers are identified as unavailable by the load balancer. When the load balancer determines that all TargetServers are unavailable, all traffic is routed to the fallback server. For example:</p>
 <pre>&lt;TargetEndpoint name="default"&gt;
-  &lt;HttpTargetConnection&gt;
+  &lt;HTTPTargetConnection&gt;
       &lt;LoadBalancer&gt;
         &lt;Algorithm&gt;RoundRobin&lt;/Algorithm&gt;
         &lt;Server name="target1" /&gt;
         &lt;Server name="target2" /&gt;
-        &lt;Server name="target3"
+        &lt;Server name="target3" /&gt;
           &lt;IsFallback&gt;true&lt;/IsFallback&gt;
       &lt;/LoadBalancer&gt;
-  &lt;/HttpTargetConnection&gt;
+  &lt;/HTTPTargetConnection&gt;
 &lt;/TargetEndpoint&gt;</pre>
 <p>The configuration above results in round robin load balancing between targets 1 and 2 until both targets 1 and 2 are unavailable. When targets 1 and 2 are unavailable, all traffic is routed to target 3.</p>
+
 <h3>IsEnabled</h3>
-<p>A boolean, enables target servers to be turned on and off by changing this setting from true to false. A common usage would be to write an app or script that enables or disables target servers automatically based on expected capacity requirements, maintenance schedules, etc.</p>
+<p>A boolean, enables TargetServers to be turned on and off by changing this setting from true to false. A common usage would be to write an app or script that enables or disables TargetServers automatically based on expected capacity requirements, maintenance schedules, etc.</p>
 <pre>&lt;IsEnabled&gt;true&lt;/IsEnabled&gt;</pre>
+
+<h2>Health monitoring</h2>
+<p>Health monitoring enables you to enhance load balancing configurations by actively polling the TargetServers defined for the load balancer.</p>
+
+<p>A HealthMonitor can optionally be defined on a TargetEndpoint HTTPConnection. A simple HealthMonitor defines an IntervalinSec combined with a TCPMonitor or an HTTPMonitor.</p> 
+
+<h3>TCPMonitor</h3>
+
+<p>The configuration below defines a HealthMonitor that polls each TargetServer by opening a connection on port 80 every 5 seconds.</p>
+<p><ul><li>If the connection fails or takes more than 10 seconds to connect, then the failure count increments by 1 for that TargetServer. </li>
+<li>If the connection succeeds, then the failure count for the TargetServer is reset to 0.</li></ul></p>
+
+<pre>&lt;HealthMonitor&gt;
+  &lt;IsEnabled&gt;true&lt;/IsEnabled&gt;
+  &lt;IntervalInSec&gt;5&lt;/IntervalInSec&gt;
+  &lt;TCPMonitor&gt;
+    &lt;ConnectTimeoutInSec&gt;10&lt;/ConnectTimeoutInSec&gt;
+    &lt;Port&gt;80&lt;/Port&gt;
+  &lt;/TCPMonitor&gt;
+&lt;/HealthMonitor&gt;</pre>
+
+<h3>HealthMonitor with TCPMonitor Configuration Elements</h3>
+<table border="1" cellpadding="1" cellspacing="1" class="table" style="width: 690px;">
+	<thead>
+		<tr>
+			<th>Name</th>
+			<th>Description</th>
+			<th>Default</th>
+			<th>Required?</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td><b><code>IsEnabled</code></b></td>
+			<td>A boolean that enables or disables the HealthMonitor.</td>
+			<td>false</td>
+			<td>No</td>
+		</tr>
+		<tr>
+			<td><b><code>IntervalInSec</code></b></td>
+			<td>The time interval, in seconds, between each polling TCP request.</td>
+			<td>0</td>
+			<td>Yes</td>
+		</tr>
+		<tr>
+			<td><b><code>ConnectTimeoutInSec</code></b></td>
+			<td>Time in which connection to the TCP port must be established to be considered a success. Failure to connect in the specified interval count as failures, incrementing the load balancer's failure count for the TargetServer.</td>
+			<td>0</td>
+			<td>Yes</td>
+		</tr>
+		
+				<tr>
+			<td><b><code>Port</code></b></td>
+			<td>The port on which the TCP connection will be established.</td>
+			<td>0</td>
+			<td>Yes</td>
+		</tr>
+
+</tbody>
+
+</table>
+
+<h3>HTTPMonitor</h3>
+
+<p>A sample HealthMonitor that uses an HTTPMonitor:</p>
+
+<pre>&lt;HealthMonitor&gt;
+  &lt;IsEnabled&gt;true&lt;/IsEnabled&gt;
+  &lt;IntervalInSec&gt;5&lt;/IntervalInSec&gt;
+  &lt;HTTPMonitor&gt; 
+    &lt;Request&gt;
+      &lt;ConnectTimeoutInSec&gt;10&lt;/ConnectTimeoutInSec&gt;
+      &lt;SocketReadTimeoutInSec&gt;30&lt;/SocketReadTimeoutInSec&gt;
+      &lt;Port&gt;80&lt;/Port&gt;
+      &lt;Verb&gt;GET&lt;/Verb&gt;
+      &lt;Path&gt;/healthcheck&lt;/Path&gt;
+      &lt;Headers&gt;
+        &lt;Header name=&quot;Authorization&quot;&gt;Basic blahblah&lt;/Header&gt;
+      &lt;/Headers&gt;
+      &lt;Payload&gt;Hello, Server!&lt;/Payload&gt;
+    &lt;/Request&gt;
+    &lt;Response&gt; 
+      &lt;ResponseCode&gt;200&lt;/ResponseCode&gt;
+      &lt;Headers&gt;
+      &lt;Header name=&rdquo;ImOK&rdquo;&gt;YoureOK&lt;/Header&gt;
+      &lt;/Headers&gt;
+    &lt;/Response&gt;
+  &lt;/HTTPMonitor&gt; 
+&lt;/HealthMonitor&gt;</pre>
+
+<h3>HealthMonitor with HTTPMonitor Configuration Elements</h3>
+
+<table border="1" cellpadding="1" cellspacing="1" class="table" style="width: 690px;">
+	<thead>
+		<tr>
+			<th>Name</th>
+			<th>Description</th>
+			<th>Default</th>
+			<th>Required?</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td><b><code>IsEnabled</code></b></td>
+			<td>A boolean that enables or disables the HealthMonitor.</td>
+			<td>false</td>
+			<td>No</td>
+		</tr>
+		<tr>
+			<td><b><code>IntervalInSec</code></b></td>
+			<td>The time interval, in seconds, between each polling HTTP request.</td>
+			<td>0</td>
+			<td>Yes</td>
+		</tr>
+		<tr>
+			<td><b><code>Request</code></b></td>
+			<td>Configuration options for the outbound HTTP request message sent by the HealthMonitor to the TargetServers in the rotation.</td>
+			<td>N/A</td>
+			<td>Yes</td>
+		</tr>
+		
+
+				<tr>
+			<td><b><code>ConnectTimeoutInSec</code></b></td>
+			<td>Time, in seconds, in which the TCP connection handshake to the HTTP service must complete to be considered a success. Failure to connect in the specified interval counts as a failure, incrementing the LoadBalancer's failure count for the TargetServer.</td>
+			<td>0</td>
+			<td>No</td>
+		</tr>
+		
+		<tr>
+			<td><b><code>SocketReadTimeoutInSec</code></b></td>
+			<td>Time, in seconds, in which data must be read from the HTTP service to be considered a success.  Failure to read in the specified interval counts as a failure, incrementing the LoadBalancer's failure count for the TargetServer.</td>
+			<td>0</td>
+			<td>No</td>
+		</tr>
+				<tr>
+			<td><b><code>Port</code></b></td>
+			<td>The port on which the HTTP connection to the TargetServer will be established.</td>
+			<td>N/A</td>
+			<td>No</td>
+		</tr>
+				<tr>
+			<td><b><code>Verb</code></b></td>
+			<td>The HTTP verb used for each polling HTTP request to the TargetServer .</td>
+			<td>N/A</td>
+			<td>No</td>
+		</tr>
+				<tr>
+			<td><b><code>Path</code></b></td>
+			<td>The path appended to the URL defined in the TargetServer. Use the path element to configure a 'polling endpoint' on your HTTP service.</td>
+			<td>N/A</td>
+			<td>No</td>
+		</tr>
+				<tr>
+			<td><b><code>Headers</code></b></td>
+			<td>A list of one or more HTTP headers and their values that will be populated on each polling HTTP request.</td>
+			<td>N/A</td>
+			<td>No</td>
+		</tr>
+		
+				<tr>
+			<td><b><code>Payload</code></b></td>
+			<td>The HTTP body generated for each polling HTTP request.</td>
+			<td>N/A</td>
+			<td>No</td>
+		</tr>
+		
+			<tr>
+			<td><b><code>Response</code></b></td>
+			<td>Matching options for the inbound HTTP response message generated by the polled TargetServers. Responses hat do not maych increment teh failure count by 1.</td>
+			<td>N/A</td>
+			<td>Yes</td>
+		</tr>
+		
+			<tr>
+			<td><b><code>ResponseCode</code></b></td>
+			<td>The HTTP response code expected to be received from the polled TargetServer. A code different than the code specified results in a failure, and the count being incremented for the polled TargetServer. You can define multiple ResponseCode elements.</td>
+			<td>N/A</td>
+			<td>No</td>
+		</tr>
+		
+					<tr>
+			<td><b><code>Headers</code></b></td>
+			<td>A list of one or more HTTP headers and values expected to be received from the polled TargetServer. Any HTTP headers or values on the response that are different from those specified result in a failure, and the count for the polled TargetServer is incremented by 1. You can define multiple Header elements.</td>
+			<td>N/A</td>
+			<td>No</td>
+		</tr>
+
+</tbody>
+
+</table>
+
+<h2>Configuring outbound client SSL for mutual authentication</h2>
+
+<p>TargetServers expose the same SSL configuration settings as TargetEndpoints.</p>
+
+<pre>&lt;TargetServer  name=&quot;TargetServer 1&quot;&gt; 
+    &lt;IsEnabled&gt;true&lt;/IsEnabled&gt; 
+    &lt;Host&gt;www.example.com/Host&gt; 
+    &lt;Port&gt;443&lt;/Port&gt; 
+    &lt;SSLInfo&gt; 
+        &lt;Ciphers/&gt; 
+        &lt;ClientAuthEnabled&gt;true&lt;/ClientAuthEnabled&gt; 
+        &lt;Enabled&gt;true&lt;/Enabled&gt; 
+        &lt;IgnoreValidationErrors&gt;false&lt;/IgnoreValidationErrors&gt; 
+        &lt;KeyAlias&gt;keystore-alias&lt;/KeyAlias&gt; 
+        &lt;KeyStore&gt;keystore-name&lt;/KeyStore&gt; 
+        &lt;Protocols/&gt; 
+        &lt;TrustStore&gt;truststore-name&lt;/TrustStore&gt; 
+    &lt;/SSLInfo&gt; 
+&lt;/TargetServer &gt; </pre>
+
+<p>For complete instructions on configuring outbound client SSL, see [node:4572].</p>
 
 <p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
 
-<p>Back to <a href="/docs/enterprise/content/developer_guide">API Platform Developer Guide</a>.</p>
+<p>Back to <a href="/docs/enterprise/content/developer_guide">API Proxy Developer Guide</a>.</p>
+
+

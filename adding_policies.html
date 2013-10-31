@@ -18,7 +18,7 @@
 
 <p>Quota policies are very common. Quotas provide control over how often a client app is permitted to invoke an API over a given time interval. In the example below, a Quota policy is configured to limit apps to 1 request per minute. (While this may not be realistic, it does provide a simple way to see the effects of a policy.)</p>
 
-<p>Policy files are stored as XML files under <code>/apiproxy/policies</code> directory.</p>
+<p>Policy files are usually stored as XML files under <code>/apiproxy/policies</code> directory.</p>
 
 <p>For example, a policy of type Quota called "QuotaPolicy" could be created as a file called <code>QuotaPolicy.xml</code> with the following content:</p>
 
@@ -35,16 +35,17 @@ async="false" name="QuotaPolicy"&gt;
 <ul>
 	<li><code>enabled</code>: Indicates whether the policy is turned "on" or "off". Policies can be enabled/disabled at runtime by changing this setting. A policy that has <code>enabled</code> set to <code>false</code> is not enforced. </li>
 	<li><code>continueOnError</code>: Defines whether the pipeline should continue processing the message if the policy fails. When enforcing quota policies, errors likely indicate that the quota has been exceeded, and, therefore, this attribute should be set to false.</li>
-	<li><code>async</code>: If set to <code>true</code> the processing pipeline will continue processing subsequent policy steps before the current step completes. Asynchronous setting is useful, for example, when using policies to call out to external APIs or services as part of a flow.</li>
+	<li><code>async</code>: In a policy, enabling <code>async=true</code> tells the Apigee gateway to run the policy inside a different thread pool, isolated from the regular pool that is servicing the request/response Flow. This is an internal optimization that will rarely be of use to API developers.</li>
 	<li><code>name</code>: The name that you give to this policy. This name is unique to this policy instance, and it is used to attach the policy to the flow as a processing step.</li>
 </ul>
 
 <p>In the example above, the elements <code>Allow</code>, <code>Interval</code>, and <code>TimeUnit</code> are specific to the quota policy. These elements provide settings that the API Platform enforces on behalf of an API. Other policy types define their own settings.</p>
 
 <h2>Attaching a policy to a ProxyEndpoint or TargetEndpoint Flow</h2>
+
 <p>Policies in the <code>/policies</code> directory are available to be executed in the processing pipeline of a ProxyEndpoint or a TargetEndpoint. You can think of the <code>/policies</code> directory as a repository for instances of policies. The policies in the repository have no effect until they are attached as a processing 'Step' in the API proxy Flow.</p>
 
-<p>The choice of attachment point is critical. If you attach the Quota policy to a response Flow, for example, the Quota would be enforced after the request message was sent to the backend service. That would defeat the purpose of applying a Quota policy! Therefore, we need to attach the Quota policy as a processing Step on the request Flow.</p>
+<p>The choice of attachment point is critical to the behavior of your API proxy. For example, if you attach the Quota policy to a response Flow, then the Quota would be enforced <i>after</i> the request message was sent to the backend service. That would defeat the purpose of applying a Quota policy! Therefore, you need to attach the Quota policy as a processing Step on the request Flow.</p>
 
 <p>The format of a policy attachment is:</p>
 
@@ -58,7 +59,15 @@ async="false" name="QuotaPolicy"&gt;
     &lt;Name&gt;QuotaPolicy&lt;/Name&gt;
 &lt;/Step&gt;</pre>
 
-<p>A policy is attached to a Flow by adding the Step configuration to the appropriate request or response flow in a ProxyEndpoint or TargetEndpoint. For example, a Quota must be enforced before any additional processing occurs. Therefore, a Quota policy should be attached to the ProxyEndpoint request 'PreFlow'. A PreFlow is an important construct. A PreFlow always executes, even if other Flows are configured to execute dynamically. (Dynamic execution is an advanced topic that you will cover in a later topic.)</p>
+<p>A policy is attached to a Flow by adding the Step configuration to the appropriate request or response Flow in a ProxyEndpoint or TargetEndpoint.</p>
+
+<p>You can attach a policy to request or response Flow in the ProxyEndpoint or TargetEndpoint.</p>
+
+<p>Request and response Flows are further subdivided in to PreFlow and PostFlow.</p>
+
+<p>For more detail on the Flow processing model, see [node:10].
+</p>
+	
 	
 <p>The following example demonstrates a simple ProxyEndpoint configuration has no policy attachments. It simply defines the HTTPConnections and a RouteRule. </p>
 
@@ -77,11 +86,11 @@ async="false" name="QuotaPolicy"&gt;
 <p>To enforce this configuration, you attach a processing Step to the request PreFlow as follows:</p>
 
 <pre>&lt;ProxyEndpoint name="default"&gt;
-&nbsp; &lt;PreFlow&gt;
-&nbsp; &nbsp; &lt;Request&gt;
-&nbsp; &nbsp; &nbsp; &lt;Step&gt;&lt;Name&gt;QuotaPolicy&lt;/Name&gt;&lt;/Step&gt;
-&nbsp; &nbsp; &lt;/Request&gt;
-&nbsp; &lt;/PreFlow&gt;
+  &lt;PreFlow&gt;
+    &lt;Request&gt;
+      &lt;Step&gt;&lt;Name&gt;QuotaPolicy&lt;/Name&gt;&lt;/Step&gt;
+    &lt;/Request&gt;
+  &lt;/PreFlow&gt;
   &lt;HTTPProxyConnection&gt; 
     &lt;BasePath&gt;/weather&lt;/BasePath&gt; 
     &lt;VirtualHost&gt;default&lt;/VirtualHost&gt; 
@@ -91,14 +100,43 @@ async="false" name="QuotaPolicy"&gt;
   &lt;/RouteRule&gt; 
 &lt;/ProxyEndpoint&gt;</pre>
 
+
+<p>The following is a sample request PostFlow attachment. This policy would execute on the request message after all of the policies in the PreFlow execute.</p>
+
+<pre>&lt;PostFlow&gt;
+  &lt;Request&gt;
+    &lt;Step&gt;&lt;Name&gt;QuotaPolicy&lt;/Name&gt;&lt;/Step&gt;
+  &lt;/Request&gt;
+&lt;/PostFlow&gt;</pre>
+
+<p>The following is sample response PostFlow attachment. This policy would execute on the response message. (The ProxyEndpoint response PostFlow is the final processing phase before the response is returned to the requesting client app.)</p>
+
+<pre>&lt;PostFlow&gt;
+  &lt;Response&gt;
+    &lt;Step&gt;&lt;Name&gt;QuotaPolicy&lt;/Name&gt;&lt;/Step&gt;
+  &lt;/Response&gt;
+&lt;/PostFlow&gt;</pre>
+
 <p>Note that the rest of the ProxyEndpoint configuration remains the same. The only change is that you added the PreFlow, Request, and Step elements. In the ProxyEndpoint configuration above, the Quota policy executes when the ProxyEndpoint receives a request from a client app, and before any additional processing takes place.</p>
 
+<p>You can also define conditional Flows that execute <i>between</i> the PreFlow and PostFlow phases. This is covered in the next Developer Guide topic, [node:4583].</p>
+
+
 <h2><a class="jumplink" name="import_deploy"></a>Importing and deploying changes</h2>
+
 <p>Whenever you modify API proxy, you must import and deploy. Policy changes do not take effect until the modified configuration files have been imported and deployed.</p>
 
+<p>When you import the API proxy, a ZIP file is loaded to your organization. The API proxy configuration is given a revision number.</p>
+
+<p>You can deploy a revision of an imported API proxy to an environment. Usually, you develop, iterate, and test in the test environment. When you are satisfied that your API proxy meets your requirements, you deploy to the prod environment.</p>
+
+<p>You can increment the revision number of an API proxy when you deploy. (The Python deploy tool does this automatically each time you deploy and API proxy.) The API Platform undeploys the current API proxy configuration and then deploys the new configuration. There is no downtime during deployment.</p>
+
 <p>To deploy your changes, run the Python deploy tool, substituting your username and password for <span style="font-family:courier new,courier,monospace;">myname:mypass</span> and your Apigee organization for <span style="font-family:courier new,courier,monospace;">myorg</span>.</p>
+
 <pre>$ python tools/deploy.py -n weatherapi -u myname:mypass -o myorg -e test -p / -d simpleProxy</pre>
 <p>You should see the following result:</p>
+
 <pre>Writing ./simpleProxy/apiproxy/weatherapi.xml to apiproxy/weatherapi.xml
 Writing ./simpleProxy/apiproxy/policies/QuotaPolicy.xml to apiproxy/policies/QuotaPolicy.xml
 Writing ./simpleProxy/apiproxy/proxies/default.xml to apiproxy/proxies/default.xml
@@ -108,6 +146,7 @@ Undeploying revision 1 in same environment and path:
 Environment: test
   Revision: 2 BasePath = /
   State: deployed</pre>
+
 <p>Note that the deploy tool deploys a new revision number, and provides a notice indicating that the previous revision has been undeployed. If necessary, the revision mechanism can be used to revert to the previous revision of the API proxy, thus rolling back any changes. The Apigee deploy tool always increments the revision number of an API proxy on import.</p>
 
 <p>You can also use the shell scripts provided with the API Platform samples on GitHub. Those scripts simply wrap the Python deploy, and therefore provide an example of how you might start scripting your deployment procedures. By scripting deployment procedures, you gain the benefit of consistency, repeatability, and so on.</p>
@@ -124,37 +163,16 @@ Environment: test
 
 <p>Now that you understand how to create and attach a simple Quota policy, you can begin working locally with all of the policies that are provided by Apigee.</p>
 
-<h2>Configuring conditional policy enforcement</h2>
+<p>For a complete list of available policies along with a configuration reference, see the <a href="apigee.com/docs/enterprise/content/customize-apis">API Platform Policy reference</a>.</p>
 
-<p>A powerful feature of the API Platform is conditional policy enforcement.</p>
+<div class="sample-github"><p>Working samples of policy configurations are available in the [node:4561] on GitHub.</p></div>
 
-<p>Conditional statements can be added to policy attachments. For example, to add a conditional statement that enforces a quota policy only for XML messages:</p>
-
-<pre>&lt;Step&gt;
-  &lt;Condition&gt;request.header.content-type = "text/xml"&lt;/Condition&gt;
-    &lt;Name&gt;QuotaPolicy&lt;/Name&gt;
-&lt;/Step&gt;</pre>
-
-<p>The configuration above enforces the Quota policy as a processing Step only if the conditional statement evaluates to true. In other words, the Quota is enforced on inbound request messages where the HTTP <code>content-type</code> header is set to <code>text/xml</code>.</p>
-
-<p>The API Platform evaluates the HTTP <code>content-type</code> header in the request message from the client, and checks to see whether that value equals <code>text/xml</code>. If the condition evaluates to true, the policy is enforced. If not, the policy is bypassed.</p>
-
-<p>The API Platform automatically makes all HTTP headers and query parameters available as variables. For example, the following request message to an API:</p>
-
-<p>$ curl http://apifactory-test.apigee.net/weather/forecastrss?w=12797282&apikey=h789srfhuih -H "User-Agent:Mozilla/5.0"</p>
-
-<p>Results in the following variables being set:</p>
-
-<pre>request.queryParam.w=12797282
-request.queryParam.apikey=h789srfhuih
-request.header.User-Agent=User-Agent:Mozilla/5.0</pre>
-
-<p>Conditions have two components, a <i>variable</i> and a <i>conditional operator</i>.</p>
-
-<p>The configuration above uses a variable defined by Apigee: <code>request.header.content-type</code>. Many other variables are defined by the API Platform, providing a rich environment in which to implement dynamic, context-driven behavior. You can also define your own custom variables to support dynamic behavior specific to the content of the messages that your apps and API exchange.</p>
-
-<p>For more, refer to the the list of [node:243] and [node:231].</p>
+<h2>Get help</h2>
 
 <p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
 
-<p>Back to <a href="/docs/enterprise/content/developer_guide">API Platform Developer Guide</a>.</p>
+<h2>Next Steps</h2>
+
+{node:4583]}
+
+<p>Back to <a href="/docs/enterprise/content/developer_guide">API Proxy Developer Guide</a>.</p>

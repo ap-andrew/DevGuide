@@ -1,0 +1,45 @@
+<p>[toc]</p>
+<p>The Apigee API Platform processes API requests and responses using a pipeline processing model.&nbsp;The behavior of your API is determined by the processing of both the request and response flows.&nbsp;The request flow processes incoming messages sent to your backend services. The response flow processes messages sent from your backend service to the client.&nbsp;</p>
+<p>Your proxy has two types of endpoints:&nbsp;</p>
+<ul>
+	<li><strong>ProxyEndpoint:</strong>&nbsp;Processes inbound requests from, and outbound responses to, HTTP clients.&nbsp;</li>
+	<li><strong>TargetEndpoint:</strong>&nbsp;Processes outbound requests to, and inbound responses from, HTTP services.</li>
+</ul>
+<p>[[{"type":"media","view_mode":"media_original","fid":"1122","attributes":{"alt":"","class":"media-image","height":"256","style":"width: 650px; height: 256px; margin: 15px;","typeof":"foaf:Image","width":"650"}}]]</p>
+<h2><a class="jumplink" name="construct_flow"></a>API Platform flow processing model</h2>
+<p>Each endpoint defines Flows that determine the order in which pre-defined processing steps&nbsp;are applied to messages in the request or response. Each request and response path in a ProxyEndpoint and TargetEndpoint defines the following Flow types:</p>
+<ul>
+	<li><strong>PreFlow: </strong>Always executes&nbsp;before any other Flows. The processing steps defined in the PreFlow are applied to every message that passes through an Endpoint.&nbsp;</li>
+	<li><strong>Conditional Flows:&nbsp;</strong>&nbsp;Execute only when a conditional statement defined for the Flow evaluates to true. An Endpoint may define any number of conditional Flows, but only the first conditional Flow whose condition evaluates to true will execute.&nbsp;</li>
+	<li><strong>PostFlow</strong>: Always executes&nbsp;after all other Flows. As with PreFlow, the processing defined for PostFlow is applied to every message.&nbsp;</li>
+</ul>
+<p>[[{"type":"media","view_mode":"media_original","fid":"1129","attributes":{"alt":"","class":"media-image","height":"303","style":"width: 701px; height: 303px; margin: 15px 0px;","typeof":"foaf:Image","width":"701"}}]]</p>
+<p>As shown above, API proxy flows execute in the following sequence:</p>
+<p><strong>Request</strong></p>
+<ol>
+	<li>ProxyEndpoint request PreFlow</li>
+	<li>Optional conditional Flows</li>
+	<li>ProxyEndpoint request PostFlow</li>
+	<li>TargetEndpoint request PreFlow</li>
+	<li>Optional conditional Flows</li>
+	<li>TargetEndpoint request PostFlow</li>
+</ol>
+<p><strong>Response</strong></p>
+<ol start="7">
+	<li>TargetEndpoint response PreFlow</li>
+	<li>Optional conditional Flows</li>
+	<li>TargetEndpoint response PostFlow</li>
+	<li>ProxyEndpoint response PreFlow</li>
+	<li>Optional conditional Flows</li>
+	<li>ProxyEndpoint response PostFlow</li>
+</ol>
+<div class="tipstricks"<p><strong>Note:</strong>A fully functioning API proxy does not require all of these Flows to be explicitly configured. You only need to define the Flows to which you need to attach a Policy as a processing Step.</p></div>
+<h3>RouteRule</h3>
+<p>A ProxyEndpoint must have at least one RouteRule. When you create a new proxy, it contains a default RouteRule. The RouteRule defines where the inbound request message is forwarded after it is processed by the ProxyEndpoint PostFlow. A simple API proxy usually routes message to a named Target Endpoint. However, multiple RouteRules may be configured to support conditional routing. For example, messages may be dynamically routed to different URLs or TargetEndpoints based on the value of HTTP headers, based on request message content, etc. This makes RouteRules useful for supporting versioning, for example. See [node:211] for an example of a RouteRule.</p>
+<h2><a name="order"></a>Modify API Proxy behavior using policies</h2>
+<p>API proxy behavior is controlled by policies. A policy encapsulates an atomic unit of management functionality. &nbsp;It may rely on out-of-the-box functionality, or it may rely on scripts or code to execute custom behavior. &nbsp;Policies are attached as processing steps to Flows. The policies you attach to the request Flows impact all the messages sent from an app to a backend service (that is, an inbound request and an outbound request). Policies attached to the response Flow impact messages sent from the backend service to the app (that is, the inbound response and the outbound response).</p>
+<p>Polices can be used to manage availability and performance, or to implement custom behavior. For example, to improve availability, a Response Caching policy can be attached to Flows in the ProxyEndpoint. To expand the reach of your APIs, you might attach an XML to JSON policy to the response Flow to selectively convert outbound responses from XML to JSON based on the requesting app. For examples, refer to the&nbsp;<a href="/docs/enterprise/content/customize-apis">Policy Reference</a>&nbsp;and for working examples refer to the <a href="https://github.com/apigee/api-platform-samples">API Platform samples</a> on Github.&nbsp;</p>
+<p>[[{"type":"media","view_mode":"media_original","fid":"1131","attributes":{"alt":"","class":"media-image","height":"366","style":"width: 589px; height: 366px; margin-top: 15px; margin-bottom: 15px;","typeof":"foaf:Image","width":"589"}}]]</p>
+<h2>Editing your proxy</h2>
+<p>An API proxy is a bundle of XML files and associated code that is imported to the Apigee API Platform, where it can be deployed to any available environments for runtime execution. You can choose to model and configure your API proxy by editing the API proxy configuration files on you local machine and uploading your changes to the API Platform, or by using the Proxy Editor in the Management UI.&nbsp;</p>
+<p>To learn how to develop API proxies locally in a text editor or IDE , see [node:429]. If you're more comfortable using the Management UI read [node:219].</p>

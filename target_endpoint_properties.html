@@ -25,6 +25,15 @@
 
 <tr><td><code>connect.timeout.millis</code></td><td>60000</td><td>Target connection timeout.</td></tr>
 
+
+<tr><td><code>io.timeout.millis</code></td><td>12000</td><td><p>If there is no data to read for the specified number of milliseconds, or if the socket is not ready to write data for specified number of milliseconds, then the transaction is treated as a timeout.</p>
+
+<ul><li>If a timeout happens while reading HTTP request, <code>408, Request Timeout</code> is returned.</li>
+<li>If a timeout happens while reading HTTP response, <code>504, Gateway Timeout </code> is returned.</li></ul>
+</td></tr>
+
+
+
 <tr><td><code>supports.http10</code></td><td>true</td><td>If this is true and the client sends a 1.0 request, the target is also sent a 1.0 request. Otherwise 1.1 request is sent to target.
 </td></tr>
 

@@ -1,3 +1,49 @@
+API
+
+<p>Now, deploy the API to the test environment</p>
+
+<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/apis/weatherapi/revisions/1/deployments?action=deploy&env=test&basepath=/</pre>
+
+<p>Sample Response</p>
+
+<pre>{
+  "aPIProxy" : "weatherapi",
+  "environment" : [ test ],
+  "name" : "1",
+  "organization" : "{org_name}"
+}</pre>
+
+
+<p>First ZIP the /apiproxy directory that contains the API proxy configuration that you want to deploy.</p>
+
+<pre>$ zip apiproxy.zip -r ./apiproxy/</pre>
+
+<p>Import the API proxy to the test environment:</p>
+
+<pre>$ curl -X POST -H "Content-type:application/octet-stream" \ htts://api.enterprise.apigee.com/v1/o/apifactory/apis?"action=import&name=weatherapi" -F file=@apiproxy.zip \
+-u myname:mypass -v</pre>
+
+<p>This is a common error:</p>
+
+<pre>{
+  "code" : "messaging.config.beans.ImportFailed",
+  "message" : "Failed to import the bundle : com.apigee.repository.RepositoryException: java.util.zip.ZipException: ZIP file must have at least one entry",
+  "contexts" : [ ],
+  "cause" : {
+    "message" : "java.util.zip.ZipException: ZIP file must have at least one entry",
+    "contexts" : [ ],
+    "cause" : {
+      "message" : "ZIP file must have at least one entry",
+      "contexts" : [ ]
+    }
+  }</pre>
+
+<p>On Mac OSX use the following ZIP command to create the apiprozy.zip.</p>
+
+<pre>$ zip -r apiproxy.zip apiproxy -x "*.DS_Store"</pre>
+
+
+
 <ul><li>Pre-computed, static dimensions used for operational dashboards</li>
 <li>Dynamic dimensions, whose metrics are computed 'on-demand' when a report is built</li>
 <li>Custom dimensions, which enable you to build reports based on message content</li></ul>
@@ -22,7 +68,7 @@
 
 <p>Use the additional query parameters defined in the API method to construct the complete request.</p>
 
-<p>For usage, see the <a href="https://apigee.com/docs/enterprise/content/reporting-api-analytics">API Platform Developer Guide topic</a>.</p>
+<p>For usage, see the <a href="https://apigee.com/docs/enterprise/content/reporting-api-analytics">API Proxy Developer Guide topic</a>.</p>
 
 <p>A comprehensive reference on all dimensions, metrics, metrics, and functions supported by the API is available in the <a href="https://apigee.com/docs/content/analytics-reference">API Platform Analytics reference</a>.</p>
 

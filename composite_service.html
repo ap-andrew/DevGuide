@@ -1,8 +1,13 @@
 <p>[toc]</p>
-<p>The topic [node:3971] demonstrates how to write and execute simple JavaScript in an API flow. This topic builds on those examples to demonstrate how to create a standalone composite service by attaching an entire JavaScript app to an API proxy, using the API Platform as a managed container for your code.</p>
-<p>The JavaScript sample app in this topic calls out from the API Platform to two third-party APIs, parses and combines the results in a JSON response to the requesting client. Unlike other API proxies, the API proxy that you create here does not define a TargetEndpoint. Instead, the JavaScript app that executes in the ProxyEndpoint functions as an HTTP client, making two sequential API calls before returning a JSON response to the client app. No TargetEndpoint configuration is required.</p>
 
-The complete code and API proxy for this sample are available in the <a href="https://github.com/apigee/api-platform-samples/tree/master/sample-proxies/javascript-mashup">API Platform samples</a> on GitHub.
+<p>The topic [node:3971] demonstrates how to write and execute simple JavaScript in an API flow. This topic builds on those examples to demonstrate how to create a standalone composite service by attaching an entire JavaScript app to an API proxy, using the API Platform as a managed container for your code.</p>
+
+<div class="sample-github"><p>The complete code and API proxy for this sample are available in the <a href="https://github.com/apigee/api-platform-samples/tree/master/sample-proxies/javascript-mashup">API Platform samples</a> on GitHub.</p></div>
+
+
+<p>This examples illustrates how the API Platform provides developers with the flexibility to solve the same problem using either code or configuration, whichever suits the preferences or requirements of the user. You can implement precisely the same functionality using policies. See [node:3974].</p>
+
+<p>The JavaScript sample app in this topic calls out from the API Platform to two third-party APIs, parses and combines the results in a JSON response to the requesting client app. In other words, this JavaScript sample implements a composite service, or 'API mashup'.</p>
 
 <p>The composite service consumes two public APIs:</p>
 <ul>
@@ -10,20 +15,29 @@ The complete code and API proxy for this sample are available in the <a href="ht
 	<li>The Google Elevation API</li>
 </ul>
 <p>The composite service returns a JSON response that includes the geocoded location for the center of the postal code, combined with the elevation at that location.</p>
+
 <p>The composite service also exposes its own API, which takes two query parameters:</p>
 <ol>
 	<li>postalcode: A postal code valid in the country specified</li>
 	<li>country: A two-letter country code</li>
 </ol>
-<p>Thus, the API that you expose can be documented and published using the Apigee API Console by using the sample WADL and following instructions provided at the end of this topic.</p>
 
-<p>The steps involved in attaching and deploying the JavaScript are the same as those covered in [node:3971].</p>
+<p>Unlike other API proxies, the API proxy that you create here does not define a TargetEndpoint. Instead, the JavaScript app that executes in the ProxyEndpoint functions as an HTTP client, making two sequential API calls before returning a JSON response to the client app. No TargetEndpoint configuration is required.</p>
+
+<div class="tipstricks"><p>You can get complete documentation of the httpClient in the [node:3976] reference.</p></div>
 
 <h2>Creating a JavaScript resource</h2>
-<p>The following JavaScript is written to the [node:3976] and can be stored in a file called <code>MashItUp.js</code> under <code>apiproxy/resources/jsc</code>.</p>
+
+<p>On the API Platform, your JavaScript files are stored 'resources'. Such resources can stored directly within the API proxy configuration bundle that will execute the code. The can also be stored at the environment level, or at the organization level.<p>
+	
+<p>When stored at the environment level, any API proxy in the environment can reference the code. Similarly, when stored at the organization level, resources can bebe referenced by an API proxy deployed in the organization. This makes it easy to reuse and share common code, without replicating instances of your code in lots of different places.</p>
+
+<p>In this example, you store the JavaScript in the API Proxy bundle in a reserved directory: <code>apiproxy/resources/jsc</code>. (<code>jsc</code> stands for "compiled JavaScript"--the API Platform compiles JavaScript into Java at runtime.)</p>
+
+<p>The following JavaScript is written to the [node:3976] and can be stored in a file called <code>MashItUp.js</code> under <code>/apiproxy/resources/jsc</code>.</p>
 
 <h3>Initialize any responses</h3>
-<div id="well">
+
 	<pre>response.content = '';
 response.headers['Content-Type'] = 'application/json';
 
@@ -33,10 +47,9 @@ try {
      throw '"postalcode" and "country" query parameters are required';
    }
 </pre>
-</div>
+
 <h4>Construct a URL and call the geocoding API</h4>
-<div id="well">
-	<pre>   var geocoding = httpClient.get(
+<pre>   var geocoding = httpClient.get(
         'http://maps.googleapis.com/maps/api/geocode/json?address=' +
         request.queryParams.postalcode +
         '&amp;region=' + request.queryParams.country +
@@ -45,24 +58,24 @@ try {
     if (!geocoding.isSuccess()) {
 	throw 'Error contacting geocoding web service';
     }</pre>
-</div>
+
 <h4>Parse the JSON response</h4>
 <p>The JSON response from the geocoding API is parsed into a JavaScript object</p>
-<div id="well">
+
 	<pre>    geocodeResponse = geocoding.getResponse().content.asJSON;
     if (geocodeResponse.status != 'OK') {
 	throw 'Error returned from geocoding web service: ' + geocodeResponse.status;
     }</pre>
-</div>
+
 <h4>Retrieve latitude and longitude from the response</h4>
 <p>Populate two variables with the latitude and longitude returned by the geocoding service.</p>
-<div id="well">
+
 	<pre>    var lat = geocodeResponse.results[0].geometry.location.lat;
     var lng = geocodeResponse.results[0].geometry.location.lng;</pre>
-</div>
+
 <h4>Construct a URL and call the elevation API</h4>
 <p>Using the latitude and longitude returned from the geocoding service, construct a request to the elevation API.</p>
-<div id="well">
+
 	<pre>    var altitude = httpClient.get(
         'http://maps.googleapis.com/maps/api/elevation/json?sensor=false&amp;locations=' +
             lat + ',' + lng);
@@ -75,13 +88,15 @@ try {
 	throw 'Error returned from altitude web service: ' + altitudeResponse.status;
     }
 </pre>
-	<h4><span style="font-family:arial,helvetica,sans-serif;">Retrieve elevation from the response</span></h4>
+
+	<h4>Retrieve elevation from the response</h4>
+	
 	<p>Using JavaScript, populate a variable with the elevation returned by the elevation service.</p>
-	<div id="well">
+
 		<pre>var alt = altitudeResponse.results[0].elevation;</pre>
-	</div>
+
 	<h4>Assemble the parts of the response as a JavaScript object</h4>
-	<div id="well">
+
 		<pre>    var location = new Object();
     location.latitude = lat;
     location.longitude = lng;
@@ -89,31 +104,35 @@ try {
     var altitude = new Object();
     altitude.meters = alt;
     altitude.feet = alt * 3.2808399;</pre>
-	</div>
+
 	<h4>Assemble response as a JSON object</h4>
-	<div id="well">
+
 		<pre>    var body = response.content.asJSON;
     body.country = request.queryParams.country;
     body.postalcode = request.queryParams.postalcode;
     body.elevation = location;
     body.altitude = altitude;
 } </pre>
-	</div>
+
 	<h4>Handle any errors</h4>
-	<div id="well">
+
 		<pre>catch (err) {response.content.asJSON.error = err;
 }</pre>
-	</div>
+
 	<h2>Creating a JavaScript policy</h2>
-	<p>Under <code>apiproxy/policies</code>, create a policy called <code>MashItUp.xml</code> of type JavaScript that references the JavaScript resource.</p>
-	<div id="well">
+	
+<p>JavaScript is executed in an API Proxy Flow by referencing the script by name in a Policy. This enables you to execute the JavaScript at the specific point in the Flow where you need it.
+</p>	
+	<p>Under <code>/apiproxy/policies</code>, create a policy called <code>MashItUp.xml</code> of type JavaScript that references the JavaScript resource.</p>
+
 		<pre>&lt;JavaScript name="MashItUp" timeout="10000"&gt;
   &lt;ResourceURL&gt;jsc://MashItUp.js&lt;/ResourceURL&gt;
 &lt;/JavaScript&gt;</pre>
-	</div>
+
 	<h2>Attaching a JavaScript policy to the ProxyEndpoint</h2>
-	<p>Note that, unlike other API proxies, the TargetEndpoint definition is not invoked by the route rule. For this reason, the processing pipeline is agnostic about the existence of the <code>apiproxy/targets/default.xml</code> configuration that you have seen in other topics. The JavaScript app itself makes all of the necessary API calls.</p>
-	<div id="well">
+	
+	<p>Note that, unlike other API proxies, the TargetEndpoint definition is not invoked by the RouteRule. For this reason, the processing pipeline is agnostic about the existence of the <code>/apiproxy/targets/default.xml</code> configuration that you have seen in other topics. The JavaScript app itself makes all of the necessary API calls.</p>
+
 		<pre>&lt;ProxyEndpoint name="default"&gt;
   &lt;Flows&gt;
     &lt;Flow name="default"&gt;
@@ -134,11 +153,11 @@ try {
     &lt;!-- No route. The proxy will return the request and not call a backend service. --&gt;
   &lt;/RouteRule&gt;
 &lt;/ProxyEndpoint&gt;</pre>
-	</div>
+
 	<h2>Importing and deploying the API proxy</h2>
 	<p>Run the deploy tool in the base directory of the API platform samples distribution, substituting valid username and password for <code>myname:mypass</code>, and your Apigee organization for <code>myorg</code>.</p>
-	<div id="well">
-		<pre>$ python tools/deploy.py -n weatherapi -u myname:mypass -h
+
+		<pre class="terminal">$ python tools/deploy.py -n weatherapi -u myname:mypass -h
 https://api.enterprise.apigee.com -o myorg -e test -p / -d
 simpleProxy
 Writing simpleProxy/apiproxy/weatherapi.xml to apiproxy/weatherapi.xml
@@ -153,19 +172,23 @@ Undeploying revision 1 in same environment and path:
 Environment: test
   Revision: 2 BasePath = /
   State: deployed</pre>
-	</div>
-	<h2>Testing the composite service</h2>
-	<div id="well">
-		<pre>$ curl http://myorg-test.apigee.net/weather?"postalcode=94306&amp;country=us"</pre>
-	</div>
-	<p>Sample Response</p>
-	<div id="well">
-		<pre>{"country":us,"postalcode":29407,"elevation":{"latitude":32.8017595,"longitude":-79.99759159999999},"altitude":{"meters":0.758330225944519,"feet":2.4879600626547935}}</pre>
-	</div>
-	<h2>Creating an API console for your new API</h2>
+
+<h2>Testing the composite service</h2>
+
+<p>Make the following request to invoke the API proxy.</p>
+
+<pre class="terminal">$ curl http://myorg-test.apigee.net/weather?"postalcode=94306&amp;country=us"</pre>
+
+<p>Sample Response</p>
+
+<p>The following response is the JSON assembled by the JavaScript executing in the API proxy.</p>
+
+<pre>{"country":us,"postalcode":29407,"elevation":{"latitude":32.8017595,"longitude":-79.99759159999999},"altitude":{"meters":0.758330225944519,"feet":2.4879600626547935}}</pre>
+
+<h2>Creating an API console for your new API</h2>
 
 	<p>The composite service exposes an API, enabling [node:282] for sharing with other developers or for reuse across projects. A sample WADL file below describes the API, along with the appropriate Apigee WADL extensions. This Apigee-specific extensions  control how the AIP Console displays the API. The WADL content below can be pasted into a file called <code>elevation.wadl.xml</code>.</p>
-	<div id="well">
+
 		<pre>&lt;application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xmlns:xsd="http://www.w3.org/2001/XMLSchema"
              xmlns:apigee="http://api.apigee.com/wadl/2010/07/"
@@ -191,10 +214,14 @@ Environment: test
 		&lt;/resource&gt;
     &lt;/resources&gt;
 &lt;/application&gt;</pre>
-	</div>
+
 	<p>To generate a dedicated API Console, upload this file using the <a href="https://apigee.com/togo">Console To-Go</a> tool. (A free Console To-Go account is required.)</p>
 	<p>Once the API Console is generated, it can be used to make requests to the composite service, and to view responses generated by the composite service.</p>
+	
+<h2>Get help</h2>
 
 	<p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
+	
+<h2>Next steps</h2>
 
-	<p>Back to <a href="/docs/enterprise/content/developer_guide">API Platform Developer Guide</a>.</p>
+	<p>Back to <a href="/docs/enterprise/content/developer_guide">API Proxy Developer Guide</a>.</p>

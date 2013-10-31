@@ -1,0 +1,144 @@
+<p>[toc]</p>
+<h2>Overview</h2>
+<p>A 'virtual host' is a named network configuration for an environment on the API Platform. Virtual hosts determine how apps connect to your API proxies over the network. You can think of a virtual host as the server-side configuration for you API proxies. All API proxies in an environment can share virtual hosts. In the API proxy builder UI, you can tell API proxies which virtual hosts to 'listen' on.</p>
+<p>For example, you might want one API proxy to listen on HTTP and HTTPS endpoints. You might want another API proxy to listen only on HTTPS. Or you might want API proxies to listen only on custom domains, such as a domain that identifies your company, like <code>api.mycompany.com</code>. You can also do this by specifying the the names of one or more virtual hosts in the API proxy ProxyEndpoint configuration--specifically by using the VirtualHosts configuration element.</p>
+<h2>Environments and virtual hosts</h2>
+<p>Each environment in an organization on the API Platform is defined by at least one network address. The network addresses associated with each environment are defined in named virtual host configurations.</p>
+
+<p>The scheme for default network addresses on the API Platform is the following:</p>
+
+<pre>
+{org_name}-{environment_name}.apigee.net</pre>
+
+<p>For example, in an organization named ‘apifactory’, two default network addresses are provisioned when the organization is created:</p>
+<pre>
+apifactory-test.apigee.net
+apifactory-prod.apigee.net</pre>
+
+<p>When you deploy an API proxy to the test environment, the API proxy is exposed over the network at the network address:</p>
+<pre>
+apifactory-test.apigee.net/{base_path}</pre>
+
+<p>Recall that when you add an API to the API Platform, you have to set a BasePath for the API proxy configuration. (Under the covers, the BasePath setting is defined in the ProxyEndpoint configuration.) Therefore, every API proxy must define a unique BasePath. Many API proxies may deployed in an environment; it is the BasePath that enables the API Platform to route incoming requests to the appropriate API proxy.</p>
+
+<h2>Default virtual hosts</h2>
+
+<p>Every environment has at least one virtual host definition. Each virtual host in the default environments (test and prod) define two virtual hosts.</p>
+<p>The default configuration defines two VirtualHosts for each environment:</p>
+<ul>
+	<li><code>default</code>: Defines a network address available over HTTP</li>
+	<li><code>secure</code>: Defines a network address available over HTTPS</li>
+</ul>;
+
+<h2>Editing virtual hosts</h2>
+
+<h3>Navigate to environment configuration</h3>
+
+<p>From the main menu, select Configure Environments from the APIs drop-down:</p>
+
+<p>[[{"type":"media","view_mode":"media_large","fid":"1502","attributes":{"alt":"","class":"media-image","height":"128","typeof":"foaf:Image","width":"480"}}]]</p>
+
+<h3>Select the environment</h3>
+
+<p>A drop-down menu displays a list of all available environments in your organization. Select the environment whose virtual hosts you need to view or manage.</p>
+
+<p>[[{"type":"media","view_mode":"media_large","fid":"1501","attributes":{"alt":"","class":"media-image","height":"191","typeof":"foaf:Image","width":"417"}}]]</p>
+
+<h3>Review available virtual hosts</h3>
+
+<p>[[{"type":"media","view_mode":"media_large","fid":"1503","attributes":{"alt":"","class":"media-image","height":"126","typeof":"foaf:Image","width":"480"}}]]</p>
+
+<h3>Modify virtual host configuration</h3>
+
+<p><b>Select Edit. ???</b></p>
+
+<p>A virtual host configuration has the following properties:</p>
+<table class="table" style="width: 690px;" width="690">
+	<thead>
+		<tr>
+			<th>Property Name</th>
+			<th>Default Value</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td><code>hostAliases</code></td>
+			<td>{org_name}-{env_name}.apigee.net</td>
+			<td>A comma-separated list of domains that map to this environment</td>
+		</tr>
+		<tr>
+			<td><code>name</code></td>
+			<td>default, secure</td>
+			<td>The name of the VirtualHost configuration, which must be unique within the environment.</td>
+		</tr>
+		<tr>
+			<td><code>sSLInfo</code></td>
+			<td>N/A</td>
+			<td>The server-side SSL configuration for the VirtualHost.</td>
+		</tr>
+		<tr>
+			<td><code>ciphers</code></td>
+			<td>??</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td><code>clientAuthEnabled</code></td>
+			<td>N/A</td>
+			<td>A comma-separated list of domains that map to this environment</td>
+		</tr>
+		<tr>
+			<td><code>enabled</code></td>
+			<td>60000</td>
+			<td>A true/false flag that indicates whether SSL is enabled</td>
+		</tr>
+		<tr>
+			<td><code>ignoreValidationErrors</code></td>
+			<td>true</td>
+			<td>A true/false flag that indicates whether certificate validation should be disabled. When disabled, only encryption of the HTTP exchange is in effect, and all certificate validation errors are ignored.</td>
+		</tr>
+		<tr>
+			<td><code>keyAlias</code></td>
+			<td>freetrial</td>
+			<td>The name of the private key associated with the server-side SSL certificate. Apigee free trial accounts are provisioned out-of-the-box with a key whose alias is ‘freetrial’.</td>
+		</tr>
+		<tr>
+			<td><code>keyStore</code></td>
+			<td>freetrial</td>
+			<td>The name of the keystore that contains the server-side SSL certificate. Apigee free trial accounts are provisioned out-of-the-box with a keystore whose alias is ‘freetrial’.</td>
+		</tr>
+		<tr>
+			<td><code>supportedCipherSuites</code></td>
+			<td>N/A</td>
+			<td>???</td>
+		</tr>
+		<tr>
+			<td><code>supportedProtocols</code></td>
+			<td>SSLv2Hello, SSLv3, TLSv1</td>
+			<td>The default configuration supports SSLv2Hello, SSLv3, TLSv1</td>
+		</tr>
+	</tbody>
+</table>
+<p>Each API proxy must explicitly define the named VirtualHosts they support. If you need to ensure that app traffic flows across connection secured with HTTPS, then list only the VirtualHost named ‘secure’ in the ProxyEndpoint configuration file.</p>
+<p>&nbsp;</p>
+<div class="bestpractices">Disable HTTP connections in your prod environment to ensure that all production traffic flows over SSL. You can do this by deleting any non-SSL enabled virtual host definitions in the environment.</div>
+<p>&nbsp;</p>
+<h2>Configuring custom domains</h2>
+<p>With APIs, the domain is a fundamental identity. You will probably want to configure the API Platform to expose your API via a domain name owned by your company or project team.</p>
+<h3>Set up a CName entry</h3>
+<p>Log into the DNS manager for the provider who manages your domain.</p>
+<p>Configure a host to point to one of the virtual hosts defined in your organization. Substitute the name of your organization on the API Platform for the value of {org_name} in the example below. The example below points to the prod environment. </p>
+<p>[[{"type":"media","view_mode":"media_large","fid":"1509","attributes":{"alt":"","class":"media-image","height":"59","typeof":"foaf:Image","width":"480"}}]]</p>
+
+<div class="bestpractices"><p>Create the CName with a host named <code>api</code>. This will provide your developers with an entry point such <code>api.mycompany.com</code>. In this way, web traffic can be routed to <code>www.mycompany.com</code>, while API calls go to <code>api.mycompany.com</code>.</p></div>
+
+<p>You can also point CName entries to test environments by providing the appropriate name, such as:</p>
+
+<pre>{org_name}-test.apigee.net</pre>
+
+<div class="tipstricks"><p>Remember the domain must always exactly match at least one domain configured in the virtual host definition for an environment.</p></div>
+
+
+
+<h2>Get help</h2>
+<p>For questions and issues, post to the <b><a href="support.apigee.com/apigee">Developer Support Forum</a></b>.</p>

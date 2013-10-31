@@ -2,41 +2,40 @@
 <p>Apigee API Platform samples are designed to help developers learn how to use the Apigee API Platform. The package contains sample API proxies, policies, code, and tools that illustrate the capabilities of the Apigee API Platform.</p>
 <h2>Where to get samples</h2>
 <p>If you have git installed, run:</p>
-<div id="well">
-	<pre>$ git clone https://github.com/apigee/api-platform-samples</pre>
-</div>
+
+<pre class="terminal">$ git clone https://github.com/apigee/api-platform-samples</pre>
+
 <p>If you do not have git installed, you can browse and download the samples from the <a href="https://github.com/apigee/api-platform-samples">API Platform Samples Github Repo</a>.</p>
 <h2>How to use samples</h2>
 <p>All of these samples require you to have an account on <a href="http://enterprise.apigee.com">http://enterprise.apigee.com</a>.</p>
 <p>You can sign up for a trial account at <a href="http://enterprise.apigee.com/signup">http://enterprise.apigee.com/signup</a>.</p>
 <p>To use the included deployment tool, you also require Python to be installed on your machine.</p>
 
-After yo download the samples 
+<p>After you download the samples, go to the <code>/setup</code> directory.</p>
 
-<pre>$ cd /setup</pre>
+<pre class="terminal">$ cd setup</pre>
 
 In the <code>/setup</code> directory, locate the file <code>setenv.sh</code> 
 
 <p>In this file, provide settings for your organization, username, and the environment where you want to deploy the API proxies.</p>
 
-After you setup setenv.sh, run:
+<p>After you setup <code>setenv.sh</code>, run:</p>
 
-<pre>$ sh deploy_all.sh</pre>
+<pre class="terminal">$ sh deploy_all.sh</pre>
 
 <p>This script deploys all API proxies samples to your organization. (The process takes 3-4 minutes.)</p>
 
-<p>Follow prompts to deploy API products, developers, and apps (which are used for OAuth</p>).
+<p>Follow prompts to deploy API products, developers, and apps (which are used for OAuth).</p>
 
 <p>Once the deploy script completes, navigate to the sample-proxies directory.</p>
 
 <p>In the directory <code>sample-proxies</code>, you will find one directory per sample proxy. In each directory are two scripts:
 </p>
 
-<ul><li>invoke.sh: Run this script to invoke the deployed version of the API proxy</li>
-<li>deploy.sh: Run this script to deploy the API proxy after you make any changes</li></ul>
+<ul><li><code>invoke.sh</code>: Run this script to invoke the deployed version of the API proxy</li>
+<li><code>deploy.sh</code>: Run this script to deploy the API proxy after you make any changes</li></ul>
 
 <p>These scripts are designed to help you iterate quickly, as you make small changes, deploy and invoke to see what effect you change had. This type of iterative development is a great way to investigate the behavior of policies and scripts.</p>
-
 
 <h2>Sample API proxies</h2>
 
@@ -53,13 +52,18 @@ After you setup setenv.sh, run:
 
 	<tr><td><code>apikey</code></td>
 	<td>Implements simple API key validation</td>
-	<td>VerifyAPIKey Quota</td>
+	<td>VerifyAPIKey, Quota</td>
 	<td>None</td></tr>
+	
+	<tr><td><code>async-callout</code></td>
+	<td>Demonstrates a simple asynchronous callout using the JavaScript httpClient.</td>
+	<td>Javascript</td>
+	<td><code>assemble_reponse.js</code>, <code>callout.js</code></td></tr>
 	
 	<tr><td><code>conditional-policy</code></td>
 	<td>Implements simple conditional policy enforcement. When a request contains an HTTP header <code>responsetime:true</code>, a policy executes a Python script that adds a set of performance metrics to the response message, as HTTP headers</td>
 	<td>Python</td>
-	<td>timer.py</td></tr>
+	<td><code>timer.py</code></td></tr>
 	
 	<tr><td><code>conditional-routing</code></td>
 	<td>Implements simple conditional routing. When a request contains an HTTP header <code>routeTo</code>, the ProxyEndpoint dynamically routes to the specified URL.</td>
@@ -74,7 +78,7 @@ After you setup setenv.sh, run:
 	<tr><td><code>javascript-mashup</code></td>
 	<td>A complete JavaScript application that calls to public APIs, combines results, and generates an enriched response for the client app. (Note: this API proxy implements the same functionality as the policy-mashup, demonstrating that the same problem can be addressed using different techniques.)</td>
 	<td>Javascript, StatisticsCollector</td>
-	<td>MashItUp.js</td></tr>
+	<td><code>MashItUp.js</code></td></tr>
 	
 	<tr><td><code>oauth-authcode</code></td>
 	<td>Demonstrates a fully functional OAuth 2.0 token and authorization endpoint configuration.</td>
@@ -92,44 +96,71 @@ After you setup setenv.sh, run:
 	<td>None</td></tr>
 	
 	<tr><td><code>oauth-verify-accesstoken</code></td>
-	<td>Demonstrates a n API configured to validate OAuth 2.0 access tokens and verify Quota.</td>
+	<td>Demonstrates an API proxy that is configured to validate OAuth 2.0 access tokens and verify Quota.</td>
 	<td>VerifyAccessToken, Quota</td>
+	<td>None</td></tr>
+	
+	<tr><td><code>oauth10a-3legged</code></td>
+	<td>Demonstrates an OAuth 1.0a three-legged configuration.</td>
+	<td>GenerateAceessToken, GenerateRequestToken, GenerateVerifier, VerifyAccessToken, Quota</td>
 	<td>None</td></tr>
 	
 	<tr><td><code>policy-mashup</code></td>
 	<td>A complete application that uses policy composition to call two public APIs, combines results, and generates an enriched response for the client app. (Note: this API proxy implements the same functionality as the javascript-mashup, demonstrating that the same problem can be addressed using different techniques.)</td>
 	<td>AssignMessage, ServiceCallout, ExtractVariables, JavaScript, RaiseFault, StatisticsCollector</td>
-	<td>GenerateResponse.js</td></tr>
+	<td><code>GenerateResponse.js</code></td></tr>
+	
+	<tr><td><code>response-cache</code></td>
+	<td>Demonstrates response caching.</td>
+	<td>AssignMessage, ResponseCache</td>
+	<td><code>minimize.js</code></td></tr>
 	
 	<tr><td><code>simple-javascript</code></td>
 	<td>Demonstrates a simple JavaScript snippet that transforms an XML-formatted weather report from JSON to XML, and trims content down for mobile clients.</td>
 	<td>JavaScript</td>
-	<td>transform.js</td></tr>
+	<td><code>transform.js</code></td></tr>
 	
 	<tr><td><code>simple-python</code></td>
 	<td>Demonstrates a simple JavaScript snippet that sets HTTP response headers using a predefined variable.</td>
 	<td>Script</td>
-	<td>setHeader.py</td></tr>
+	<td><code>setHeader.py</code></td></tr>
 	
 	<tr><td><code>soap</code></td>
 	<td>Demonstrates an XSL transformation that rewrites a WSDL file in response to a request with the query parameter <code>?wsdl</code>.</td>
 	<td>AssignMessage, ExtractVariables, Script, XSL</td>
-	<td>calculateaddress.py, fixwsdl.xsl</td></tr>
+	<td><code>calculateaddress.py</code>, <code>fixwsdl.xsl</code></td></tr>
+	
+	<tr><td><code>streaming</code></td>
+	<td>Demonstrates an HTTP streaming configuration.</td>
+	<td>None</td>
+	<td>None</td></tr>
+	
+	<tr><td><code>target-reroute</code></td>
+	<td>Demonstrates using JavaScript to dynamically select a target URL based on the the content of a request message.</td>
+	<td>ExtractVariables, Javascript</td>
+	<td><code>setJsHeader.js</code></td></tr>
 	
 	<tr><td><code>twitter-mobile-timeline</code></td>
 	<td>Demonstrates how to use JavaScript to strip out unneeded parameters from tweets, resulting in a streamlined Twitter timeline that is friendly for resource-constrained mobile devices.</td>
-	<td>JavaScript</td>
-	<td>CORS.js, MobileTimeline.js</td></tr>
+	<td>Javascript</td>
+	<td><code>CORS.js</code>, <code>MobileTimeline.js</code></td></tr>
 	
 	<tr><td><code>twitter-oembed</code></td>
 	<td>Transforms timeline responses (e.g. from statuses/user_timeline.json) into an oEmbed response that contains the timeline data as rich HTML content.</td>
 	<td>JavaScript</td>
-	<td>cors.js, timeline-oembed.js</td></tr>
+	<td><code>cors.js</code>, <code>timeline-oembed.js</code></td></tr>
 	
 	<tr><td><code>twitter-translate</code></td>
 	<td>The most sophisticated sample, this API proxy uses the Microsoft Azura translator API to translate tweets. To do so, it makes an outbound call to obtain an OAuth access token, and then caches the token using the API Platform caching policies, reusing the cached token each time an outbound call is made. Also, includes a demonstration browser app used to invoke the API proxy.</td>
 	<td>AssignMessage, LookupCache, PopulateCache, JavaScript</td>
-	<td>api-config.js, api-token-get.js, cors.js, timeline-translate.js, translate-query.js, translate-results.js</td></tr>
+	<td><code>api-config.js</code>, <code>api-token-get.js</code>, <code>cors.js</code>, <code>timeline-translate.js</code>, <code>translate-query.js</code>, <code>translate-results.js</code></td></tr>
+	
+	<tr><td><code>variables</code></td>
+	<td>Demonstrates how to extract and set variables based on transport and JSON and XML message content.</td>
+	<td>AssignMessage, ExtractVariables, XMLToJSON</td>
+	<td>None</td></tr>
+	
+	
 	
 	<tr><td><code>xmltojson</code></td>
 	<td>Converts a Yahoo API weather report from XML to JSON.</td>
@@ -149,7 +180,7 @@ After you setup setenv.sh, run:
 				<p><code>/simpleProxy</code></p>
 			</td>
 			<td>
-				<p>A basic API proxy that is used in the <a href="http://apigee.com/docs/enterprise/content/developer_guide/">API Platform Developer Guide</a>.&nbsp;The Developer Guide shows you how to build API proxies that run on the API platform, with instructions on  API Keys, OAuth 1 and 2, developer and app provisioning, custom scripting tutorials, environment configuration, and more.</p>
+				<p>A basic API proxy that is used in the <a href="http://apigee.com/docs/enterprise/content/developer_guide/">API Proxy Developer Guide</a>.&nbsp;The Developer Guide shows you how to build API proxies that run on the API platform, with instructions on  API Keys, OAuth 1 and 2, developer and app provisioning, custom scripting tutorials, environment configuration, and more.</p>
 			</td>
 		</tr>
 		<tr>

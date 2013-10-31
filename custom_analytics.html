@@ -1,156 +1,197 @@
 <p>[toc]</p>
-<p>In [node:428], you learned how to create different reports based on default data collected by the Apigee API Platform.</p>
-<p>In this topic, you will populate Apigee Analytics with data specific to your API. This capability is beneficial when you need to analyze your data for patterns that are specific to your business. In this example, we use the Yahoo Weather API.</p>
-<h2>Step 1: Create policies</h2>
-<p>The Yahoo Weather API returns XML-formatted responses. For example, to get a weather forecast for Palo Alto:</p>
-<div id="well">
-	<pre>$ curl http://{org_name}-test.apigee.net/weather/forecastrss?w=12797282</pre>
-</div>
-<p>The content within the response that you are interested in analyzing is probably the specific weather report data and forecast:</p>
-<div id="well">
-	<pre>&lt;yweather:location city="Palo Alto" region="CA"   country="United States"/&gt;
-&lt;yweather:units temperature="F" distance="mi" pressure="in" speed="mph"/&gt;
-&lt;yweather:wind chill="48"   direction="0"   speed="6" /&gt;
-&lt;yweather:atmosphere humidity="82"  visibility=""  pressure="30.19"  rising="0" /&gt;
-&lt;yweather:astronomy sunrise="6:52 am"   sunset="4:54 pm"/&gt;
+<p>In [node:428], you learned how to use the RESTful API exposed by Analytics Services to get statistics on a variety of entities monitored by Apigee Enterprise.</p>
+<p>In this topic, you will learn how to use the Analytics Services API combined with Policies to analyze data that is unique to your app and API traffic. Most of the data that is key to your business is found in the payload content moving back forth from apps to your backend services. Using Analytics Services, you can define custom dimensions that the Apigee API platform uses to collect, analyze, and provide reports on that data.</p>
+<p>This topic demonstrates the usage of custom analytics against the Yahoo Weather API. The goal of the exercise is to create a custom dimension called <code>location</code> that enables you to collect statistics on the number of requests received for weather reports for different locations. Once you have defined the custom dimension called <code>location</code>, you can use the capabilities of the Analytics Services API to retrieve and filter statistics that the API platform collects. The custom dimension <code>location</code> will also be made available in the <a href="http://enterprise.apigee.com/">Management UI</a>, enabling you to create reports for this dimension using the API platform's UI-based tools.</p>
+<h2>Parsing payloads using Policies</h2>
+<p>The Yahoo Weather API returns XML-formatted responses. You request a weather report for particular location by providing a WOEID, which stand for "where on Earth ID". The WEOID for Palo Alto, CA is 12797282. To get a weather forecast for Palo Alto, you submit the following request to the Yahoo Weather API:</p>
 
-&lt;yweather:forecast day="Mon" date="19 Nov 2012" low="48" high="66" text="Partly Cloudy" code="30" /&gt;
-&lt;yweather:forecast day="Tue" date="20 Nov 2012" low="51" high="66" text="Partly Cloudy" code="30" /&gt;</pre>
+<pre class="terminal">$ curl http://weather.yahooapis.com/forecastrss?w=12797282</pre>
+
+<p>To collect custom analytics, you need to call the API using an API proxy. The PAI proxy will inspect the request and response messages from your app to the Yahoo API. You are provided with a pre-configured API proxy in the <code>test</code> environment of your organization. The API proxy is called <code>weatherapi</code>. You can invoke that API proxy to obtain a proxied response from the the Yahoo Weather API.</p>
+<div class="tipstricks">
+	<p>If you don't have an account on Apigee Enterprise, see [node:8403].</p>
 </div>
-<p>For another location:</p>
-<div id="well">
-	<pre>$ curl http://{org_name}-test.apigee.net/weather/forecastrss?w=2520841</pre>
-</div>
-<div id="well">
-	<pre>&lt;yweather:location city="Williamsburg" region="NY"   country="United States"/&gt;
-&lt;yweather:units temperature="F" distance="mi" pressure="in" speed="mph"/&gt;
-&lt;yweather:wind chill="37"   direction="0"   speed="6" /&gt;
-&lt;yweather:atmosphere humidity="73"  visibility="10"  pressure="30.49"  rising="2" /&gt;
-&lt;yweather:astronomy sunrise="6:48 am"   sunset="4:32 pm"/&gt;
-. . . 
-&lt;yweather:forecast day="Mon" date="19 Nov 2012" low="38" high="50" text="Partly Cloudy" code="30" /&gt;
-&lt;yweather:forecast day="Tue" date="20 Nov 2012" low="40" high="50" text="Partly Cloudy" code="30" /&gt;</pre>
-</div>
-<p>To extract the information of interest, you use XPath expressions. For example to extract the value of the city:</p>
-<div id="well">
-	<pre>/rss/channel/yweather:location/@city</pre>
-</div>
-<p>(There are many tools available online that you can use to construct XPath expressions for your XML documents.)</p>
-<p>To create custom reports in Apigee Analytics, you define such XPath expressions in a policy, and you use them to populate custom variables. Custom variables are like [node:243], except that you define the prefix name and variable name. The result is a new type of variable with a name such as <code>prefix.variable</code>. In this example, you define four custom variables:</p>
+
+<p>You can invoke the proxied version of the Yahoo Weather API using the following command. As usual, substitute your organization name on Apigee Enterprise for the variable <code>{org_name}</code>.</p>
+
+<pre class="terminal">
+$ curl http://{org_name}-test.apigee.net/weather/forecastrss?w=12797282</pre>
+<p>The interesting part of the response message, the weather report and forecast, is shown below. (Note that the response, except for specifics such as timestamps, is exactly the same as the response from the direct API call above.)</p>
+
+<pre>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;yes&quot; ?&gt;
+&lt;rss version=&quot;2.0&quot; xmlns:yweather=&quot;http://xml.weather.yahoo.com/ns/rss/1.0&quot; xmlns:geo=&quot;http://www.w3.org/2003/01/geo/wgs84_pos#&quot;&gt;
+ &lt;channel&gt;
+  &lt;item&gt;
+   &lt;!-- Some XML excluded here. . . for brevity --&gt;
+   &lt;yweather:forecast day=&quot;Wed&quot; date=&quot;1 Oct 2013&quot; low=&quot;49&quot; high=&quot;72&quot; text=&quot;Sunny&quot; code=&quot;30&quot; /&gt;
+   &lt;yweather:forecast day=&quot;Thu&quot; date=&quot;2 Oct 2013&quot; low=&quot;48&quot; high=&quot;73&quot; text=&quot;Sunny&quot; code=&quot;30&quot; /&gt;
+   &lt;yweather:forecast day=&quot;Fri&quot; date=&quot;3 Oct 2013&quot; low=&quot;47&quot; high=&quot;72&quot; text=&quot;Sunny&quot; code=&quot;32&quot; /&gt;
+   &lt;yweather:forecast day=&quot;Sat&quot; date=&quot;4 Oct 2013&quot; low=&quot;48&quot; high=&quot;75&quot; text=&quot;Sunny&quot; code=&quot;32&quot; /&gt;
+   &lt;yweather:forecast day=&quot;Sun&quot; date=&quot;5 Oct 2013&quot; low=&quot;49&quot; high=&quot;77&quot; text=&quot;Sunny&quot; code=&quot;32&quot; /&gt;
+   &lt;guid isPermaLink=&quot;false&quot;&gt;USCA1093_2013_1_13_7_00_PDT&lt;/guid&gt;
+   &lt;/item&gt;
+ &lt;/channel&gt;
+&lt;/rss&gt;</pre>
+
+
+<p>To see the same data for a different location, submit the same request with a different WOEID, <code>2520841</code>, for Williamsburg.</p>
+
+<pre class="terminal">
+	
+$ curl http://{org_name}-test.apigee.net/weather/forecastrss?w=2520841</pre>
+
+<pre>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;yes&quot; ?&gt;
+&lt;rss version=&quot;2.0&quot; xmlns:yweather=&quot;http://xml.weather.yahoo.com/ns/rss/1.0&quot; xmlns:geo=&quot;http://www.w3.org/2003/01/geo/wgs84_pos#&quot;&gt;
+ &lt;channel&gt;
+  &lt;item&gt;
+   &lt;!-- Some XML excluded here. . . for brevity --&gt;
+   &lt;yweather:location city="Williamsburg" region="NY"   country="United States"/&gt;
+   &lt;yweather:units temperature="F" distance="mi" pressure="in" speed="mph"/&gt;
+   &lt;yweather:wind chill="37"   direction="0"   speed="6" /&gt;
+   &lt;yweather:atmosphere humidity="73"  visibility="10"  pressure="30.49"  rising="2" /&gt;
+   &lt;yweather:astronomy sunrise="6:48 am"   sunset="4:32 pm"/&gt;
+   &lt;yweather:forecast day="Mon" date="1 Oct 2013" low="38" high="50" text="Cloudy" code="1" /&gt;
+   &lt;yweather:forecast day="Tue" date="2 Oct 2013" low="40" high="50" text="Cloudy" code="1" /&gt;
+   &lt;guid isPermaLink=&quot;false&quot;&gt;USCA1093_2013_1_13_7_00_PDT&lt;/guid&gt;
+   &lt;/item&gt;
+ &lt;/channel&gt;
+&lt;/rss&gt;</pre>
+
+<p>Both of these message contain potentially valuable information. However, the API platform doesn't yet 'know' how to feed this message content into Analytics Services for processing. To enable this, the API platform provides Policy type that parses message payloads and feeds the content into Analytics Services.</p>
+
+<p>The Policy type that enables this functionality is called ExtractVariables. The ExtractVariables Policy type enables you to configure JSONPath or XPath expressions that the API platform used to extract pieces of data from message content.</p>
+
+<div class="tipstricks">There are many tools available online that you can use to construct XPath expressions for your XML documents. There also many tools available for JSONPath.</div>
+
+<p>See [node:227].</p>
+
+<p>To extract the information of interest from the weather report, you use an XPath expression. For example, to extract the value of the city, the XPath expression is:</p>
+<pre>
+/rss/channel/yweather:location/@city</pre>
+
+<p>Note how this XPath expression reflects the structure of the XML nodes. also, note the prefix<code>yweather</code> is defined by a namespace:</p>
+
+<pre>xmlns:yweather=&quot;http://xml.weather.yahoo.com/ns/rss/1.0</pre>
+
+<p>To enable the XML message to be parsed properly, you use both the XPath and the namespace definition in the policy.</p>
+
+<p>You will include this XPath expression in the ExtractVariables Policy. Once the XPath has been evaluated, the Policy needs a place to store the value that results from the evaluation. For this, the Policy uses <i>variables</i>. You can create custom variables whenever you need them by defining a variable prefix and variable name in the ExtractVariables Policy. The Policy can then store the value that it finds by parsing the message payload in the variable, and Policies and code can retrieve that value to do some additional processing on it.</p>
+<p>In this example, you define four custom variables:</p>
 <ul>
 	<li><code>weather.location</code></li>
 	<li><code>weather.condition</code></li>
 	<li><code>weather.forecast_today</code></li>
-	<li><code>weather.forecast_tomorrow</code></li>
+	<li><code>weather.forecast_today</code></li>
 </ul>
-<p>NOTE: The only special character permitted in custom variable names is underscore, '_'.)</p>
-<p>Under <code>apiproxy/policies</code>, create a file called <code>ParseWeatherReport.xml</code> with the following content:</p>
-<div id="well">
-	<pre>&lt;ExtractVariables name="ParseWeatherReport"&gt;
-  &lt;!-- Parse the XML weather report using XPath. --&gt;
-  &lt;VariablePrefix&gt;weather&lt;/VariablePrefix&gt;
+<p>In these variables that you define here, <code>weather</code> is a prefix. <code>Location</code>, <code>condition</code>, <code>forecast_today</code>, and <code>forecast_today</code> are each variable names, and each will have an associated XPath expression.</p>
+<div class="tipstricks">
+	<p>You can give custom variables any name you want. The only restrictions are that custom variables cannot share the same name as any [node:243], and the only special character permitted in custom variable names is underscore, <code>_</code>.). However, you should always define semantically accurate names for your variables, especially when using variables for custom analytics.</p>
+</div>
+<p>The following ExtractVariables Policy configuration demonstrates how you can define these custom variables. Note that the VariablePrefix is <code>weather</code>, and that each Variable element has a name attribute that maps to the list of custom variables that you need to have populated. Each variable in turn has an associated XPath expression that will populate the variable with the appropriate value for each response message.</p>
+<p>To create the Policy, under <code>/apiproxy/policies</code>, create a file called <code>ParseWeatherReport.xml</code> with the following content:</p>
+<pre>&lt;ExtractVariables name="ParseWeatherReport"&gt;
+ &lt;!-- Parse the XML weather report using XPath. --&gt;
+ &lt;VariablePrefix&gt;weather&lt;/VariablePrefix&gt;
   &lt;XMLPayload&gt;
-	&lt;Namespaces&gt;
-		&lt;Namespace prefix="yweather"&gt;http://xml.weather.yahoo.com/ns/rss/1.0&lt;/Namespace&gt;
-	&lt;/Namespaces&gt;
-    &lt;Variable name="location" type="string"&gt;
-      	&lt;XPath&gt;/rss/channel/yweather:location/@city&lt;/XPath&gt;
-    &lt;/Variable&gt;
-    &lt;Variable name="condition" type="string"&gt;
-      	&lt;XPath&gt;/rss/channel/item/yweather:condition/@text&lt;/XPath&gt;
-    &lt;/Variable&gt;
-    &lt;Variable name="forecast_today" type="string"&gt;
-      	&lt;XPath&gt;/rss/channel/item/yweather:forecast[1]/@text&lt;/XPath&gt;
-    &lt;/Variable&gt;
-	&lt;Variable name="forecast_tomorrow" type="string"&gt;
-      	&lt;XPath&gt;/rss/channel/item/yweather:forecast[2]/@text&lt;/XPath&gt;
-    &lt;/Variable&gt;
-  &lt;/XMLPayload&gt;
+   &lt;Namespaces&gt;
+    &lt;Namespace prefix="yweather"&gt;http://xml.weather.yahoo.com/ns/rss/1.0&lt;/Namespace&gt;
+   &lt;/Namespaces&gt;
+   &lt;Variable name="location" type="string"&gt;
+    &lt;XPath&gt;/rss/channel/yweather:location/@city&lt;/XPath&gt;
+   &lt;/Variable&gt;
+   &lt;Variable name="condition" type="string"&gt;
+    &lt;XPath&gt;/rss/channel/item/yweather:condition/@text&lt;/XPath&gt;
+   &lt;/Variable&gt;
+   &lt;Variable name="forecast_today" type="string"&gt;
+    &lt;XPath&gt;/rss/channel/item/yweather:forecast[1]/@text&lt;/XPath&gt;
+   &lt;/Variable&gt;
+   &lt;Variable name="forecast_tomorrow" type="string"&gt;
+    &lt;XPath&gt;/rss/channel/item/yweather:forecast[2]/@text&lt;/XPath&gt;
+   &lt;/Variable&gt;
+ &lt;/XMLPayload&gt;
 &lt;/ExtractVariables&gt;</pre>
-</div>
-<p>These variables will be populated each time a response message is returned to an app by your API proxy. Once the variables are populated, you forward the values to Apigee Analytics by defining a 'statistic' for each variable.</p>
-<p>You define statistics in a StatisticsCollector policy, one statistic per custom variable.</p>
-<p>Under <code>apiproxy/policies</code>, create a file called <code>AnalyzeWeatherReport.xml</code> with the following content:</p>
-<div id="well">
-	<pre>&lt;StatisticsCollector name="AnalyzeWeatherReport"&gt;
-  &lt;Statistics&gt;
-    &lt;Statistic name="location" ref="weather.location" type="string"&gt;Earth&lt;/Statistic&gt;
-    &lt;Statistic name="condition" ref="weather.condition" type="string"&gt;Sunny&lt;/Statistic&gt;
-    &lt;Statistic name="forecast_today" ref="weather.forecast_today" type="string"&gt;Rainy&lt;/Statistic&gt;
-    &lt;Statistic name="forecast_tomorrow" ref="weather.forecast_tomorrow" type="string"&gt;Balmy&lt;/Statistic&gt;
-  &lt;/Statistics&gt;
+
+<p>The next step is to create another Policy that reads these values and sends them to Analytics Services for processing. The StatisticsCollector Policy type is used to do this. In the StatisticsCollector Policy, you define a Statistic by providing a pointer to each of the custom variables defined in the ExtractVariables Policy. You can also provide a default value for custom variable, which will be forwarded to Analytics Services if the variables cannot be resolved on a response. (in the example below, the default values are <code>Earth</code>, <code>Sunny</code>, <code>Rainy</code>, and <code>Balmy</code>.)</p>
+
+<p>Under <code>/apiproxy/policies</code>, create a file called <code>AnalyzeWeatherReport.xml</code> with the following content:</p>
+
+<pre>&lt;StatisticsCollector name="AnalyzeWeatherReport"&gt;
+ &lt;Statistics&gt;
+  &lt;Statistic name="location" ref="weather.location" type="string"&gt;Earth&lt;/Statistic&gt;
+  &lt;Statistic name="condition" ref="weather.condition" type="string"&gt;Sunny&lt;/Statistic&gt;
+  &lt;Statistic name="forecast_today" ref="weather.forecast_today" type="string"&gt;Rainy&lt;/Statistic&gt;
+  &lt;Statistic name="forecast_tomorrow" ref="weather.forecast_tomorrow" type="string"&gt;Balmy&lt;/Statistic&gt;
+ &lt;/Statistics&gt;
 &lt;/StatisticsCollector&gt;</pre>
-</div>
-<h2>Attaching policies to the ProxyEndpoint response flow</h2>
-<p>Policies attached to the ProxyEndpoint response flow are enforced on outbound response messages, before the response is returned to the calling client app.</p>
-<p>The example below parses response, populates variables using the ParseWeatherReport policy, and then forwards those values to Apigee Analytics using the AnalyzeWeatherReport policy.</p>
-<div id="well">
-	<pre>&lt;ProxyEndpoint name="default"&gt;
-&lt;Flows&gt;
-    &lt;Flow name="default"&gt;
-    &lt;Response&gt;
-      &lt;Step&gt;&lt;Name&gt;ParseWeatherReport&lt;/Name&gt;&lt;/Step&gt;
-      &lt;Step&gt;&lt;Name&gt;AnalyzeWeatherReport&lt;/Name&gt;&lt;/Step&gt;
-    &lt;/Response&gt;
+
+<h2>Attaching policies to the ProxyEndpoint response Flow</h2>
+
+<p>To make things work properly, Policies must be attached to the API proxy Flow in the appropriate location. In this use case, the Policies must execute after the response has been received from the Yahoo Weather API and before the response is sent to the request client. To accomplish this, the Policies must be attached to the ProxyEndpoint response Flow, so that they will be enforced on outbound response messages, before the response is returned to the calling client app.</p>
+
+<p>The example ProxyEndpoint configuration below first executes the Policy called 'ParseWeatherReport' to parse the response message. The ParseWeatherReport evaluates the XPath expressions and populates appropriate variables. The policy called 'AnalyzeWeatherReport' then forwards those values to Analytics Services.</p>
+
+<div class=“proxyresponse2”></div>
+
+<pre>&lt;ProxyEndpoint name="default"&gt;
+ &lt;Flows&gt;
+  &lt;Flow name="default"&gt;
+   &lt;Response&gt;
+    &lt;Step&gt;&lt;Name&gt;ParseWeatherReport&lt;/Name&gt;&lt;/Step&gt;
+    &lt;Step&gt;&lt;Name&gt;AnalyzeWeatherReport&lt;/Name&gt;&lt;/Step&gt;
+   &lt;/Response&gt;
   &lt;/Flow&gt;
-&lt;/Flows&gt;
-    &lt;HTTPProxyConnection&gt;
-        &lt;!-- Base path used to route inbound requests to this API proxy --&gt;
-        &lt;BasePath&gt;/weather&lt;/BasePath&gt;
-        &lt;!-- The named virtual host that defines the base URL for requests to this proxy --&gt;
-        &lt;VirtualHost&gt;default&lt;/VirtualHost&gt;
-    &lt;/HTTPProxyConnection&gt;
-  &lt;RouteRule name="default"&gt;
-    &lt;!-- Connects the proxy to the target defined under /targets --&gt;
-    &lt;TargetEndpoint&gt;default&lt;/TargetEndpoint&gt;
-  &lt;/RouteRule&gt;
+ &lt;/Flows&gt;
+ &lt;HTTPProxyConnection&gt;
+  &lt;!-- Base path used to route inbound requests to this API proxy --&gt;
+  &lt;BasePath&gt;/weather&lt;/BasePath&gt;
+  &lt;!-- The named virtual host that defines the base URL for requests to this proxy --&gt;
+  &lt;VirtualHost&gt;default&lt;/VirtualHost&gt;
+ &lt;/HTTPProxyConnection&gt;
+ &lt;RouteRule name="default"&gt;
+ &lt;!-- Connects the proxy to the target defined under /targets --&gt;
+  &lt;TargetEndpoint&gt;default&lt;/TargetEndpoint&gt;
+ &lt;/RouteRule&gt;
 &lt;/ProxyEndpoint&gt;</pre>
-</div>
 <h2>Importing and deploying the API proxy</h2>
-<div id="well">
-	<pre>$ python tools/deploy.py -n weatherapi -u myname:mypass -o myorg -e test -p / -d simpleProxy</pre>
-</div>
-<div id="well">
-	<pre>Writing ./simpleProxy/apiproxy.zip to ./apiproxy.zip
-Writing ./simpleProxy/apiproxy/weatherapi.xml to apiproxy/weatherapi.xml
-Writing ./simpleProxy/apiproxy/policies/AnalyzeWeatherReport.xml to apiproxy/policies/AnalyzeWeatherReport.xml
-Writing ./simpleProxy/apiproxy/policies/ParseWeatherReport.xml to apiproxy/policies/ParseWeatherReport.xml
-Writing ./simpleProxy/apiproxy/proxies/default.xml to apiproxy/proxies/default.xml
-Writing ./simpleProxy/apiproxy/targets/default.xml to apiproxy/targets/default.xml
-Imported new proxy version 3
-Environment: test
-  Revision: 4 BasePath = /
-  State: deployed</pre>
-</div>
+<p>After you have made these changes, you need to import and deploy the API proxy that you have configured.</p>
+<p>If you are using the <a href="https://github.com/apigee/api-platform-samples/tree/master/simpleProxy">simpleProxy</a> in the [node:4561] on GitHub, run:</p>
+<pre>$ sh deploy.sh</pre>
+
+<p>For deployment instructions, see [node:429].</p>
+
 <h2>Populating Analytics data for custom variables</h2>
-<p>Before reports can be be built against custom data, requests must be submitted to an API in order to populate analytics data for the custom variables defined in the policies.
-</p>
-<p>For example:</p>
+
+<p>After you deploy your changes, you need populate some data in Analytics Services. You can do this by running the following commands, each of which uses a WOEID for a different geographic location.</p>
+
 <p>Palo Alto:</p>
-<div id="well">
-	<pre>$ curl http://{org_name}-test.apigee.net/weather/forecastrss?w=12797282</pre>
-</div>
+<pre class="terminal">
+$ curl http://{org_name}-test.apigee.net/weather/forecastrss?w=12797282</pre>
 <p>Shanghai:</p>
-<div id="well">
-	<pre>$ curl http://{org_name}-test.apigee.net/weather/forecastrss?w=2151849</pre>
-</div>
+<pre class="terminal">
+$ curl http://{org_name}-test.apigee.net/weather/forecastrss?w=2151849</pre>
 <p>London:</p>
-<div id="well">
-	<pre>$ curl http://{org_name}-test.apigee.net/weather/forecastrss?w=44418</pre>
-</div>
+<pre class="terminal">
+$ curl http://{org_name}-test.apigee.net/weather/forecastrss?w=44418</pre>
 <p>Wiliamsburg:</p>
-<div id="well">
-	<pre>$ curl http://{org_name}-test.apigee.net/weather/forecastrss?w=2520841</pre>
-</div>
+<pre class="terminal">
+$ curl http://{org_name}-test.apigee.net/weather/forecastrss?w=2520841</pre>
 <h2>Generating a custom report</h2>
-<p>Now generate a custom report based on the data that Apigee records from calls to the the Weather API. The report you generate here provides the number of requests submitted to the API by location. Here we generate the report using the Apigee API Platform API. You can generate the same custom report using the UI at <a href="http://enterprise.apigee.com">enterprise.apigee.com</a>.</p>
-<p>Note that the <span style="font-family:courier new,courier,monospace;"> timeRange</span> parameter must be modified to include the time interval when data was collected.</p>
-<p>In the example request below, the custom dimension is called <code>location</code>. This request builds a custom report for locations based on the sum of message counts submitted for each location. </p>
-<div id="well">
-	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/environments/test/stats/location?'select=sum(message_count)&amp;timeRange=11/19/2012%2000:00~11/21/2012%2000:00&amp;timeUnit=day'</pre>
-</div>
-<div id="well">
-	<pre>{
+
+<p>Now that you have populated some data, you can use the RESTful API exposed by Analytics Services to get statistics on your new custom dimensions, in the same way that you use the API to get statistics on the out-of-the-box dimensions.</p>
+
+<p>You can also generate custom reports using the UI at <a href="http://enterprise.apigee.com">enterprise.apigee.com</a>. You will find that a new dimension called location is available in the UI for you to use in generating reports.</p>
+
+
+<div class="warning"><code>timeRange</code> parameter must be modified to include the time interval when data was collected.</div>
+
+<p>In the example request below, the custom dimension is called <code>location</code>. This request builds a custom report for locations based on the sum of message counts submitted for each location.</p>
+
+<p>As usual, substitute your organization name for the variable <code>{org_name}</code>, and substitute the username and password for your account on Apigee Enterprise for <code>myname:mypass</code>:</p>
+<pre class="terminal">
+$ curl https://api.enterprise.apigee.com/v1/o/{org_name}/environments/test/stats/location?"select=sum(message_count)&amp;timeRange=11/19/2012%2000:00~11/21/2012%2000:00&amp;timeUnit=day"
+-u myname:mypass</pre>
+<pre>
+{
   "environments" : [ {
     "dimensions" : [ {
       "metrics" : [ {
@@ -195,14 +236,15 @@ Environment: test
     "samplingRate" : "100"
   }
 }</pre>
-	<p>In some cases, there may be a large number of results. It may be useful to filter the list to report the top 2 locations by message volume. This is done by adding the <code>topk</code> query parameter and providing an integer value for the number to filter:</p>
-</div>
-
-	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/environments/test/stats/location?'select=sum(message_count)&amp;timeRange=11/19/2012%2000:00~11/21/2012%2000:00&amp;timeUnit=day&amp;sortby=sum(message_count)&amp;topk=2"</pre>
-
+<p>In some cases, there may be a large number of results. It may be useful to filter the list to report the top 2 locations by message volume. This is done by adding the <code>topk</code> query parameter and providing an integer value for the number to filter:</p>
+<pre class="terminal">
+$ curl https://api.enterprise.apigee.com/v1/o/{org_name}/environments/test/stats/location?'select=sum(message_count)&amp;timeRange=11/19/2012%2000:00~11/21/2012%2000:00&amp;timeUnit=day&amp;sortby=sum(message_count)&amp;topk=2" \
+-u myname:mypass</pre>
 <p>Results can also be filtered by specifying the values of the dimensions of interest. In the example below, the report is filtered by results for London and Shanghai :</p>
-<div id="well">
-	<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/environments/test/stats/location?"select=sum(message_count)&amp;timeRange=11/19/2012%2000:00~11/21/2012%2000:00&amp;timeUnit=day&amp;filter=(location%20in%20'London','Shanghai')"
+<pre class="terminal">
+$ curl https://api.enterprise.apigee.com/v1/o/{org_name}/environments/test/stats/location?"select=sum(message_count)&amp;timeRange=11/19/2012%2000:00~11/21/2012%2000:00&amp;timeUnit=day&amp;filter=(location%20in%20'London','Shanghai')" \
+-u myname:mypass</pre>
+<pre>
 {
   "environments" : [ {
     "dimensions" : [ {
@@ -230,9 +272,15 @@ Environment: test
     "samplingRate" : "100"
   }
 }
-
 </pre>
+
+<a href="tipstricks"><p>For complete API documentation, see the [node:12538] resource in the API reference.</p>
+</a>
+
+
+<h2>Get help</h2>
 
 <p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
 
-<p>Back to <a href="/docs/enterprise/content/developer_guide">API Platform Developer Guide</a>.</p>
+
+<p>Back to <a href="/docs/enterprise/content/developer_guide">API Proxy Developer Guide</a>.</p>

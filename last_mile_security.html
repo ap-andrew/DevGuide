@@ -1,0 +1,26 @@
+<p>[toc]</p>
+
+<p>Now that you have secured inbound traffic, you need to add some security to the connection between the API Platform and your backend services. This is traditionally referred to as "last-mile" security. </p>
+
+<p>Last-mile security has different requirements than inbound security. Last-mile security involves configuring the TargetEndpoint to be a client of your backend service; you must think in terms that treat teh API proxy as a consumer of your backend service.</p>
+
+<h3>IP Whitelisting</h3>
+
+<p>This is only a viable option when you are using the On-premises version of the API Platform. </p>
+
+<h3>Client SSL</h3>
+
+<h3>API keys</h3>
+
+<p>API keys are useful. You provision API keys to the API proxies that will interact with your backend services. </p>
+
+API keys present a few challenges:
+
+Storing credentials: The API key and secret must be stored 
+
+<h3>OAuth 2.0 client credentials</h3>
+
+<p>OAuth is a better option than API keys because access tokens provide revocability. This provides a second layer of defense if you discover that API keys have been compromised, or if you need to revoke credentials on specific dates or over time intervals (monthly, for example).</p>
+
+
+

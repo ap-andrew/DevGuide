@@ -1,0 +1,458 @@
+<p>[toc]</p>
+<p>Apigee Analytics exposes APIs for three types of dimensions:</p>
+<ul>
+	<li><b>Dedicated dimensions:</b> Analytics that are computed in aggregate based on pre-defined dimensions and metrics, with no detailed drill-down available. These are used primarily to populate default dashboards and operational performance graphs in the Apigee API Platform Management UI.</li>
+	<li><b>Dynamic dimensions: </b>Analytics for a pre-defined set of dimensions that are computed only when you build custom reports. As is explained below, these require you to define a <em>function</em> to calculate metrics against a dimension.</li>
+	<li><b>Custom dimensions:</b> Analytics that you use to build reports for data that is specific to your business, and which is not measured by the Analytics above. Custom Analytics require the definition and population of custom variable as well as requiring a function to be defined. For instructions on building reports for custom dimensions, see [node:4554].</li>
+</ul>
+<h2>Dedicated dimensions</h2>
+<p>Dedicated dimensions are associated with aggregate, precomputed metrics. For speed and scale, Apigee Analytics automatically calculates these metrics. This makes them very simple to use, but limits their flexibility. For example, functions are not supported against dedicated dimensions because the dimensions have been pre-aggregated; they have 'built-in' functions. For this reason, dedicated dimensions do not appear as available options in the Management UI during report creation. Rather, dedicated dimensions are used to generate operational dashboards in the Management UI. You can access the same dedicated dimensions to build your own dashboards using the Analytics API.</p>
+<p>The 'select' query parameter for dedicated dimensions accepts a metric name but does not support a function (since the function is already a specified for the associated pre-computed metric).</p>
+<table class="table" style="width: 690px;" width="690">
+	<thead>
+		<tr>
+			<th>Name</th>
+			<th>Description</th>
+			<th>Computed Metrics</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td><code>/stats/</code></td>
+			<td>Total traffic across all API proxies in an environment</td>
+			<td>message_count</td>
+		</tr>
+		<tr>
+			<td><code>/stats/apis</code></td>
+			<td>Metrics across all API proxies in a specific environment.</td>
+			<td>message_count, error_count, total_response_time, max_response_time, min_response_time, data_exchange_size, end_point_response_time</td>
+		</tr>
+		<tr>
+			<td><code>/stats/apiproducts</code></td>
+			<td>Metrics across all API products in an organization</td>
+			<td>message_count, error_count, total_response_time, max_response_time, min_response_time, data_exchange_size, end_point_response_time</td>
+		</tr>
+		<tr>
+			<td><code>/stats/apps</code></td>
+			<td>Metrics across all apps in an organization</td>
+			<td>message_count, error_count, user_count total_response_time, max_response_time, min_response_time, end_point_response_time</td>
+		</tr>
+		<tr>
+			<td><code>/stats/devs</code></td>
+			<td>Metrics across all developers in an organization</td>
+			<td>message_count, error_count, app_count, user_count</td>
+		</tr>
+		<tr>
+			<td><code>/stats/envs</code></td>
+			<td>Metrics across all environments in an organization</td>
+			<td>message_count error_count api_count</td>
+		</tr>
+	</tbody>
+</table>
+<h2>Computed metrics</h2>
+<p>Computed metrics are pre-defined <code>(metric + function)</code> calculations that are used to generate reports for dedicated dimensions. Computed metrics enable the system to provide operational analytics in a way that is highly optimized. Computed metrics are used to populate dashboards in the API Platform Management UI.</p>
+<table class="table" style="width: 690px;" width="690">
+	<thead>
+		<tr>
+			<th>Name</th>
+			<th>Description</th>
+			<th>Method of calculation</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td><code>message_count</code></td>
+			<td>Total number of request messages received by all API proxies</td>
+			<td>message_count</td>
+		</tr>
+		<tr>
+			<td><code>error_count</code></td>
+			<td>Total number of all error messages (request, response) across all API proxies</td>
+			<td>message_count</td>
+		</tr>
+		<tr>
+			<td><code>app_count</code></td>
+			<td>Total number of all apps provisioned</td>
+			<td>message_count</td>
+		</tr>
+		<tr>
+			<td><code>api_count</code></td>
+			<td>Total number of API proxies</td>
+			<td>message_count</td>
+		</tr>
+		<tr>
+			<td><code>total_response_time</code></td>
+			<td>Total traffic across all API proxies in an environment</td>
+			<td>message_count</td>
+		</tr>
+		<tr>
+			<td><code>max_response_time</code></td>
+			<td>The highest value, in milliseconds, for a complete roundtrip transaction on the API Platform, including network latency and processing time by the backend (target) service</td>
+			<td>message_count</td>
+		</tr>
+		<tr>
+			<td><code>min_response_time</code></td>
+			<td>The smallest value, in milliseconds, for a complete roundtrip transaction on the API Platform, including network latency and processing time by the backend (target) service</td>
+			<td>message_count</td>
+		</tr>
+		<tr>
+			<td><code>data_exchange_size</code></td>
+			<td>The size, in kilobytes, of the inbound request message plus the size, in kilobytes, of the outbound response message</td>
+			<td>message_count</td>
+		</tr>
+		<tr>
+			<td><code>end_point_response_time</code></td>
+			<td>The time, in milliseconds, between the TargetEndpoint response is sent and the request is received by the TargetEndpoint</td>
+			<td>message_count</td>
+		</tr>
+	</tbody>
+</table>
+<h2>Metrics</h2>
+<table class="table" style="width: 690px;" width="690">
+	<thead>
+		<tr>
+			<th>Name</th>
+			<th>Description</th>
+			<th>Functions</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td><code>cache_hit</code></td>
+			<td>A response served from the Cache on the API Platform (and which therefore did not result in a request being forwarded to the backend service)</td>
+			<td>Sum, Average</td>
+		</tr>
+		<tr>
+			<td><code>is_error</code></td>
+			<td>Any transaction that results in a transport or application error.</td>
+			<td>Sum, Average</td>
+		</tr>
+		<tr>
+			<td><code>request_processing_latency</code></td>
+			<td>Duration of processing, measured in milliseconds, of the request pipeline, encompassing ProxyEndpoint request and TargetEndpoint request segments.</td>
+			<td>Average, Min, Max</td>
+		</tr>
+		<tr>
+			<td><code>request_size</code></td>
+			<td>The size, measured in kilobytes, of a request message received by a ProxyEndpoint from the client app.</td>
+			<td>Sum, Average, Min, Max</td>
+		</tr>
+		<tr>
+			<td><code>response_processing_latency</code></td>
+			<td>Duration of processing, measured in milliseconds, of the response pipeline, encompassing ProxyEndpoint response and TargetEndpoint response segments.</td>
+			<td>Average, Min, Max</td>
+		</tr>
+		<tr>
+			<td><code>response_size</code></td>
+			<td>The size, measured in kilobytes, of a response message sent from a ProxyEndpoint to a client app.</td>
+			<td>Sum, Average, Min, Max</td>
+		</tr>
+		<tr>
+			<td><code>target_response_size</code></td>
+			<td>The size, measured in kilobytes, of a response message received by a TargetEndpoint from the backend service.</td>
+			<td>Average, Min, Max</td>
+		</tr>
+		<tr>
+			<td><code>total_response_time</code></td>
+			<td>Duration of processing, measured in milliseconds, of a request message received by a ProxyEndpoint from a client, until the request message is returned by the ProxyEndpoint, encompassing both request and response Flows plus backend processing time. In other words, total processing time by an API proxy minus the network latency between client app and API Platform.</td>
+			<td>Average, Min, Max</td>
+		</tr>
+		<tr>
+			<td><code>message_count</code></td>
+			<td>Total number of request messages processed by the API proxy.</td>
+			<td>Sum, Average, Min, Max</td>
+		</tr>
+	</tbody>
+</table>
+<h2>Functions</h2>
+<table class="table" style="width: 690px;" width="690">
+	<thead>
+		<tr>
+			<th>Name</th>
+			<th>Description</th>
+			<th>Metrics</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td><code>sum</code></td>
+			<td>An operation that adds all values in the database for a given metric, resulting in the total of all values.</td>
+			<td>cache_hit, is_error, request_size, response_size, target_response_size, total_response_time, message_count</td>
+		</tr>
+		<tr>
+			<td><code>average</code></td>
+			<td>An operation that adds all values in the database for a given metric, and then divides by the number of entries in the data set, resulting in a single value that characterizes the data set as a whole.</td>
+			<td>cache_hit, is_error, request_processing_latency, request_size, response_processing_latency, response_size, message_count</td>
+		</tr>
+		<tr>
+			<td><code>min</code></td>
+			<td>The lowest numerical value in a given set of metrics.</td>
+			<td>request_processing_latency, request_size, response_processing_latency, response_size, message_count</td>
+		</tr>
+		<tr>
+			<td><code>max</code></td>
+			<td>The highest numerical value in a given set of metrics.</td>
+			<td>request_processing_latency, request_size, response_processing_latency, response_size, message_count</td>
+		</tr>
+		<tr>
+			<td><code>count</code></td>
+			<td>The total number of entries in a given data set.</td>
+			<td>cache_hit, is_error, message_count</td>
+		</tr>
+	</tbody>
+</table>
+<h2>Dynamic dimensions</h2>
+<p>Dynamic dimensions are a set of pre-defined dimensions that are not associated with precomputed metrics. The metrics are computed at the time that you make a request for a report. This provides you with more flexibility to slice-and-dice the measurements that are recorded by Apigee Analytics.</p>
+<p>Dynamic dimensions enable you to specify a function and a raw metric in the <code>select</code> parameter. Dynamic dimensions are used to generate custom reports.</p>
+<p>For example</p>
+<pre>
+select=sum(message_count)</pre>
+<p>or</p>
+<pre>
+select=avg(total_response_time)</pre>
+<p>Note: Dynamic dimensions should not be confused with custom dimensions. Custom dimensions are derived business-specific message content that is unique to a particular API. Custom dimensions are defined using ExtractVariables policy. See [node:4554].</p>
+<p>Each dynamic dimension supports a set of <em>metrics</em> and <em>functions</em>. (When using the Management UI, only the functions available for a given metric can be selected. Radio buttons for unavailable functions are deactivated in the Management UI.)</p>
+<p>Dynamic dimensions enable you to 'slice and dice' the metric/function combinations..</p>
+<p>For example:</p>
+<pre>
+https://api.enterprise.apigee.com/v1/o/{org_name}/environments/{env_name}/stats/access_token?select={function}({metric})&amp;timeRange={startTime~endTime}&amp;timeUnit</pre>
+<pre>
+https://api.enterprise.apigee.com/v1/o/{org_name}/environments/{env_name}/stats/client_id?select={function}({metric})&amp;timeRange={startTime~endTime}&amp;timeUnit</pre>
+<pre>
+https://api.enterprise.apigee.com/v1/o/{org_name}/environments/{env_name}/stats/client_ip?select={function}({metric})&amp;timeRange={startTime~endTime}&amp;timeUnit</pre>
+<h3>Dynamic dimensions</h3>
+<table class="table" style="width: 690px;" width="690">
+	<thead>
+		<tr>
+			<th>Name</th>
+			<th>Description</th>
+			<th>Metrics</th>
+			<th>Functions</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td><code>/stats/access_token</code></td>
+			<td>App end user's OAuth access token. (OAuth policies must be enforced for this dimension to be populated.)</td>
+			<td>metrics</td>
+			<td>functions</td>
+		</tr>
+		<tr>
+			<td><code>/stats/api_product</code></td>
+			<td>An API product in an organization.</td>
+			<td>metrics</td>
+			<td>functions</td>
+		</tr>
+		<tr>
+			<td><code>/stats/apiproxy</code></td>
+			<td>An API proxy</td>
+			<td>metrics</td>
+			<td>functions</td>
+		</tr>
+		<tr>
+			<td><code>/stats/apiproxy_revision</code></td>
+			<td>A specific revision of an API proxy</td>
+			<td>metrics</td>
+			<td>functions</td>
+		</tr>
+		<tr>
+			<td><code>/stats/client_host</code></td>
+			<td>The network name of the computer hosting the client app</td>
+			<td>metrics</td>
+			<td>functions</td>
+		</tr>
+		<tr>
+			<td><code>/stats/client_id</code></td>
+			<td>The API key, also known as consumer key, of the client app.</td>
+			<td>metrics</td>
+			<td>functions</td>
+		</tr>
+		<tr>
+			<td><code>/stats/client_ip</code></td>
+			<td>The IP address of the client app.</td>
+			<td>metrics</td>
+			<td>functions</td>
+		</tr>
+		<tr>
+			<td><code>/stats/developer</code></td>
+			<td>The developer associated with the client app, identified by internal developer ID (generated by the API Platform when a developer registers in an organization).</td>
+			<td>metrics</td>
+			<td>functions</td>
+		</tr>
+		<tr>
+			<td><code>/stats/developer_app</code></td>
+			<td>The name of the developer app submitting the request. (The API Platform groups apps by developer.)</td>
+			<td>metrics</td>
+			<td>functions</td>
+		</tr>
+		<tr>
+			<td><code>/stats/developer_email</code></td>
+			<td>The email address of the developer.</td>
+			<td>metrics</td>
+			<td>functions</td>
+		</tr>
+		<tr>
+			<td><code>/stats/environment</code></td>
+			<td>The environment in an organization in which an API proxy is deployed.</td>
+			<td>metrics</td>
+			<td>functions</td>
+		</tr>
+		<tr>
+			<td><code>/stats/flow_resource</code></td>
+			<td>The URI (defined as an API resource by a conditional Flow)</td>
+			<td>metrics</td>
+			<td>functions</td>
+		</tr>
+		<tr>
+			<td><code>/stats/gateway_flow_id</code></td>
+			<td>The name of the API Proxy Flow</td>
+			<td>metrics</td>
+			<td>functions</td>
+		</tr>
+		<tr>
+			<td><code>/stats/organization</code></td>
+			<td>The organization where metrics are gathered.</td>
+			<td>metrics</td>
+			<td>functions</td>
+		</tr>
+		<tr>
+			<td><code>/stats/proxy</code></td>
+			<td>The name of the ProxyEndpoint</td>
+			<td>metrics</td>
+			<td>functions</td>
+		</tr>
+		<tr>
+			<td><code>/stats/proxy_basepath</code></td>
+			<td>The URI path fragment defined as the base path for an API proxy in the ProxyEndpoint configuration.</td>
+			<td>metrics</td>
+			<td>functions</td>
+		</tr>
+		<tr>
+			<td><code>/stats/proxy_client_ip</code></td>
+			<td>The IP address of the ProxyEndpoint.</td>
+			<td>metrics</td>
+			<td>functions</td>
+		</tr>
+		<tr>
+			<td><code>/stats/proxy_pathsuffix</code></td>
+			<td>The URI fragment that follows the proxy base path.</td>
+			<td>metrics</td>
+			<td>functions</td>
+		</tr>
+		<tr>
+			<td><code>/stats/request_path</code></td>
+			<td>The full URI path of the request message.</td>
+			<td>metrics</td>
+			<td>functions</td>
+		</tr>
+		<tr>
+			<td><code>/stats/request_uri</code></td>
+			<td>The full URI of the request message</td>
+			<td>metrics</td>
+			<td>functions</td>
+		</tr>
+		<tr>
+			<td><code>/stats/request_verb</code></td>
+			<td>The HTTP verb associated with the request message</td>
+			<td>metrics</td>
+			<td>functions</td>
+		</tr>
+		<tr>
+			<td><code>/stats/target</code></td>
+			<td>The name of the TargetEndpoint</td>
+			<td>metrics</td>
+			<td>functions</td>
+		</tr>
+		<tr>
+			<td><code>/stats/target_host</code></td>
+			<td>The name of the network host where the TargetEndpoint is deployed.</td>
+			<td>metrics</td>
+			<td>functions</td>
+		</tr>
+		<tr>
+			<td><code>/stats/target_basepath</code></td>
+			<td>?</td>
+			<td>metrics</td>
+			<td>functions</td>
+		</tr>
+		<tr>
+			<td><code>/stats/target_ip</code></td>
+			<td>The IP address of the TargetEndpoint</td>
+			<td>metrics</td>
+			<td>functions</td>
+		</tr>
+		<tr>
+			<td><code>/stats/target_url</code></td>
+			<td>The complete URL of the target service (that is, the backend service)</td>
+			<td>metrics</td>
+			<td>functions</td>
+		</tr>
+		<tr>
+			<td><code>/stats/virtual_host</code></td>
+			<td>The name of the VirtualHost (that is, the named network address configuration) invoked by the client app</td>
+			<td>metrics</td>
+			<td>functions</td>
+		</tr>
+	</tbody>
+</table>
+<h2>Report Filters</h2>
+<p>A filter is expressed as a query parameter in an API request to build a report. Filters can be applied to any API request.</p>
+<p>Filter on API proxies with the name books or music:</p>
+<pre>
+filter=(apiproxy in 'books','music')</pre>
+<p>Filter on response codes between 400 and 599:</p>
+<pre>
+filter=(responsecode in '4xx','5xx')</pre>
+<p>Filter on response code 500:</p>
+<pre>
+filter=(responsecode eq 500)</pre>
+<p>Filter on metrics for non-error messages:</p>
+<pre>
+filter=(is_error eq 0)</pre>
+<table class="table" style="width: 690px;" width="690">
+	<thead>
+		<tr>
+			<th>Token</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td><code>in</code></td>
+			<td>Include in list</td>
+		</tr>
+		<tr>
+			<td><code>notin</code></td>
+			<td>Exclude from list</td>
+		</tr>
+		<tr>
+			<td><code>eq</code></td>
+			<td>Equals, <code>==</code></td>
+		</tr>
+		<tr>
+			<td><code>ne</code></td>
+			<td>Not equal to, <code>!=</code></td>
+		</tr>
+		<tr>
+			<td><code>gt</code></td>
+			<td>Greater than, <code>&gt;</code></td>
+		</tr>
+		<tr>
+			<td><code>lt</code></td>
+			<td>Less than, <code>&lt;</code></td>
+		</tr>
+		<tr>
+			<td><code>ge</code></td>
+			<td>Greater than or equal to, <code>&gt;=</code></td>
+		</tr>
+		<tr>
+			<td><code>le</code></td>
+			<td>Less than or equal to, <code>&lt;=</code></td>
+		</tr>
+	</tbody>
+</table>
+
+<h2>Get help</h2>
+<p>Post questions to the <a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
+
+<p>Back to <a href="/docs/enterprise/content/developer_guide">API Platform Developer Guide</a>.</p>

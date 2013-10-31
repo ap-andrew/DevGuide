@@ -1,7 +1,10 @@
 <p>[toc]</p>
+
 <p>This topic helps you get set up with the prerequisites you need to build API proxies locally.</p>
-<h2>Sign up for an Apigee Enterprise account</h2>
-<p>The Apigee API Platform enables any developer to leverage the enterprise-strength capabilities of Apigee Enterprise. Apigee provides free accounts that give you access to all of the features available to enterprise customers. You can sign up for a free account at <a href="http://enterprise.apigee.com/signup">http://enterprise.apigee.com/signup</a>.</p>
+
+<h2>Step 1: Sign up for an Apigee Enterprise account</h2>
+
+<p>The Apigee API Platform enables any developer to leverage the enterprise-strength capabilities of Apigee Enterprise. Apigee provides free accounts that give you access to all of the features available to enterprise customers. You can sign up for a free account at <a href="https://accounts.apigee.com/accounts/sign_up">https://accounts.apigee.com/accounts/sign_up</a>.</p>
 <p>An Apigee API Platform account provides you with:</p>
 <ul>
 	<li>An organization</li>
@@ -9,23 +12,34 @@
 	<li>A password</li>
 </ul>
 <p>You use these credentials to login to <a href="http://enterprise.apigee.com">enterprise.apigee.com</a> and to access the RESTful API exposed by the Apigee API Platform. If you need an account in an existing organization, please contact your organization administrator.</p>
-<h2>Download sample API proxies, policies, and code</h2>
-<p>The developer topics refer to a set of API Platform samples that are located on Github.</p>
-<p>For detail see [node:4561]</p>
+
+
+<h2>Step 2: Download sample API proxies, policies, and code</h2>
+
+
+<div class="sample-github"><p>The developer topics refer to a set of API Platform samples that are located on Github.</p>
+
+<p>For detail see [node:4561]</p></div>
+
 <p>To obtain the sample files, run:</p>
 
-	<pre>$ git clone https://github.com/apigee/api-platform-samples.git</pre>
+	<pre class="terminal">$ git clone https://github.com/apigee/api-platform-samples.git</pre>
 
 <p>If you do not have Git installed, please refer to <a href="https://help.github.com/articles/set-up-git">Github's git setup instructions</a>. If you don't want to install Git, you can browse the files and download a ZIP from <a href="https://github.com/apigee/api-platform-samples">https://github.com/apigee/api-platform-samples</a>.</p>
+
 <h3>Python</h3>
 <p>Python is required to run the Apigee deploy tool. Python is present in most Linux environments, on a Mac with XCode installed, on a Windows machine with <a href="http://www.cygwin.com/">Cygwin</a> installed, and in many other places.</p>
 <p>To obtain Python, please refer to the <a href="http://www.python.org/getit/">Python installation instructions</a>.</p>
 <h3>An HTTP Client</h3>
 <p>The Developer Guide provides sample HTTP requests using cURL. If you need cURL, you can download it from http://curl.haxx.se.</p>
 <p>Note: If you are running Windows, makes sure to download a version of curl that includes the libcurl library.</p>
-<h3>How to use the sample cURL commands</h3>
+
+<h2>Step 3: Run sample cURL commands</h2>
+
 <p>The goal of each topic is to enable you to interact with the RESTful API by cutting and pasting simple cURL commands directly into your command-line terminal.</p>
+
 <p>After you cut and paste the command to your terminal, you must replace the following variables in the command with information for your Apigee account:</p>
+
 <ul>
 	<li><code>myname</code>: The username for your Apigee account</li>
 	<li><code>mypass</code>: The password for your account in an Apigee account</li>
@@ -37,36 +51,70 @@
 
 <p>For example:</p>
 
-<pre>$ curl -k https://api.enterprise.apigee.com/v1/organizations/{org_name}/apis -u myname:mypass</pre>
+<pre class="terminal">$ curl -k https://api.enterprise.apigee.com/v1/organizations/{org_name}/apis -u myname:mypass</pre>
 
-<h2>Make a successful API call</h2>
+<p>If you are using the API Platform samples, set the values for your organization, username, and password in the file <code>/setup/setenv.sh</code>. Once you have done so, you can run the simplified deploy and invoke scripts provided for each sample API proxy.</p>
 
-<p>In this step, you make an API call to the Apigee API Platform. </p>
+<h2>Step 4: Make a successful API call to the API Platform</h2>
+
+<p>In this step, you make an API call to the Apigee API Platform. The API call in this example returns a list of the names of all API proxies in your organization.</p>
 
 <p>First, open the terminal on your computer.</p>
 
-<p>This call lists all APIs in your organization. The following cURL command can be copied and pasted into a terminal window on your computer.</p>
+<p>Copy and paste the following command into the terminal window on your computer.</p>
 
-<pre>$ curl https://api.enterprise.apigee.com/v1/organizations/{org_name}/apis -u myname:mypass</pre>
+<pre class="terminal">$ curl https://api.enterprise.apigee.com/v1/organizations/{org_name}/apis -u myname:mypass</pre>
+
+<p>For brevity, you can abbreviate <code>/organizations</code> as <code>/o</code>:</p>
+
+<pre class="terminal">$ curl https://api.enterprise.apigee.com/v1/o/{org_name}/apis -u myname:mypass</pre>
 
 <p>For example, if your username is <code>me@mycompany.com</code>, your password is <code>secret</code>, and your account in the organization called <code>apifactory</code>, then the request looks like this:</p>
-<pre>$ curl https://api.enterprise.apigee.com/v1/organizations/apifactory/apis -u me@mycompany.com:secret</pre>
 
-<p>For brevity, the following URL also works:</p>
+<pre class="terminal">$ curl https://api.enterprise.apigee.com/v1/o/apifactory/apis -u me@mycompany.com:secret</pre>
 
-<pre>$ curl https://api.enterprise.apigee.com/v1/o/apifactory/apis -u me@mycompany.com:secret</pre>
+<p>The request and response should look like this in your terminal:</p>
 
-<p>JSON is the default format for response messages.</p>
+<pre class="terminal">$ curl  https://api.enterprise.apigee.com/v1/o/apifactory/apis -u myname:mypass
+[ ]</pre>
 
-<p>If you require XML, you can add an HTTP Accept header to get an XML response instead of JSON:</p>
+<p>Not much of a response! What you see is an empty JSON array. The array is empty because you have not created any API proxies yet. If you do see a list of names, it's because some API proxies have already been created or imported. In the next topic, [node:429], you use the API to create, deploy and invoke an API proxy. </p>
 
-<pre>$ curl -H "Accept:text/xml" \
+<p>curl has a few tools that can make you life easier. For example, you often need to see the HTTP headers associated with a request. To obtain this detail about an HTTP request, you can use the <code>-v</code> flag provided by curl. </p>
+
+<p>For example:</p>
+
+<pre class="terminal">$ curl  https://api.enterprise.apigee.com/v1/o/{org_name}/apis -u myname:mypass -v</pre>
+
+<p>If you only want to see the HTTP headers on the response from the API Platform (and not the content), then you can use the <code>-I</code> flag.</p>
+
+<pre class="terminal">$ curl  https://api.enterprise.apigee.com/v1/o/{org_name}/apis -u myname:mypass -I</pre>
+
+<h2>Working with XML</h2>
+
+<p>JSON is the default format for response messages, but XML is supported equally.</p>
+
+<p>If you require XML, you can add an HTTP <code>Accept</code> header to get an XML response instead of JSON:</p>
+
+<pre class="terminal">$ curl -H "Accept:text/xml" \
 https://api.enterprise.apigee.com/v1/organizations/apifactory/apis -u me@mycompany.com:secret</pre>
+
+<p>When POSTing or PUTting payloads in XML, use the <code>Content-type</code> HTTP header:</p>
+
+<pre class="terminal">$ curl -H "Content-type:text/xml" -X POST -d \
+'&lt;XMLPayload&gt;
+ &lt;/XMLPayload&gt; ' \
+https://api.enterprise.apigee.com/v1/organizations/apifactory/apis \
+-u me@mycompany.com:secret</pre>
 
 <h2>Get help</h2>
 
 <p>For troubleshooting tips, see [node:4536].</p>
 
 <p>If you have any issues with the topic, post them to the at&nbsp;<a href="http://support.apigee.com">Apigee Developer Forum</a>.</p>
+
 <h2>Next steps</h2>
-<p>Now that you understand API Platform basics, refer to the <a href="/docs/enterprise/content/developer_guide">API platform topics</a> to learn how to apply advanced features to your API proxy.</p>
+
+<p>Now you have successfully invoked the RESTful API exposed by the API Platform.</p>
+
+<p>In the next Developer Guide topic, [node:429], you deploy and invoke a working API proxy.</p>

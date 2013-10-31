@@ -2,58 +2,78 @@
 <p>Conditions enable API proxies to behave dynamically at runtime. Conditions define operations on variables, which are evaluated by the API Platform processing pipeline. Conditional statements are boolean and always evaluate to true or false.</p>
 <p>Apigee specifies a set of commonly used variables. For a complete list, see [node:243]. Custom variables can also be used in conditional statements. For instructions, see on setting custom variables, see [node:227]</p>
 <p>The basic structure of a conditional statement is:</p>
-<div id="class">
-	<pre>&lt;Condition&gt;{variable.name}{operator}{"value"}&lt;Condition&gt;</pre>
-</div>
+
+	<pre>
+&lt;Condition&gt;{variable.name}{operator}{"value"}&lt;Condition&gt;</pre>
+
 <p>For example:</p>
-<div id="class">
-	<pre>&lt;Condition&gt;request.verb = "GET"&lt;Condition&gt;</pre>
-</div>
+
+	<pre>
+&lt;Condition&gt;request.verb = "GET"&lt;Condition&gt;</pre>
+
 <p>Conditions can be chained. For example, the following condition evaluates to true only if the URI of the request matches <code>/statuses/user_timeline.json</code> and the HTTP verb of the request is <code>GET</code>.</p>
-<div id="class">
-	<pre>&lt;Condition&gt;(proxy.pathsuffix MatchesPath "/statuses") and (request.verb = "GET")&lt;Condition&gt;</pre>
-</div>
+
+	<pre>
+&lt;Condition&gt;(proxy.pathsuffix MatchesPath "/statuses") and (request.verb = "GET")&lt;Condition&gt;</pre>
+
 <p>Or:</p>
-<div id="class">
-	<pre>(proxy.pathsuffix MatchesPath "/statuses") and (request.verb != "GET")</pre>
-</div>
+
+	<pre>
+(proxy.pathsuffix MatchesPath "/statuses") and (request.verb != "GET")</pre>
+
 <p>Conditional behavior is supported by three components of an API proxy:</p>
+
 <p><strong>Policy enforcement</strong></p>
+
 <p>Using conditional statements, you can control the enforcement of policies. A common use case is conditional transformation of response messages, based on HTTP header or message content.</p>
+
 <p>For example, to conditionally transfrom XML to JSON based on the <code>Accept</code> header:</p>
-<pre>&lt;Step&gt;
-    &lt;Condition&gt;request.header.accept = "application/json"&lt;/Condition&gt;
-    &lt;Name&gt;XMLtoJSON&lt;/Name&gt;
+<pre>
+&lt;Step&gt;
+  &lt;Condition&gt;request.header.accept = "application/json"&lt;/Condition&gt;
+  &lt;Name&gt;XMLtoJSON&lt;/Name&gt;
 &lt;/Step&gt;</pre>
+
 <p><strong>Flow execution</strong></p>
+
 <p>Using conditional statements, you can control the execution of named flows in ProxyEndpoints and TargetEndpoints. Note that only 'named' flows can be executed conditionally. Preflows and postflows (both request and response) on ProxyEndpoints and TargetEndpoints execute for every transaction, and thus provide unconditional 'failsafe' capabilities.</p>
+
 <p>For example, to execute a conditional request flow based on the HTTP verb of the request message, and conditional response flow based on a (potential) HTTP error code:</p>
-<pre>&lt;Flow name="GetRequests"&gt;
-    &lt;Condition&gt;response.verb="GET"&lt;/Condition&gt;
-    &lt;Request&gt;
-        &lt;Step&gt;
-            &lt;Condition&gt;request.path MatchesPath "/statuses/**"&lt;/Condition&gt;
-            &lt;Name&gt;StatusesRequestPolicy&lt;/Name&gt;
-        &lt;/Step&gt;
-    &lt;/Request&gt;
-    &lt;Response&gt;
-        &lt;Step&gt;
-            &lt;Condition&gt;(response.status.code = 503) or (response.status.code = 400)&lt;/Condition&gt;
-            &lt;Name&gt;MaintenancePolicy&lt;/Name&gt;
-        &lt;/Step&gt;
-    &lt;/Response&gt;
+
+<pre>
+&lt;Flow name="GetRequests"&gt;
+  &lt;Condition&gt;response.verb="GET"&lt;/Condition&gt;
+  &lt;Request&gt;
+    &lt;Step&gt;
+      &lt;Condition&gt;request.path MatchesPath "/statuses/**"&lt;/Condition&gt;
+      &lt;Name&gt;StatusesRequestPolicy&lt;/Name&gt;
+    &lt;/Step&gt;
+  &lt;/Request&gt;
+  &lt;Response&gt;
+    &lt;Step&gt;
+      &lt;Condition&gt;(response.status.code = 503) or (response.status.code = 400)&lt;/Condition&gt;
+      &lt;Name&gt;MaintenancePolicy&lt;/Name&gt;
+    &lt;/Step&gt;
+  &lt;/Response&gt;
 &lt;/Flow&gt;</pre>
+
 <p><strong>Routes</strong></p>
+
 <p>Using conditional statements, you can control the target endpoint invoked by proxy endpoint configuration. A route rule forwards a request to a particular target endpoint. When more than one target endpoint is available, the route rule is evaluated for its condition and, if true, the request is forwarded to the named target endpoint.</p>
+
 <p>For example, to conditionally route messages to designated target endpoints based on <code>Content-Type</code>:</p>
-<pre>&lt;RouteRule name="ContentTypeRouter"&gt;
-     &lt;Condition&gt;request.header.content-type = "text/xml"&lt;/Condition&gt;
-     &lt;TargetEndpoint&gt;XmlTargetEndpoint&lt;/TargetEndpoint&gt;
-     &lt;Condition&gt;request.header.content-type = "application/json"&lt;/Condition&gt;
-     &lt;TargetEndpoint&gt;JsonTargetEndpoint&lt;/TargetEndpoint&gt;
+<pre>
+&lt;RouteRule name="ContentTypeRouter"&gt;
+  &lt;Condition&gt;request.header.content-type = "text/xml"&lt;/Condition&gt;
+  &lt;TargetEndpoint&gt;XmlTargetEndpoint&lt;/TargetEndpoint&gt;
+  &lt;Condition&gt;request.header.content-type = "application/json"&lt;/Condition&gt;
+  &lt;TargetEndpoint&gt;JsonTargetEndpoint&lt;/TargetEndpoint&gt;
 &lt;/RouteRule&gt;</pre>
+
 <p>See [node:123] for more information.</p>
+
 <h2>Path Expressions</h2>
+
 <p>Path expressions are used for matching URI paths., using "*" to represent a single path element and "**" to represent multiple URI levels.</p>
 <p>For example:</p>
 <table class="table" style="width: 690px;" width="690">
@@ -122,7 +142,8 @@
 		</tr>
 	</tbody>
 </table>
-<p>&nbsp;</p>
+
+
 <p><code>%</code> is treated as escape character. The pattern <code>hello %{user%}{symbol}</code> matches <code>hello {user}!</code> but not <code>hello world!</code>.</p>
 <p>Conditions can be categorized as follows:</p>
 <ul>
@@ -132,7 +153,9 @@
 	<li><strong>Literals:</strong>&nbsp;Literal values in a condition.</li>
 </ul>
 <h2><a class="jumplink" name="operators"></a>Operators</h2>
+
 <p>When using operators, observe the following restrictions:</p>
+
 <ul>
 	<li>Operators cannot be used as variable names.</li>
 	<li>A space character is required before and after an operator.</li>
@@ -213,7 +236,13 @@
 		<tr>
 			<td>~</td>
 			<td>Matches, Like</td>
-			<td>Matches a regular expression</td>
+			<td>Matches an Apigee-specific regular expression</td>
+		</tr>
+		
+		<tr>
+			<td>~~</td>
+			<td>Matches, Like</td>
+			<td>Matches a <code>javax.util.regex</code> compliant regular expression</td>
 		</tr>
 		<tr>
 			<td>~/</td>
@@ -306,7 +335,9 @@
 		</tr>
 	</tbody>
 </table>
+
 <h2><a class="jumplink" name="operands"></a>Operands</h2>
+
 <p>Data types are defined for variables, so values can be adapted as needed for comparison. For example, the response status code = "404" is not a valid comparison because the response status code is an integer and not a string.</p>
 <p>The system is configured to adapt operands to a common data type before comparing them. For example, if the response status code is 404, the expression response.status.code = "400" and the response.status.code = 400 are equivalent.</p>
 <p>For numeric operands, the data type is interpreted as integer unless the value is terminated as follows:</p>
@@ -423,21 +454,27 @@
 	</tbody>
 </table>
 <h2><a class="jumplink" name="literals"></a>Literals</h2>
+
 <p>Null, true, and false are the literals available in conditions. For example:</p>
 <ul>
 	<li>request.header.host is null</li>
 	<li>flow.cachehit is true</li>
 </ul>
+
 <h3>Samples</h3>
-<pre>&lt;RouteRule name="default"&gt;
+
+<pre>
+&lt;RouteRule name="default"&gt;
      &lt;Condition&gt;request.header.content-type = "text/xml"&lt;/Condition&gt;
      &lt;TargetEndpoint&gt;XmlTargetEndpoint&lt;/TargetEndpoint&gt;
 &lt;/RouteRule&gt;</pre>
-<pre>&lt;Step&gt;
+<pre>
+&lt;Step&gt;
     &lt;Condition&gt;response.status.code is 503&lt;/Condition&gt;
     &lt;Name&gt;MaintenancePolicy&lt;/Name&gt;
 &lt;/Step&gt;</pre>
-<pre>&lt;Flow name="GetRequests"&gt;
+<pre>
+&lt;Flow name="GetRequests"&gt;
     &lt;Condition&gt;response.verb="GET"&lt;/Condition&gt;
     &lt;Request&gt;
         &lt;Step&gt;

@@ -1,31 +1,31 @@
 <p>[toc]</p>
 
-<p>You have now created, deployed and invoked a basic API proxy. In this topic you will explore the RESTful APIs that are exposed by the API Platform to enable API proxy management. These APIs are useful for exploring, debugging, and scripting the API proxy development lifecycle.</p>
-
-<p>Every organization has a unique software development lifecycle (SDLC). It can be important to synchronize API proxy deployment with the deployment of backend services. </p>
+<p>Every organization has a unique software development lifecycle (SDLC). It is often necessary to synchronize and align API proxy deployment with the processes used for backend services. </p>
 	
-<p>The API demonstrated in this topic can be used to integrate API proxy management into your organization's SDLC. A common usage of this API is to write scripts or code that deploys new API proxies, or that migrate API proxies from test into prod, as part of a larger automated process that also deploys or migrates other applications.</p>
+<p>The Platform API methods demonstrated in this topic can be used to integrate API proxy management into your organization's SDLC. A common usage of this API is to write scripts or code that deploy API proxies, or that migrate API proxies from one environment to another, as part of a larger automated process that also deploys or migrates other applications.</p>
 
-<p>The API makes no assumptions about your SDLC (or anyone else's, for that matter). Rather, it exposes atomic functions that can be coordinated by your development team to automate and optimize your API lifecycle.</p>
+<p>The Platform API makes no assumptions about your SDLC (or anyone else's, for that matter). Rather, it exposes atomic functions that can be coordinated by your development team to automate and optimize your API development lifecycle.</p>
 
-<p>All of the API Platform APIs are documented in [node:4972].</p>
+<p>All of the API Platform APIs are documented in [node:4972]. This topic focuses on the set of APIs that are for managing API proxies.</p>
 
 <h2>Interacting with the API</h2>
 
+The following steps walk you through simple interactions with the APIs.
+
 <h3>List APIs in your organization</h3>
 
-<p>You can begin by listing all of the API proxies in your organization.</p>
+<p>You can begin by listing all of the API proxies in your organization. (Remember to substitute entries for <code>myname:mypass</code> and <code>{org_name}</code>. For instructions, see [node:8403].</p>
 
-<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/apis</pre>
+<pre class="terminal">$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/apis</pre>
 
 <p>Sample Response:</p>
 <pre>[ "weatherapi" ]</pre>
 
 <h3>Get an API</h3>
 
-<p>You can call the GET method on an API. This call returns a list of all available revisions of the API proxy.</p>
+<p>You can call the GET method on any API proxy in your organization. This call returns a list of all available revisions of the API proxy.</p>
 	
-<pre>$ curl -u myname:mypass -H "Accept: application/json" https://api.enterprise.apigee.com/v1/o/{org_name}/apis/weatherapi</pre>
+<pre class="terminal">$ curl -u myname:mypass -H "Accept: application/json" https://api.enterprise.apigee.com/v1/o/{org_name}/apis/weatherapi</pre>
 	
 <p>Sample Response:</p>
 
@@ -34,25 +34,26 @@
   "revision" : [ "1" ]
 }</pre>
 
-<p>The only detail we get is the name of the API along with a 'revision', which in turn has a number. </p>
+<p>The only detail returned by this method is the name of the API proxy along with the associated 'revision', which has an associated number. Revisions are sequentially numbered, providing some lightweight versioning capabilities for API proxy configurations.</p>
 
-<p>There is only one revision because you just created this API. As an API moves through the lifecycle of iterative configuration and deployment, the version number increments by integers.</p>
+<p>In this example, there is only one revision because the API proxy was just created. As an API proxy moves through the lifecycle of iterative configuration and deployment, the version number increments by integers. Using direct API calls to deploy, you deploy optionally increment the revision number of the API proxy. Sometimes when you make minor changes, you might not want to increment the revision. </p>
 
 <h3>Get API Revision</h3>
 
-<p><span class="label label-info">Note</span> Don't confuse the <i>version</i> of an API with the <i>revision</i> of an API proxy. The two numbers are unrelated, and the revision number of an API proxy is totally opaque to apps that consume your API.</p> 
+<div class="warning"><p>Don't confuse the <i>version</i> of an API (that is, the public interface) with the <i>revision</i> of an API proxy (that is, the internal number associated with a configuration). The two numbers are unrelated, and the revision number of an API proxy is totally opaque to apps that consume your API.</p></div>
 	
-<p>The API version (for example, <code>api.company.com/v1</code>) should change very infrequently. When you do increment the API version, it signifies to developers that there has been a significant change in the signature of the API. </p>
+<p>The API <i>version</i> (for example, <code>api.company.com/v1</code>) should change very infrequently. When you do increment the API version, it signifies to developers that there has been a significant change in the signature of the external interface exposed by the API. </p>
 
-<p>The API proxy revision is merely an incremented number associated with an API proxy configuration. The API Platform maintains revisions of your configurations so that you can revert a configuration when something goes wrong. By default, an API proxy's revision is automatically incremented every time you deploy an API proxy. This behavior can be overridden in the Management UI and in the API.</p>
+<p>The API proxy <i>revision</i> is merely an incremented number associated with an API proxy configuration. The API Platform maintains revisions of your configurations so that you can revert a configuration when something goes wrong. By default, an API proxy's revision is automatically incremented every time you deploy an API proxy. This behavior can be overridden in the Management UI and in the API.</p>
 
-<p>See <a href="http://apigee.com/docs/enterprise/content/add-apis#-a-class-jumplink-name-set-root-id-set-root-a-a-class-jumplink-name-api-versions-id-api-versions-a-api-versions">Versioning an API</a> for guidance and instruction on incrementing the interface version of the API that you expose to external developers.</p>
+<div class="bestpractice"><p>See <a href="http://apigee.com/docs/enterprise/content/add-apis#-a-class-jumplink-name-set-root-id-set-root-a-a-class-jumplink-name-api-versions-id-api-versions-a-api-versions">Versioning an API</a> for guidance and instruction on incrementing the interface version of the API that you expose to external developers.</p>
+	
+</div>
+<p>To obtain the detailed profile of an API proxy configuration, you call the GET method on a specific revision number.</p>
 
-<p>To obtain the detailed profile of an API configuration, you view a specific revision number.</p>
+<p>For example, you can call the GET method on API proxy revision 1 to get a detailed view.</p>
 
-<p>For example, you can call the GET method on  API proxy revision 1 to get a detailed view.</p>
-
-<pre>$ curl -u myname:mypass -H "Accept:application/json" https://api.enterprise.apigee.com/v1/o/{org_name}/apis/weatherapi/revisions/1</pre>
+<pre class="terminal">$ curl -u myname:mypass -H "Accept:application/json" https://api.enterprise.apigee.com/v1/o/{org_name}/apis/weatherapi/revisions/1</pre>
 <p><b>Sample Response</b></p>
 <pre>{
   "configurationVersion" : {
@@ -74,50 +75,88 @@
   "type" : "Application"
 }</pre>
 
-<p>You can see here that all of the important pieces of the API are empty. There are no policies, no Endpoints, no resources. You will add these to your API in the next Developer Guide topics. You can also read about these configuration elements in the [node:8407].</p>
+<p>These API proxy configuration elements are documented in detail in the [node:8407].</p>
 
 <h3>Deploying an API to an environment</h3>
 
-<p>Now that your API proxy is configured to receive and forward requests properly, you can deploy it to one or more environments. Usually, you iterate on API proxies in 'test' and then, when ready, you deploy an API proxy to 'prod'. You then publish the 'prod' URL to external developers.</p>
+<p>Once your API proxy is configured to receive and forward requests properly, you can deploy it to one or more environments. Usually, you iterate on API proxies in 'test' and then, when ready, you deploy an API proxy to 'prod'. You then publish the 'prod' URL to external developers.</p>
 	
-<p><b>Note:</b> An API proxy cannot be invoked until is has been deployed.</p>
-<p>You deploy the API <b>revision</b> to an environment. First, check environments in your organization.</p>
+<div class="tipstricks"><p>An API proxy cannot be invoked until is has been deployed to an environment.</p></div>
 
-<h3>How to List Environments</h3>
+<p>You deploy the API <b>revision</b> to an environment, so the first step is to verify the list of environments in your organization.</p>
 
-<p>Every organization on the API Platform has at least two environments: 'test' and 'prod'. The distinction is arbitrary. The goal is to provide you with an area to verify that your API proxy is working properly before you open it up to outside developers. Each environment is really just a network address, enabling you segregate traffic between the API proxies that you are working on, and those that are being accessed by apps at runtime.</p>
+<h3>How to list environments</h3>
+
+<p>Every organization on the API Platform has at least two environments: 'test' and 'prod'. The distinction is arbitrary. The goal is to provide you with an area to verify that your API proxy is working properly before you open it up to outside developers.</p>
+
+<p>Each environment is really just a network address, enabling you segregate traffic between the API proxies that you are working on, and those that are being accessed by apps at runtime.</p>
+
+<p>Environments also provide segregation of data and resources. You can for example, set up different caches in test and prod, which can be accessed only by API proxies executing in that environment.</p>
 
 <h3>View environments in an organization</h3>
 
-<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/environments</pre>
+<pre class="terminal">$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/environments</pre>
+
 <p>Sample Response</p>
 
 <pre>[ "test", "prod" ]</pre>
 
-<h3>Deploy your API to the Test Environment</h3>
-
-<p>Now, deploy the API to the test environment</p>
-
-<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/apis/weatherapi/revisions/1/deployments?action=deploy&env=test&basepath=/</pre>
-
-<p>Sample Response</p>
-
-<pre>{
-  "aPIProxy" : "weatherapi",
-  "environment" : [ test ],
-  "name" : "1",
-  "organization" : "{org_name}"
-}</pre>
-
+<div class="tiptricks">If you have in On-Premise installation of Apigee Enterprise, you may see a different list of environments.</div>
 
 <h3>Explore Deployments</h3>
 
-<p>A "deployment" is a deployed revision of your API proxy. An API proxy that is in the deployed state is accessible over the network. It is often useful to check to see in which environment (and if!) your API is deployed. </p>
+<p>A "deployment" is a revision of an API proxy that has been deployed in an environment. An API proxy that is in the 'deployed' state is accessible over the network, at the addresses defined in the VirtualHost for that environment. 
+		
+<div class="tipstricks">It is often useful to check to see in which environment (and if!) your API is deployed. For example, you might find requests to your API proxy are failing. One troubleshooting step is to ensure that the API proxy is deployed as expected.</div>
 
-<p>For example, you might find requests to your API proxy are failing. One troubleshooting step is to ensure that the API proxy is deployed as expected.</p>
+<h2>Deploying API proxies</h2>
 
-<h3>See All Deployments of an API Revision</h3>
-<div id="well"><pre>curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/apis/weatherapi/revision/1/deployments</pre></div>
+<p>API proxies cannot be invoked until they have been deployed. The Platform exposes RESTful APIs that provide control over the deployment process.</p>
+
+<div class="bestpractice"><p>The following API calls are called on your behalf by the Python deploy tool. The deploy tool provides support for packaging and importing API proxies that you developer locally, and it also managed undeployment of existing API proxy revisions. Use the direct API calls described below when you need additional control over the deployment process.</p></div>
+
+<p>Only one revision of an API proxy can be deployed in an environment at a given time. Therefore the deployed revision needs to be undeployed. You can control whether the new bundle is deployed as a new revision or whether it overwrites the existing revision.</p>
+
+<p>First undeploy the existing revision:</p>
+
+<pre class="terminal">$ curl -X DELETE \
+https://api.enterprise.apigee.com/v1/o/{org_name}/environments/{environment_name}/apis/{api_name}/revisions/{revision_number}/deployments"
+-u myname:mypass</pre>
+
+<p>Then deploy the new revision. (You can deploy using the same revision number, or you can increment it.)</p>
+
+<pre class="terminal">$ curl -X POST -H "Content-type:application/x-www-form-urlencoded" \
+https://api.enterprise.apigee.com/v1/o/{org_name}/environments/{env-name}/apis/{api_name}/revisions/{revision_number}/deployments" \
+-u myname:mypass</pre> 
+
+<div class="warning"><p>Using this approach, there will inevitably be some lag time between the time when the first package is undeployed and the next one is deployed. During this interval calls from apps may be rejected with HTTP code 503 (Service Unavailable). If this is a problem, as it usually is in production deployments, use the seamless deployment option, described below.</p></div>
+
+<h3>Seamless deployment</h3>
+
+<p>To minimize the potential for downtime during deployment, use the <code>override</code> option on the deployment method, and set it to <code>true</code>.</p>
+
+<p>You cannot deploy one revision of an API proxy on top of another. The first must always be undeployed. By setting <code>override</code> to <code>true</code>, you indicate that one revision of an API proxy should be deployed over the currently deployed revision. The result is that the deployment sequence is reversed--the new revision is deployed, and once the deployment is complete, the already deployed revision is undeployed.</p>
+
+<pre class="terminal">$ curl -X POST -H "Content-type:application/x-www-form-urlencoded" \
+https://api.enterprise.apigee.com/v1/o/{org_name}/environments/{env-name}/apis/{api_name}/revisions/{revision_number}/deployments?"override=true" \
+-u myname:mypass</pre> 
+
+<p>When <code>override=true</code> is used, 503 responses during deployment will be significantly minimized.
+</p>
+
+<p>You can further optimize deployment by setting the <code>delay</code> parameter. The <code>delay</code> parameter specifies a time interval, in seconds, before which the previous revision should be undeployed. The effect is that in-flight transactions have a time interval in which to complete before the API proxy processing their transaction is undeployed.</p> 
+
+<pre class="terminal">$ curl -X POST -H "Content-type:application/x-www-form-urlencoded" \
+https://api.enterprise.apigee.com/v1/o/{org_name}/environments/{env-name}/apis/{api_name}/revisions/{revision_number}/deployments?"override=true&delay=5" \
+-u myname:mypass</pre> 
+
+
+<h3>See all deployments of an API Revision</h3>
+
+<p>Sometimes it's necessary to fetch a list of all of the currently deployed revisions of an API proxy.</p>
+
+<pre class="terminal">$ curl https://api.enterprise.apigee.com/v1/o/{org_name}/apis/weatherapi/revision/1/deployments \
+-u myname:mypass </pre>
 
 <pre>{
   "aPIProxy" : "weatherapi",
@@ -150,14 +189,25 @@
   "organization" : "org_name"
 }</pre>
 
-<h3>See All Deployments in the Test Environment</h3>
-<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/environments/test/deployments</pre>
+<p>The response above contains many properties specific to the internal infrastructure of the API Platform. Unless you are using Apigee Enterprise on-premise, you can't change these settings.</p>
+
+<p>The important properties contained in the response are <code>organization</code>, <code>environment</code>, <code>aPIProxy</code>, <code>name</code>, and <code>state</code>. By reviewing these property values, you can confirm that a specific revision of an API proxy is deployed in an environment.</p>
+
+<h3>See all deployments in the test environment</h3>
+
+<p>You can also retrieve the deployment status for a specific environment (including the revision number of the currently deployed API proxy) using the following call:
+</p>
+<pre class="terminal">$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/environments/test/deployments</pre>
 
 <p>Returns the same result as above for every API deployed in the test environment
 </p>
 
-<h3>See All Deployments in your organization</h3>
-<pre>$ curl -u myname:mypass https://api.enterprise.apigee.com/v1/o/{org_name}/deployments</pre>
+<h3>See all deployments in your organization</h3>
+
+<p>To fetch a list of all currently deployed revisions of all API proxies in all environments, use the following API method:</p>
+
+<pre class="terminal">$ curl https://api.enterprise.apigee.com/v1/o/{org_name}/deployments -u myname:mypass </pre>
+
 <p>Returns the same result as above for all API proxies deployed in all environments.
 </p>
 
@@ -186,7 +236,7 @@
   "type" : "Application"
 }</pre>
 	
-<p><span class="label label-info">Note</span> Keep in mind that the response payload merely contains a representation of an API resource--you can create an API proxy using JSON or XML, and you can also retrieve representations of the API proxy as XML or JSON, depending on your needs.</p>
+<div class="tipstricks"><p>Keep in mind that the response payload merely contains a representation of an API resource--you can create an API proxy using JSON or XML, and you can also retrieve representations of the API proxy as XML or JSON, depending on your needs.</p></div>
 
 <p>The API proxy profile that is generated demonstrates the complete structure of an API proxy:</p>
 <ul>
@@ -237,7 +287,7 @@ export env=$env
 export url=$url
 export api_domain=$api_domain</pre>
 
-<p>The file above makes all of your settings available to the shell script that wrap the deploy tool.</p>
+<p>The file above makes all of your settings available to the shell scripts that wrap the deploy tool.</p>
 
 <p>Now create a shell script that imports those settings and uses them to call the deploy tool. (You can see an example <a href="https://github.com/apigee/api-platform-samples/tree/master/setup">here</a>.)
 </p>
@@ -289,6 +339,8 @@ read -s password
 
 echo Undeploy and delete the previous revision
 
+# Note that you need to explicitly update the revision to be undeployed. One benefit of the Python deploy tool is that it manages this for you.
+
 curl -k -u $username:$password "$url/v1/o/$org/apis/$api/revisions/1/deployments?action=undeploy&env=$env" -X POST -H "Content-Type: application/octet-stream"
 
 curl -k -u $username:$password -X DELETE "$url/v1/o/$org/apis/$api/revisions/1"
@@ -305,7 +357,19 @@ curl -k -v -u $username:$password "$url/v1/o/$org/apis?action=import&name=$api" 
 
 echo Deploy the new revision to $env environment 
 
-curl -k -u $username:$password "$url/v1/o/$org/apis/$apirevisions/1/deployments?action=deploy&env=$env" -X POST -H "Content-Type: application/octet-stream"</pre>
+curl -k -u $username:$password "$url/v1/o/$org/apis/$apirevisions/1/deployments?action=deploy&env=$env" -X POST</pre>
+
+<h2>Security guidelines</h2>
+
+<p>The Platform API relies on HTTP Basic Authentication. You need to provide a username and password for each API call.</p>
+
+<p>In some situations, it is not practical to collect the password when the script runs. For example, you may need to run a cron job that fires when no administrators are present. In these situations, you need to make the password available to the script without any human intervention.</p>
+
+<p>Follow these guidelines:</p>
+
+<ol><li>Centralize credentials in a single file that is used as a source for the programs and scripts that you write</li>
+<li>Protect the credentials source file to the extent possible using file system security and permissions</li>
+<li>Create an automation client with highly restricted permissions on specific resources in your organization. See [Node:9906].</li></ol>
 
 <h2>Get help</h2>
 
@@ -313,8 +377,6 @@ curl -k -u $username:$password "$url/v1/o/$org/apis/$apirevisions/1/deployments?
 
 <h2>Next steps</h2>
 
-[Node:427]
+[Node:9906]
 
-
-
-<p>Back to <a href="/docs/enterprise/content/developer_guide">API Platform Developer Guide</a>.</p>
+<p>Back to <a href="/docs/enterprise/content/developer_guide">API Proxy Developer Guide</a>.</p>

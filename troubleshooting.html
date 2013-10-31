@@ -1,11 +1,131 @@
 <p>[toc]</p>
-<p>This section provides solutions to common errors that you may see while working with the API Platform.</p>
-<p>If you have other issues, please post them to the <a href="http://support.apigee.com/support">Developer Forum</a>.</p>
-<h2>Using Curl on Windows</h2>
+
+<p>Gateway Services provides a Trace tool to enable you to debug end-to-end request and response flows. The trace results display request and response headers and payloads, policy execution, variable values, and any errors that may have occurred during the flow.</p>
+
+<p>Key data points of use in troubleshooting:</p>
+
+<ul>
+	<li><b>Timestamps:</b> Use timestamps to see how long each step takes to execute. Comparing timestamps helps you isolate the policies that are taking the longest to execute that are slowing down your API calls.</li>
+	
+	<li><b>Base path:</b> By verifying the base path, you can ensure that a policy is routing the message to correct server</li>
+	
+	<li><b>Results of policy execution:</b> These results let you see if the message is being altered as expected, such as if the message is being transformed from XML to JSON, or if the message being cached.</li>
+	
+</ul>
+
+<p>One Trace session can support 10 request/response transactions through the selected API proxy. Each Trace session is broken down into the following major steps:</p>
+
+<ul>
+	<li><strong>Original request received from client</strong><br>
+		Displays the verb and URI path of the request from the client app. During this step, policies and conditions attached to the request flow&nbsp;are executed. The results indicate if policies are being executed properly in the order you defined for the flow.&nbsp;&nbsp;Properly executing policies are clearly indicated by checkmarks. Also pay attention to the timestamp at the far right to see if any policy is taking longer than expected.</li>
+	<li><strong>Request sent to your backend service</strong><br>
+		Displays the request message sent to the backend service by the API proxy's TargetEndpoint.&nbsp;</li>
+	<li><strong>Response returned by the backend service</strong><br>
+		Displays the response headers and payload returned by the backend service. During this step, policies and conditions attached to the response flow are executed.</li>
+	<li><strong>Final response sent to client</strong><br>
+		The response message returned to the requesting client app once the response flow has executed.</li>
+</ul>
+<h2><a class="jumplink" name="make_trace"></a>Tracing API calls at runtime</h2>
+
+<p>To trace runtime calls, you need to start a tracing session in the Trace tool. While the session is active, Gateway Services captures messages sent to your API . If you don't have any live traffic you can generate some directly from the trace session, by using the Apigee Console or by sending a cURL command using a terminal. The results that are displayed for each step in the call can be used not only make sure that your flows are executing properly but also to debug issues. For example, you can ask a developer to send calls to your API while you're listening. By examining the trace results you can find where calls are failing or which policies are not executing.&nbsp;</p>
+
+
+<p><strong>Note</strong>: You need to deploy your API before you can trace calls.</p>
+
+
+<h4>To trace calls</h4>
+<ol>
+	<li>Select an API proxy from the summary list on the API proxies table.</li>
+	
+	<li>On the API proxy Overview page, select <b>Trace</b> to access the Trace page. Select an environment (test or prod). If the environment option is inactive, it indicates that the API proxy is not deployed.</li>
+	
+	<li>Click <b>Start Trace Session</b>. The places the API proxy in 'debug mode', in which the API proxy records details of each step in the processing pipeline. While the Trace session is running, messages and contextual data are captured from live traffic.<br>
+		
+		
+<p>[[{"type":"media","view_mode":"media_original","fid":"1309","attributes":{"alt":"","class":"media-image","height":"17","style":"width: 103px; height: 17px; border-width: 1px; border-style: solid; margin: 10px;","typeof":"foaf:Image","width":"103"}}]]</p>
+	</li>
+	
+	<li>When you've capture enough messages click <b>Stop Trace Session</b>.</li>
+	
+	<li>A list of captured request/response transactions displays in the left menu. Click on any of the transactions to view detailed results.</li>
+</ol>
+
+<p>Generating requests from the Trace UI</p>
+
+<ol>
+	<li>Enter the proxy URL in the URL field of the Send requests section. The URL field is initialized with the base path of your API proxy. The method is set to GET (and cannot be changed).
+		<p>[[{"type":"media","view_mode":"media_original","fid":"1311","attributes":{"alt":"","class":"media-image","height":"67","style":"width: 600px; height: 67px; border-width: 1px; border-style: solid; margin: 10px;","typeof":"foaf:Image","width":"600"}}]]</p>
+	</li>
+	<li>Click <b>Send</b>.</li>
+</ol>
+
+<h4>Trace results</h4>
+<p>The processing time for each message appears in the Transactions section.</p>
+<p>[[{"type":"media","view_mode":"media_original","fid":"1312","attributes":{"alt":"","class":"media-image","height":"164","style":"width: 277px; height: 164px; border-width: 1px; border-style: solid; margin: 10px;","typeof":"foaf:Image","width":"277"}}]]</p>
+<p>Click a message to see the details of the trace in the Transaction section (below the Send Requests section).</p>
+<p>[[{"type":"media","view_mode":"media_original","fid":"1313","attributes":{"alt":"","class":"media-image","height":"314","style":"width: 316px; height: 314px; border-width: 1px; border-style: solid; margin: 10px;","typeof":"foaf:Image","width":"316"}}]]</p>
+<p>Click the Next button on the far-right of the window, to step through the trace.</p>
+<p>At each step you can expand the results to get more detail. You can see the HTTP headers send with the message &nbsp;by expanding the Headers section. You can view the payload of a message by expanding the Content section.</p>
+<h3>Downloading trace results</h3>
+<p>You can download an XML file of the trace results for viewing offline. The file shows the complete details of the listening session including the contents of all headers, variables and policies.</p>
+
+<h4>To download raw trace output</h4>
+
+
+<p>Click <b>Download Trace Session</b> after you stop a tracing session.&nbsp;</p>
+
+
+<h2><a class="jumplink" name="make_trace"></a>Refining message capture using filters</h2>
+
+
+<p>To enable root-case analysis, filters enable you to target specific calls that may be causing problems. For example, you may need to zero in on requests that have specific content or requests coming from specific partners or apps.</p>
+<ul>
+	<li>HTTP headers - limits the trace to only calls that contain a specific header. This is a good way of helping you troubleshoot issues. You can send a header to your app developer and ask them to include it in the call that is causing issues. Then Apigee will only record calls with that specific header so you can examine the results. &nbsp;</li>
+	<li>Query parameters - only calls with a &nbsp;specific value of a parameter will be recorded.</li>
+</ul>
+<h4>To add a filter:</h4>
+<ol>
+	<li>Open the Filter section of the Trace page.<br>
+		<p>[[{"type":"media","view_mode":"media_original","fid":"1314","attributes":{"alt":"","class":"media-image","height":"332","style":"width: 273px; height: 332px; border-width: 1px; border-style: solid; margin: 10px;","typeof":"foaf:Image","width":"273"}}]]</p>
+	</li>
+	<li>Enter a name and value into either the Header or Query fields. Blank fields are not evaluated.<br>
+		You can add more filters by clicking the Add Filter button. You can delete filters by clicking the (X) button next to the filter.&nbsp;</li>
+</ol>
+
+
+
+<h2>HTTP response codes</h2>
+<p>Because Apigee's API is RESTful, response messages can be interpreted as a combination of an HTTP response code and an Apigee-specific error message.</p>
+<p>For example, if you try to create a company entity with the same name as an existing company, the response is:</p>
+<pre>404
+{
+  "code": "messaging.config.beans.ApplicationDoesNotExist",
+  "message": "APIProxy named WeatherApi does not exist in organization mycompany",
+  "contexts": []
+}</pre>
+<p>Example error codes are provided in the [node:4972].</p>
+<p>An explanation of important HTTP response codes follows:</p>
+<p><strong>HTTP 2xx:</strong> Any response code in the 200 range means 'success'. In some cases only a 204 HTTP response code is issued when an operation succeeds. 204 means that the response is submitted with no content, usually because a DELETE operation succeeded.</p>
+<p><strong>HTTP 401:</strong> This an authorization failure. It means that the credentials that you used to make a request map to a user who lacks permission to perform the operation. Verify the roles for the account you are using.</p>
+<p><strong>HTTP 403:</strong> This an authorization failure. It means that the username and password combination you are using is not valid for the organization you specified. To test your credentials, login to <a href="http://enterprise.apigee.com/login">enterprise.apigee.com/login</a>. Once logged in check your account settings to see the organization name. In some situations, you may belong to multiple organizations. Make sure that you are using the correct credentials for you organization. Check your spelling. &nbsp;If you need an account, sign up here:&nbsp;<a href="http://enterprise.apigee.com/trial">http://enterprise.apigee.com/trial</a>.</p>
+<p><strong>HTTP 404: </strong>The object wasn't found. This is usually happens because of misspelling in your request URL, but it may also happen if you try to update an object that doesn't exist (for example, the wrong revision of an API).</p>
+<p><strong>HTTP 405: </strong>This means 'Method not allowed'. This response code simply means that you, for example, used the GET verb for an API call that requires the POST verb.</p>
+<p><strong>HTTP 415:</strong> Unsupported media type. This error usually occurs on POST or PUT requests when the <code>Content-type</code> HTTP header is set to the wrong value. For example, imagine that you POST the following to an API that only supports JSON:</p>
+<pre>$ curl -X POST -H "Content-type:text/xml" -d '&lt;SomeXML&gt;' https://api.company.com/v1/json_service</pre>
+<p>The result would be an HTTP 415 error.</p>
+<p>For GET requests,remember to use the <code>Accept</code> header instead of the <code>Content-type</code> header</p>
+.
+
+<p><strong>HTTP 500: </strong>This is an internal server error. It means that you should contact support@apigee.com to resolve the issue.</p>
+
+<h2>Common client issues</h2>
+<h3>Using cURL on Windows</h3>
+
+
 <p>All of the example commands use Linux/Unix command line syntax for quoting arguments. A single quote can be used as a wrapper for double-quote characters inside a pair of single quotes.</p>
 <p>If you are using cURL from a Windows command prompt, Windows does not provide such multi-layered quoting. Under Windows, the outermost quotes must be the double-quote character and quotes within that string must doubled, two double-quote characters, where the following examples have one.</p>
 <p>curl and HTTPS</p>
-<p>The Apigee API requires SSL (https). If you encounter SSL Certificate problems in response to your cURL commands, you can:</p>
+<p>The Apigee API requires SSL (HTTPS). If you encounter SSL Certificate problems in response to your cURL commands, you can:</p>
 <ul>
 	<li>Update your certs file.</li>
 	<li>Use a command line option to specify an alternate certs file.</li>
@@ -13,19 +133,19 @@
 </ul>
 <p><b>Protocol https not supported or disabled in libcurl</b></p>
 <p>Usually seen on machines running Windows. This means that you downloaded and installed a version of curl that did not include the libcurl package. Download a different package from http://curl.haxx.se/download.html, and make sure it includes libcurl for SSL.</p>
-<h2>HTTP Errors</h2>
-<p><strong>HTTP 403:</strong> This an authorization failure. It means that the username and password combination you are using is not valid for the organization you specified. To test your credentials, login to <a href="http://enterprise.apigee.com/login">enterprise.apigee.com/login</a>. Once logged in check your account settings to see the organization name. In some situations, you may belong to multiple organizations. Make sure that you are using the correct credentials for you organization. Check your spelling. &nbsp;If you need an account, sign up here:&nbsp;<a href="http://enterprise.apigee.com/trial">http://enterprise.apigee.com/trial</a>.</p>
-<p><strong>HTTP 404: </strong>The object wasn't found. This is usually happens because of misspelling in your request URL, but it may also happen if you try to update an object that doesn't exist (for example, the wrong revision of an API).</p>
-<h2>CLASSIFICATION_FAILURE</h2>
-<p>You may see this error when you submit a request to your API proxy after you deploy it to the Apigee platform. This error means that Apigee cannot determine which API proxy your request should be routed to. This usually happens because your request URL does not match the base path for any API proxies currently deployed in the environment. (Note that Apigee validates that all base paths are unique when a new API proxy is imported.)&nbsp;</p>
+
+<h3>CLASSIFICATION_FAILURE</h3>
+<p>You may see this error when you submit a request to your API proxy after you deploy it to Gateway Services. This error means that Gateway Services, while attempting to route the request to the appropriate API proxy, cannot find an API proxy that matches the request URI path. This usually happens because your request URL does not match the base path for any API proxies currently deployed in the environment. (Note that Gateway Services validates that all base paths are unique when a new API proxy is imported or generated.)</p>
 <ul>
-	<li>Verify the URI for your API by logging in to the Apigee UI at <a href="http://enterprise.apigee.com">enterprise.apigee.com</a>. Select the link to your API. At the top of the page, the URI for you API including the base path, displays at the top of the page.</li>
+	<li>Verify the URI for your API by logging in to the Gateway Services UI at <a href="http://enterprise.apigee.com">enterprise.apigee.com</a>. Select the link to your API. At the top of the page, the URI for you API including the base path, displays at the top of the page.</li>
 	<li>Make sure your API proxy is deployed. Your API proxy may be imported to Apigee, but may not be deployed to an environment. API proxies can only be invoked after they have been successfully deployed to an environment. (Note that the deploy tool used in this quick start both imports and deploys your API proxy to the environment you specify.)</li>
 	<li>Make sure your request is being sent to the correct environment:&nbsp;<span style="font-family: 'courier new', courier, monospace; ">http://{myorg}-test.apigee.net/weather</span>&nbsp;versus&nbsp;<span style="font-family: 'courier new', courier, monospace; ">http://{myorg}-prod.apigee.net/weather</span>, for example.&nbsp;</li>
 </ul>
-<h2>Deploy Tool Errors</h2>
-<div><span style="font-family:courier new,courier,monospace;">python: can't open file 'tools/deploy.py': [Errno 2] No such file or directory</span>: &nbsp;</div>
-<div>The path you have provided to <span style="font-family:courier new,courier,monospace;">deploy.py</span> is incorrect.&nbsp;</div>
+
+<h2>Deploy tool errors</h2>
+
+<div><code>python: can't open file 'tools/deploy.py': [Errno 2] No such file or directory</code></div>
+<div>The path you have provided to <code>deploy.py</code> is incorrect.&nbsp;</div>
 <div>
 	<p>If you see the following result on import, it indicates that you are running the deploy tool from the wring directory.&nbsp;</p>
 	<pre>Import failed to /v1/organizations/myorg/apis?action=import&amp;name=weatherapi with status 500:
@@ -35,6 +155,6 @@
   "contexts" : [ ]
 }</pre>
 </div>
-<div>To fix this issue, run <span style="font-family:courier new,courier,monospace;">deploy.py</span>&nbsp;from the base directory of the API platform samples distribution. In the deploy tool command, specify the directory that <em>contains</em> the <span style="font-family:courier new,courier,monospace;">./apiproxy</span> directory-- in this package that value is <span style="font-family:courier new,courier,monospace;">simpleProxy</span>.</div>
-<h2>Get Help</h2>
+<div>To fix this issue, run <code>deploy.py</code> from the base directory of the API platform samples distribution. In the deploy tool command, specify the directory that <em>contains</em> the <span style="font-family:courier new,courier,monospace;">./apiproxy</span> directory-- in this package that value is <span style="font-family:courier new,courier,monospace;">simpleProxy</span>.</div>
+<h2>Get help</h2>
 <p>If you have other issues, please post them to the <a href="http://support.apigee.com">Developer Forum</a>.</p>

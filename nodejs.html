@@ -1,32 +1,150 @@
+<p>[toc]</p>
+<div class="panel panel-default">
+	<div class="panel-body">
+		<p class="lead">This feature is currently in public beta.</p>
+	</div>
+</div>
 <p>The API Platform enables developers to deploy and run Node.js applications in a scalable, cloud-based environment on the Apigee API Platform.</p>
+<p>Apigee's support for Node.js application enables developers to:</p>
+<ol>
+	<li><strong>Build API proxies</strong> entirely in Node.js using a framework like Argo.</li>
+	<li><strong>Build new APIs</strong> that proxy other APIs using frameworks like Argo, Express, Geddy, Hapi, and others.</li>
+	<li><strong>Build "mash-ups" and composite services</strong> using existing APIs and web services.</li>
+	<li><strong>Rapidly prototype new APIs</strong> using a web framework like Express.</li>
+	<li><strong>Manage your Node.js application</strong> with Apigee policies, to add API keys, OAuth, caching, rate-limiting, and many other out-of-the-box capabilities.</li>
+	<li><strong>Get detailed operational and content-based analytics</strong> on the traffic to and from your Node.js application.</li>
+</ul>
 
-<p>Apigee's support for Node.js application enables developers to:'</p>
+<h2>Apigee Enterprise Management UI quick start for Node.js</h2>
 
-<ul><li>Build API proxies entirely in Node.js using a framework like Argo</li>
-<li>Build new APIs that proxy other APIs using frameworks like Argo, Express, Geddy, Hapi, and others.</li>
-<li>Build "mash-ups" and composite services using existing APIs and web services</li>
-<li>Rapidly prototype new APIs  using a web framework like Express</li>
-<li>Manage your Node.js application with Apigee policies, to add API keys, OAuth, caching, rate-limiting, and many other out-of-the-box capabilities. </li>
-<li>Get detailed operational and content-based analytics on the traffic to and from your Node.js application</li></ul>
+<p>The Apigee API Platform enables you to write, deploy, invoke, and test Node.js applications in a Web browser-based configuration environment.</p>
+<ol>
+	<li>First, set up an account on <a href="https://accounts.apigee.com/accounts/sign_up">Apigee Enterprise.</a></li>
+	<li>Log in to the <a href="http://enterprise.apigee.com">Apigee Enterprise Management UI</a>.&nbsp;</li>
+	<li>Select <b>APIs &gt; API proxies</b> from the the main menu.&nbsp;A list of API proxies is displayed.</li>
+	<li>To generate an API proxy to host your Node.js application, select the <strong>+ API Proxy</strong> button
+		<p>[[{"type":"media","view_mode":"media_large","fid":"1710","attributes":{"alt":"","class":"media-image","height":"43","typeof":"foaf:Image","width":"106"}}]]</p>
+	</li>
+	<li>Configure the API proxy. The <strong>New API Proxy</strong> menu displays a set of options for the proxy that you are creating.
+		<ol>
+			<li>Select <strong>Node.js</strong></li>
+			<li>From the Node.js options, select <strong>Node.js "HelloWorld" Sample</strong></li>
+			<li>Provide a <strong>Display Name</strong> for your API proxy</li>
+			<li>Provide a <strong>Project Base Path</strong>. This is a URI path used to create the network address for this application.</li>
+			<li>Provide an optional <strong>Description</strong>.</li>
+			<li>Select <strong>Build</strong></li>
+		</ol>
+	</li>
 
-<h2>Node.js quick start</h2>
 
-<p>This quick start assumes that you have an account on <a href="enterprise.apigee.com">enterprise.apigee.com</a>. </p>
+<p>[[{"type":"media","view_mode":"media_large","fid":"1712","attributes":{"alt":"","class":"media-image","height":"266","typeof":"foaf:Image","width":"480"}}]]</p>
 
-<p>You can sign up for a free account at <a href="enterprise.apigee.com">enterprise.apigee.com/signup</a></p>
+<p align="center"><i>New API Proxy configuration form</i></p>
+
+<p>Once Gateway Services has generated the new API Proxy, the <strong>Overview</strong> page displays. This page displays high level information, including metadata and analytics, related to your new API proxy.</p
+
+		<p>[[{"type":"media","view_mode":"media_large","fid":"1713","attributes":{"alt":"","class":"media-image","height":"163","style":"font-size: 12px;","typeof":"foaf:Image","width":"480"}}]]</p>
+		
+			<p align="center"><i>API proxy overview for a Node.js application</i></p></li>
+	
+<li>To view the code of the Node.js application, select the <b>Develop</b> view.
+	
+<p>[[{"type":"media","view_mode":"media_large","fid":"1714","attributes":{"alt":"","class":"media-image","height":"44","typeof":"foaf:Image","width":"161"}}]]</p></li>
+
+	<li>In the left-hand menu of the &nbsp;Develop view, select <b>Scripts &gt; Node.js</b>.</li>
+	<li>Under <b>Node.js</b> is a script called <code>hello-world.js</code>. Select the script called <code>hello-world.js</code> from the menu.</li>
+</ol>
+
+<p>As shown below, the <b>Develop</b> view enables you to view, edit and save a Node.js application. You can paste Node.js scripts directly into the browser-based environment, save, and deploy them.</p>
+
+<p>[[{"type":"media","view_mode":"media_large","fid":"1715","attributes":{"alt":"","class":"media-image","height":"277","style":"font-size: 12px;","typeof":"foaf:Image","width":"480"}}]]</p>
+<p align="center"><i>Node.js application in the Apigee Enterprise Management UI</i></p>
+
+<h3>Invoking the application</h3>
+
+<p>The API proxy hosting your Node.js application is deployed in the test environment. It is available over the network at the URL generated for your organization. You can invoke the application from a Web browser. For example, if your organization were called 'developerz', then you would invoke the Node.js as follows:</p>
+
+<p>[[{"type":"media","view_mode":"media_large","fid":"1705","attributes":{"alt":"","class":"media-image","height":"107","typeof":"foaf:Image","width":"433"}}]]</p>
+
+<p>Or using curl:</p>
+
+<pre class="terminal">
+$ curl http://developerz-test.apigee.net/v1/helloworld
+Hello, World!
+</pre>
+
+<div>Just substitute the name of your organization. (To get your organization name, look under <b>User Settings</b>.)</div>
+
+<h3>Visualizing the runtime using the Trace tool</h3>
+
+<p>Apigee provides a Trace tool that enables you to view the application as it interacts with request and response messages.</p>
+
+<ol>
+	<li>Select the <b>Trace</b> view&nbsp;<p>[[{"type":"media","view_mode":"media_large","fid":"1716","attributes":{"alt":"","class":"media-image","height":"44","typeof":"foaf:Image","width":"161"}}]]</p></li>
+	
+	<li>In the Trace view, select the <b>Start Trace Session </b>button. (The button will turn red and display the <b>Stop Trace Session</b> option.)<p>[[{"type":"media","view_mode":"media_large","fid":"1706","attributes":{"alt":"","class":"media-image","height":"34","typeof":"foaf:Image","width":"138"}}]]</p></li>
+	
+	<li>With the trace session running, select the <b>Send</b> button.&nbsp;The tool will submit a request to the address that displays under&nbsp;<strong>URL</strong>.</li>
+</ol>
+	
+	<p>[[{"type":"media","view_mode":"media_large","fid":"1709","attributes":{"alt":"","class":"media-image","height":"73","typeof":"foaf:Image","width":"457"}}]]</p>
+<p>The messages that you submit result in transactions, which display in the left-hand menu.</p>
+
+	<p>[[{"type":"media","view_mode":"media_large","fid":"1708","attributes":{"alt":"","class":"media-image","height":"96","typeof":"foaf:Image","width":"293"}}]]</p>
+	
+<p>As shown below, the Trace tool displays the inbound request and the response to the client app.</p>
+		
+		<p>[[{"type":"media","view_mode":"media_large","fid":"1671","attributes":{"alt":"","class":"media-image","height":"275","style":"width: 600px; height: 344px;","typeof":"foaf:Image","width":"480"}}]]</p>
+		<p align="center"><i>Debugging a Node.js application in the trace tool&nbsp;</i></p>
+
+		<p>The Trace tool also offers a script output panel, which displays HTTP headers, payload content, and any logging messages from the Node.js application.</p>
+			<p>[[{"type":"media","view_mode":"media_large","fid":"1672","attributes":{"alt":"","class":"media-image","height":"322","typeof":"foaf:Image","width":"448"}}]]</p>
+
+<p align="center"><i>Log output from a Node.js application in Trace tool</i></p>
+
+
+<h2>Download the Node.js sample apps</h2>
+
+<p>You now know the basics of working with Node.js in the Apigee Enterprise Management UI. You can write (or copy-and-paste) your own Node.js application in the code view to start building custom Node.js applications.</p>
+
+<div class="sample-github">A set of sample Node.js applications are available on GitHub.</div>
+
+<p>To obtain the samples, clone the repository using the following command:</p>
+
+<pre class="terminal">$ git clone https://github.com/apigee/node-samples</pre>
+
+<p>You can deploy the samples by following the <b>CLI quick start for Node.js</b>, or by copying and and pasting the Node.js for the samples directly into the browser-based development environment described in the quick start above. </p>
+
+<h2>CLI quick start for Node.js</h2>
+
+<p>You can also develop Node.js application on your local machine, test them locally, and then upload them to Apigee Gateway Services for execution. This section demonstrates the usage of the <code>apigeetool</code> command-line interface (CLI).</p>
+
+<p>This quick start assumes that you have an account on <a href="enterprise.apigee.com">enterprise.apigee.com</a>.</p>
+
+<p>You can sign up for a free account at <a href="https://accounts.apigee.com/accounts/sign_up">enterprise.apigee.com/signup</a></p>
 
 <h3>Step 1: Install the Platform Tools</h3>
-<pre>$ git clone https://github.com/apigee/api-platform-tools.git
+<div class="sample-github">The Apigee Platform Tools are a Python package that is maintained in GitHub. You obtain them by cloning the repo as follows:</div>
+<pre class="terminal">
+$ git clone https://github.com/apigee/api-platform-tools.git
+</pre>
+<p>This copies the contents of the repo to your local machine under <code>api-platform-tools</code>. Navigate to the install directory.</p>
+<pre class="terminal">
+$ cd api-platform-tools</pre>
+<h3>Install the tools</h3>
+<p>The command below install the tools on your machine in a standard location such as <code>/usr/local/bin</code>. On a Macintosh or Linux, you will need to use <code>sudo</code> to run this tool as root, although <code>setup.py</code> has a number of other options in case you cannot do this.</p>
+
+<pre class="terminal">
 $ cd api-platform-tools
 $ sudo python setup.py install</pre>
-
-<h3>Step 2: Create a directory for your new application, let's call it <code>nodeapp</code></h3>
-<pre>$ cd ..
+<h3>Step 2: Create a directory for your new application. In this example, call it <code>nodeapp</code></h3>
+<pre class="terminal">
+$ cd ..
 $ mkdir nodeapp
 $ cd nodeapp</pre>
-
 <h3>Step 3: Using your favorite text editor, create a file called <code>server.js</code> and insert the following:</h3>
-<pre>var http = require('http');
+<pre>
+var http = require('http');
 
 var svr = http.createServer(function(req, resp) {
   resp.writeHead(200, { 'Content-Type': 'text/plain' });
@@ -39,277 +157,344 @@ svr.listen(9000, function() {
 </pre>
 
 <h3>Step 4: Deploy the new application to your organization on the API Platform:</h3>
-
 Using the organization name, username and password for your account on <a href="enterprise.apigee.com">enterprise.apigee.com</a>:
+<pre class="terminal">
+$ apigeetool deploynodeapp -n hello -d . -m server.js -o org_name -e test -u username -p password</pre>
 
-<pre>$ apigeetool deploynodeapp -n hello -d . -m server.js -o org_name -e test -u username -p password</pre>
-
-<h3>Step 5: Invoke the application:</h3>
+<h3>Step 5: Invoke the application</h3>
 
 <p>Substitute the name of your organization for <code>{org_name}</code>:</p>
 
-<pre>$ curl http://{org_name}-test.apigee.net/
+<pre class="terminal">`
+$ curl http://{org_name}-test.apigee.net/
 Hello, World!</pre>
-
-<h2>Install API Platform Tools</h2>
-
-<p>The Apigee Platform Tools are a Python package that is maintained in GitHub. Use the following steps to install them:
-</p>
-<h3>Fetch the tools from GitHub:</h3>
-
-<pre>$ git clone https://github.com/apigee/api-platform-tools.git</pre>
-
-<p>This will copy the tools into a new directory called "api-platform-tools". (If you do not have Git, then you will need it for this step.)</p>
-
-<h3>Install the tools</h3>
-
-<pre>$ cd api-platform-tools
-$ sudo python setup.py install</pre>
-
-<p>This will install the tools on your machine in a standard location such as <code>/usr/local/bin</code>. On a Macintosh or Linux, you will need to use <code>sudo</code> to run this tool as root, although <code>setup.py</code> has a number of other options in case you cannot do this.</p>
 
 <h2>Deploy an existing Node.js application to the API Platform</h2>
 
 <h3>Preparing the Application</h3>
 
-<p>When deploying an existing Node.js application, you specify:
-<ul><p>the Node.js application's root directory</p>
-<li>the name of the <code>main</code> script</li></ul>
-	
-<p>The deployment tool will packages the specified directory and its contents, and pushes the resultant package to the API Platform.
-</p>
-
+<p>When deploying an existing Node.js application, you specify:</p>
+<ul>
+<li>the Node.js application's root directory</li>
+	<li>the name of the <code>main</code> script</li>
+</ul>
+<p>The deployment tool will package the specified directory and its contents, and pushes the resultant package to the API Platform.</p>
 <p>Apigee is flexible about the structure of the Node.js application, but there are a few things to watch out for.</p>
-
 <p>If your application uses NPM, it will have a <code>package.json</code> file in the base directory.</p>
-
 <p>To ensure that the top-level <code>node_modules</code> directory is populated with all the applications' dependencies, run:</p>
-<pre>$ npm install </pre>
-<p>or </p>
-<pre>$ npm update</pre> 
-
-<p>from the base directory of your Node.js application. </p>
-
+<pre class="terminal">
+$ npm install </pre>
+<p>or</p>
+<pre class="terminal">
+$ npm update</pre>
+<p>from the base directory of your Node.js application.</p>
 <p>If your application defines remote dependencies, then it will not run on Apigee.</p>
-
+The following modules are pre-installed on the API Platform and are available for use in your Node.js apps:
+<pre>
+argo 0.1.8 
+usergrid 0.10.5 
+async 0.2.9 
+express 3.2.6 
+request 2.21.0 
+underscore 1.4.4</pre>
+<p>To override the version, you must package the necessary version of the module in your Node.js app as described above. Modules are resolved by name beginning with the API proxy scope and then expanding to the environment, organization, and Apigee-side scopes.</p>
 <p>As part of deployment, you'll also have to identify the <code>main</code> script. The <code>main</code> script is the name of the script that you'd normally pass to the <code>node</code> command. This script must be in the base directory of your Node.js application.</p>
-
-<h3>Deploying an Application</h3>
-
-<p>The command:
-</p>
-<pre>$ apigeetool deploynodeapp</pre>
-
-<p>is used to deploy an existing Node.js application to the API Platform. </p>
-
+<h3>Deploying a Node.js application using apigeetool</h3>
+<p>The command:</p>
+<pre class="terminal">
+$ apigeetool deploynodeapp</pre>
+<p>is used to deploy an existing Node.js application to the API Platform.</p>
 <p>When you invoke this tool, it does the following:</p>
-<ul><li>Creates an Apigee API Proxy to surround the Node application that is set up to run the application as the "target" of all API calls.</li>
-<li>Packages up the Node application and all its NPM modules.</li>
-<li>Imports the  package to the API Platform using Apigee's RESTful API.</li>
-<li>Deploys the application, making it active on the API Platform and available over the network</li></ul>
-
-<p>The command takes the following options:</p>
-
-<pre>apigeetool deploynodeapp -n [name] -o [organization] -e [environment]
+<ul>
+	<li>Generates an API proxy configuration bundle to house the Node.js application</li>
+	<li>Packages the Node.js application any associated NPM modules</li>
+	<li>Imports the API proxy configuration bundle to the specified organization on API Platform using Apigee's RESTful API.</li>
+	<li>Deploys the API proxy to an environment, activating the Node.js application on the API Platform and making it available over the network</li>
+</ul>
+<p>The apigeetool takes the following options:</p>
+<pre>
+apigeetool deploynodeapp -n [name] -o [organization] -e [environment]
          -d [directory name] -m [main script file]
          -u [username] -p [password]
          -b [base path] -l [apigee API url] -z [zip file] -i -h</pre>
-
-<pre>-o Apigee organization name
--e Apigee environment name
--n Apigee proxy name
--d Apigee proxy directory
--m Main script name: Should be at the top level of the directory
--u Apigee user name
--p Apigee password
--b Base path (optional, defaults to /)
--l Apigee API URL (optional, defaults to https://api.enterprise.apigee.com)
--z ZIP file to save (optional for debugging)
--i import only, do not deploy (optional)
+<pre>
+-o The name of your organization on enterprise.apigee.com
+-e The name of the environment (typically 'test' or 'prod') where you want to deploy the Node.js application
+-n The name of the API proxy
+-d The path to the directory called <code>/apiproxy</code> that contains the API proxy configuration files and the Node.js application
+-m Main Node.js script name, which should be at the top level of the directory
+-u The username for your account on enterprise.apigee.com
+-p The password for your account on enterprise.apigee.com
+-b An optional deployment base path (defaults to <code>/</code>)
+-l The base URL of the Apigee platform API (optional, defaults to https://api.enterprise.apigee.com)
+-z The name of the ZIP file to save (optional for debugging)
+-i A flag to import only, without deploying to an environment
 -h Print this message</pre>
-
-<p>For example, imagine that you have a directory called <code>nodeapp</code> that contains a Node.js application with a main script named <code>server.js</code>. The following command will deploy this application to the "test" environment of the Apigee organization "testorg":
-</p>
-<pre>$ apigeetool deploynodeapp -n nodeapp -d nodeapp -m server.js
-  -o testorg -e test -u USERNAME -p PASSWORD</pre>
-
+<p>For example, imagine that you have a directory called <code>nodeapp</code> that contains a Node.js application with a main script named <code>server.js</code>. The following command will deploy this application to the "test" environment of the Apigee organization "testorg":</p>
+<pre class="terminal">
+$ apigeetool deploynodeapp -n nodeapp -d nodeapp -m server.js
+  -o {org_name} -e test -u {myname} -p {mypass}</pre>
 <p>After deployment, the application will be available at the top-level of your Apigee environment. For instance, if your organization is named "testorg" then you would invoke the application at the following URL:</p>
-
-<pre>http://testorg-test.apigee.net/</pre>
-
-<p>Finally, if you wish to deploy multiple applications to the same organization and separate them by URI path, use the "-b" argument to "apigeetool," like this:</p>
-
-<pre>$ apigeetool deploynodeapp -n nodeapp -d nodeapp -m server.js
-  -o testorg -e test -u USERNAME -p PASSWORD -b /nodeapp</pre>
-
-
+<pre>
+http://testorg-test.apigee.net/</pre>
+<p>Finally, if you need to deploy multiple applications to the same organization and separate them by URI path, use the "-b" argument to "apigeetool," as follows :</p>
+<pre class="terminal">
+$ apigeetool deploynodeapp -n nodeapp -d nodeapp -m server.js
+  -o {org_name} -e test -u {myname} -p {mypass} -b /nodeapp</pre>
 <h2>Add a Node.js application to an API Proxy</h2>
-
-<p>Every Node.js application runs on the API Platform as a component of an API proxy. This section describes how to add a Node.js application to an API Proxy.</p>
-
+<p>Every Node.js application runs on the API Platform as a component of a standard API proxy. This section describes how to add a Node.js application to an API Proxy.</p>
 <h3>Typical API Proxy</h3>
 <p>The minimal API proxy has the following directory structure:</p>
-
-<pre>APIProxy.xml
-proxies/default.xml
-targets/default.xml</pre>
-
+<pre>
+/apiproxy/{APIProxy}.xml
+/apiproxy/proxies/{proxy}.xml
+/apiproxy/targets/{target}.xml</pre>
 <p>For an overview, see [node:10].</p>
 <p>For a complete description of the API proxy structure, see [node:8407].</p>
 <p>For working sample API proxies, see [node:4561].</p>
-
 <h3>Node.js Components</h3>
-
 <p>A Node.js application is added to an API Proxy in two places, the TargetEndpoint</p>
-
-<p>First, the Node.js application is added as a "target" in the TargetEndpoint configuration. Instead of the target having an <code>HTTPTargetConnection</code> element that specifies the URL of a backend service, the Node.js application is referenced as a <code>ScriptTarget</code> element (effectively substituting the  Node.js application for a remote backend service URL).</p>
-
+<p>First, the Node.js application is added as a "target" in the TargetEndpoint configuration. Instead of the target having an <code>HTTPTargetConnection</code> element that specifies the URL of a backend service, the Node.js application is referenced as a <code>ScriptTarget</code> element. This substitutes the Node.js application for a remote backend service URL.</p>
 <p>For example, instead of:</p>
-	
-<pre>&lt;TargetEndpoint name=&quot;default&quot;&gt;
+<pre>
+&lt;TargetEndpoint name="default"&gt;
   &lt;HTTPTargetConnection&gt;
     &lt;URL&gt;http://weather.yahooapis.com&lt;/URL&gt;
   &lt;/HTTPTargetConnection&gt;
 &lt;/TargetEndpoint&gt;
 </pre>
 <p>Use:</p>
-
-<pre>&lt;TargetEndpoint name=&quot;default&quot;&gt;
+<pre>
+&lt;TargetEndpoint name="default"&gt;
   &lt;ScriptTarget&gt;
     &lt;ResourceURL&gt;node://hello.js&lt;/ResourceURL&gt;
   &lt;/ScriptTarget&gt;
 &lt;/TargetEndpoint&gt;</pre>
-
 <p>The only parameter is <code>ResourceURL</code>. <code>ResourceURL</code> must always be prefixed with <code>node://</code>, followed by the name of the script that will run when the API Proxy is deployed.</p>
-
-<p>The second component is the script itself. As long as the target script uses the <code>http</code> module to listen for incoming requests, it will be invoked whenever an API call is routed to the target. This script must be stored under the <code>/resources/node</code> directory in the API Proxy configuration package.</p>
-
-<p>Assuming that the Node.js application is implemented in a single file called <code>server.js</code>, then the API Proxy containing the Node.js script has the following structure:</p>
-
-<pre>APIProxy.xml
-proxies/default.xml
-targets/default.xml
-resources/node/server.js</pre>
-
+<p>The second component is the Node.jsscript itself. As long as the target script uses the <code>http</code> module to listen for incoming requests, it will be invoked whenever an API call is routed to the target. This script must be stored under the <code>/apiproxy/resources/node</code> directory in the API Proxy configuration package.</p>
+<p>Assuming that the Node.js application is implemented in a single file called <code>server.js</code>, and that the endpoint configurations are both named <code>default.xml</code>, then the API Proxy containing the Node.js script has the following structure:</p>
+<pre>
+/apiproxy/APIProxy.xml
+/apiproxy/proxies/default.xml
+/apiproxy/targets/default.xml
+/apiproxy/resources/node/server.js</pre>
 <h3>Advanced <code>ScriptTarget</code> Configuration</h3>
-
 <p>You can use the <code>ScriptTarget</code> element to pass command-line arguments and environment variables to a Node.js script::</p>
-
-<pre>&lt;TargetEndpoint name=&quot;default&quot;&gt;
+<pre>
+&lt;TargetEndpoint name="default"&gt;
   &lt;ScriptTarget&gt;
     &lt;ResourceURL&gt;node://hello.js&lt;/ResourceURL&gt;
     &lt;EnvironmentVariables&gt;
-      &lt;EnvironmentVariable name=&quot;NAME&quot;&gt;VALUE&lt;/EnvironmentVariable&gt; 
+      &lt;EnvironmentVariable name="NAME"&gt;VALUE&lt;/EnvironmentVariable&gt; 
     &lt;/EnvironmentVariables&gt;
     &lt;Arguments&gt;
       &lt;Argument&gt;ARG&lt;/Argument&gt;
     &lt;/Arguments&gt;
   &lt;/ScriptTarget&gt;
 &lt;/TargetEndpoint&gt;</pre>
-
 <h2>Node.js Reference</h2>
-
 <table class="table" style="width: 690px;" width="690">
-<thead><th>Module</th><th>Status</th><th>Notes</th></thead>
-
-<tbody>
-<tr><td><code>assert</code></td><td>Supported</td><td> </td></tr>
-<tr><td><code>buffer</code></td><td>Supported</td><td> </td></tr>
-<tr><td><code>child_process</code></td><td>Disabled</td><td>An exception will be thrown if an attempt is made to spawn a sub-process</td></tr>	 	
-<tr><td><code>cluster</code></td><td>Disabled</td><td> cluster.isMaster will return true, and other methods are not implemented</td></tr>	 
-<tr><td><code>crypto</code></td><td>Partial support</td><td>Random and HMAC functionality is supported. Remainder is unimplemented.</td></tr>	 
-<tr><td><code>dns</code></td><td>Partial support</td><td>dns.lookup is supported. All else is not implemented.</td></tr>	 
-<tr><td><code>domain</code></td><td>Supported</td><td>An exception will be thrown if an attempt is made to spawn a sub-process</td></tr>	 
-<tr><td><code>dgram</code></td><td>Supported</td><td>Attempts to listen for incoming datagrams will generate an exception.</td></tr>	 
-<tr><td><code>events</code></td><td>Supported</td><td> </td></tr>	 
-<tr><td><code>fs</code></td><td>Disabled</td><td>Filesystem access is restricted to the directory where the script was launched: the <code>/resources/node</code> directory.</td></tr>	 
-<tr><td><code>http</code></td><td>Supported</td><td>The virtual host and path for incoming requests is specified in the API Proxy, not by the HTTP module. See below for details.</td></tr>	 
-<tr><td><code>https</code></td><td>Supported</td><td>Creating an "https" server behaves identically to an "http" server -- see below for details. TLS parameters work differently than in regular Node. See below for details.</td></tr>	    
-<tr><td><code>module</code></td><td>Supported</td><td> </td></tr>
-<tr><td><code>net</code></td><td> Attempts to listen for incoming TCP connections will generate an exception.
- os	 Partial	 Not all methods will return the same values that they return in a typical Node.js environment.</td><td> </td></tr>
-<tr><td><code>path</code></td><td>Supported</td><td> </td></tr>
-<tr><td><code>module</code></td><td>Supported</td><td> </td></tr>
-<tr><td><code>process</code></td><td>Partial support</td><td>Functionality to manipulate user ID, group membership, and working directory is not supported.</td></tr>
-
-<tr><td><code>punycode</code></td><td>Supported</td><td> </td></tr>
-
-<tr><td><code>querystring</code></td><td>Supported</td><td> </td></tr>
-
-<tr><td><code>readline</code></td><td>Disabled</td><td>There is no standard input for script running on the API Platform.</td></tr>
-
-<tr><td><code>repl</code></td><td>Disabled</td><td>There is no standard input for script running on Apigee.</td></tr>
-
-<tr><td><code>module</code></td><td>Supported</td><td> </td></tr>
-
-<tr><td><code>STDIO</code></td><td>Supported</td><td>Standard output and error are routed to a log file within the API Platform infrastructure. See below for more information. There is no standard input for script running on the API Platform.</td></tr>
-
-<tr><td><code>stream</code></td><td>Supported</td><td> </td></tr>
-
-<tr><td><code>string_decoder</code></td><td>Supported</td><td> </td></tr>
-
-<tr><td><code>timers</code></td><td>Supported</td><td> </td></tr>
-
-<tr><td><code>tls</code></td><td>Supported</td><td>TLS parameters work differently than in regular Node. See below for details.</td></tr>
-
-<tr><td><code>tty</code></td><td>Disabled</td><td>There is no standard input for script running on Apigee.</td></tr>
-
-<tr><td><code>url</code></td><td>Supported</td><td> </td></tr>
-
-<tr><td><code>util</code></td><td>Supported</td><td> </td></tr>
-<tr><td><code>vm</code></td><td>Supported</td><td> </td></tr>
-
-<tr><td><code>zlib</code></td><td>Supported</td><td> </td></tr>
-
-</tbody>
+	<thead>
+		<tr>
+			<th>Module</th>
+			<th>Status</th>
+			<th>Notes</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td><code>assert</code></td>
+			<td>Supported</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td><code>buffer</code></td>
+			<td>Supported</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td><code>child_process</code></td>
+			<td>Disabled</td>
+			<td>An exception will be thrown if an attempt is made to spawn a sub-process. However, "fork" is supported for spawning sub-scripts.</td>
+		</tr>
+		<tr>
+			<td><code>cluster</code></td>
+			<td>Disabled</td>
+			<td>cluster.isMaster will return true, and other methods are not implemented</td>
+		</tr>
+		<tr>
+			<td><code>crypto</code></td>
+			<td>Partial support</td>
+			<td>Random and HMAC functionality is supported. Remainder is unimplemented.</td>
+		</tr>
+		<tr>
+			<td><code>dns</code></td>
+			<td>Partial support</td>
+			<td>dns.lookup is supported. All else is not implemented.</td>
+		</tr>
+		<tr>
+			<td><code>domain</code></td>
+			<td>Supported</td>
+			<td>An exception will be thrown if an attempt is made to spawn a sub-process</td>
+		</tr>
+		<tr>
+			<td><code>dgram</code></td>
+			<td>Supported</td>
+			<td>Attempts to listen for incoming datagrams will generate an exception.</td>
+		</tr>
+		<tr>
+			<td><code>events</code></td>
+			<td>Supported</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td><code>fs</code></td>
+			<td>Disabled</td>
+			<td>Filesystem access is restricted to the directory where the script was launched: the <code>/resources/node</code> directory.</td>
+		</tr>
+		<tr>
+			<td><code>http</code></td>
+			<td>Supported</td>
+			<td>The virtual host and path for incoming requests is specified in the API Proxy, not by the HTTP module. See below for details.</td>
+		</tr>
+		<tr>
+			<td><code>https</code></td>
+			<td>Supported</td>
+			<td>Creating an "https" server behaves identically to an "http" server. TLS parameters work differently than in regular Node. See below for details.</td>
+		</tr>
+		<tr>
+			<td><code>module</code></td>
+			<td>Supported</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td><code>net</code></td>
+			<td>Attempts to listen for incoming TCP connections will generate an exception. os Partial Not all methods will return the same values that they return in a typical Node.js environment.</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td><code>path</code></td>
+			<td>Supported</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td><code>module</code></td>
+			<td>Supported</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td><code>process</code></td>
+			<td>Partial support</td>
+			<td>Functionality to manipulate user ID, group membership, and working directory is not supported.</td>
+		</tr>
+		<tr>
+			<td><code>punycode</code></td>
+			<td>Supported</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td><code>querystring</code></td>
+			<td>Supported</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td><code>readline</code></td>
+			<td>Disabled</td>
+			<td>There is no standard input for scripts running on the API Platform.</td>
+		</tr>
+		<tr>
+			<td><code>repl</code></td>
+			<td>Disabled</td>
+			<td>There is no standard input for scripts running on the API Platform.</td>
+		</tr>
+		<tr>
+			<td><code>module</code></td>
+			<td>Supported</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td><code>STDIO</code></td>
+			<td>Supported</td>
+			<td>Standard output and error are routed to a log file within the API Platform infrastructure. See below for more information. There is no standard input for script running on the API Platform.</td>
+		</tr>
+		<tr>
+			<td><code>stream</code></td>
+			<td>Supported</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td><code>string_decoder</code></td>
+			<td>Supported</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td><code>timers</code></td>
+			<td>Supported</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td><code>tls</code></td>
+			<td>Supported</td>
+			<td>TLS parameters work differently than in regular Node. See below for details.</td>
+		</tr>
+		<tr>
+			<td><code>tty</code></td>
+			<td>Disabled</td>
+			<td>There is no standard input for scripts running on Apigee.</td>
+		</tr>
+		<tr>
+			<td><code>url</code></td>
+			<td>Supported</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td><code>util</code></td>
+			<td>Supported</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td><code>vm</code></td>
+			<td>Supported</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td><code>zlib</code></td>
+			<td>Supported</td>
+			<td>&nbsp;</td>
+		</tr>
+	</tbody>
 </table>
-
-<h2>Scripts, Instances, and Environment</h2>
-
+<h3>Scripts, Instances, and Environment</h3>
 <p>Like all Node.js applications, Node.js applications running in Apigee run in a single thread of control. There is no need (and in fact no ability) to start another thread, or synchronize variables between threads. Since Node.js enforces non-blocking programming, a single script can support thousands of concurrent requests because the script gives up the CPU whenever it has to wait for something, and it is notified later when it happens.</p>
-
 <p>Within Apigee Enterprise, each Node.js application script is started from the beginning when the proxy is deployed, and stopped when the proxy is undeployed. In between, assuming that it used the "http" or "https" module to listen for requests, it will wait for new requests and process them.</p>
-
 <p>Apigee does not support the "cluster" module, which allows Node.js applications to control when additional copies of an application are started and stopped, and to communicate with them. In the parlance of the "cluster" module, all Node.js applications are considered to be the "master."</p>
-
-<p>However, Apigee does deploy multiple instances of each application -- two in most cases, although the system may be configured to run more if necessary.
-</p>
+<p>However, Apigee does deploy multiple instances of each application -- two in most cases, although the system may be configured to run more if necessary.</p>
 <p>That means that Node.js applications running inside Apigee, like all Node.js applications, must assume that they will be processing many different requests "in parallel" using a single thread of control. However, the application must not assume that it is the one and only one copy running in the world, and it must not assume that there is some way to communicate with the other copies.</p>
-
-<h2>HTTP and HTTPS</h2>
+<h3>HTTP and HTTPS</h3>
 <p>All Node.js applications running in Apigee must use the "http" or "https" module to listen for incoming requests. (Of course, you can deploy a script that doesn't, but it'll just exit and that will be that.)</p>
-
 <p>The "listen" method of the HTTP/S modules in Node takes a "port" as a parameter. This argument is required in Node, but Apigee ignores this parameter. Instead, the API proxy that the Node.js script runs inside specifies which "virtual hosts" it listens on, and the Node.js application uses those same virtual hosts, just like any other Apigee proxy.</p>
-
-<p>The <code>apigeetool deploynodeapp</code> command generates an Apigee proxy wrapper around the Node.js application. When deployed, the Node.js application listens on the <p>default</p> virtual host defined for the environment. So, in the Apigee cloud API Platfoem, the URL for a Node.js application will be <code>http://ORGNAME-ENVNAME.apigee.net</code>. </p>
+<p>The <code>apigeetool deploynodeapp</code> command generates an Apigee proxy wrapper around the Node.js application. When deployed, the Node.js application listens on the</p>
+<p>default</p>
+virtual host defined for the environment. So the URL for a Node.js application will be <code>http://{org_name}-{env_name}.apigee.net</code>.
 
 <p>Like other Apigee applications, if the proxy application is set up to listen on the <code>secure</code> virtual host, then it will accept incoming requests using HTTPS. Currently, more advanced setup, including custom CNAME support and custom TLS certificates, requires assistance from Apigee.</p>
-
 <p>In addition to receiving incoming traffic, Node.js applications inside Apigee may use the HTTP and HTTPS modules to make outbound requests like any other Node.js application. These modules work just as they always do inside Node.js.</p>
-
 <p>However, if you use custom SSL certificates or trust stores, the Apigee support works differently.</p>
-
-<h2>TLS / SSL</h2>
-
-<p>For incoming requests, Apigee presents the following options when using our cloud:</p>
-<ul><li>If the proxy is set up to listen on the "default" virtual host then it will accept requests over HTTP.</li>
-<li>If the proxy is set up to listen on the "secure" virtual host then it will accept requests over HTTPS. The URL to be used will be inside the "apigee.net" domain, and a "wildcard" SSL certificate for "*.apigee.net" will be used. </li></ul>
-
-<p>So, as long as clients make requests to the "apigee.net" URL then the SSL certificate will validate normally.
-</p>
-
-<p>To use custom SSL certificates for inbound traffic, contact aupport@apigee.com.</p>
-
+<h3>TLS/SSL</h3>
+<p>For incoming requests, the following options are provided:</p>
+<ul>
+	<li>If the API proxy is configured to listen on the "default" VirtualHost, then requests are accepted over HTTP.</li>
+	<li>If the API proxy is configured to listen on the "secure" VirtualHost, then it will accept requests over HTTPS. The URL will be under the "apigee.net" domain, and a "wildcard" SSL certificate for <code>*.apigee.net</code> will be used.</li>
+</ul>
+<p>As long as apps make requests to the <code>apigee.net</code> domain, then the SSL certificate will validate normally.</p>
+<div class="tipstricks">
+	<p>To use custom SSL certificates for inbound traffic, contact <b>support@apigee.com.</b></p>
+</div>
 <p>For outgoing requests, Node.js support in Apigee works a little bit differently than it does in regular Node.js:</p>
-
 <p>(Outgoing requests over TLS work the same way whether they are HTTPS requests initiated using the <code>https</code> module or raw TCP sockets opened using the <code>tls</code> module.)</p>
-
 <p>By default, outgoing connections are validated against a predefined set of trusted root CA certificates. (This is the same default behavior as Node 0.10.)</p>
-
 <p>If <code>rejectUnauthorized</code> is set to <code>false</code> on the options object passed while creating a connection, then Apigee will not validate the outgoing connection, and will instead connect to any endpoint that supports TLS. (Again, this is the same as Node 0.10.)</p>
-
 <p>To customize the list of trusted certificates that the client uses for TLS connections, a Java key store (<code>.jks</code>) file must be created that contains the appropriate certificates, and passed using the <code>truststore</code> argument. This replaces the <code>ca</code> argument used in "regular" Node.js.</p>
-
-To make a TLS or HTTPS connection using a client SSL certificate, a Java key store (<code>.jks</code>) file must be created that contains the certificate and secret key that the client should use. It must be passed using the <code>keystore</code> argument, and the passphrase must be passed in the <code>passphrase</code> argument. This replaces the <code>key</code>, <code>cert</code>, and <code>passphrase</code> options in "regular" Node.js.
- 	 	 	 
-
+<p>To make a TLS or HTTPS connection using a client SSL certificate, a Java key store (<code>.jks</code>) file must be created that contains the certificate and secret key that the client should use. It must be passed using the <code>keystore</code> argument, and the passphrase must be passed in the <code>passphrase</code> argument. This replaces the <code>key</code>, <code>cert</code>, and <code>passphrase</code> options in "regular" Node.js.</p>
+<h2>Get help</h2>
+<p>Post questions and issues to the <b><a href="support.apigee.com/apigee">Apigee Developer Form</a></b>.</p>

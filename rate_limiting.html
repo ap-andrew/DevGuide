@@ -1,0 +1,33 @@
+[toc]
+
+<p>To maintain performance and availability across a diverse base of client apps, it's critical to maintain app traffic within the limits of the capacity of your APIs and backend services. It's also important to ensure that apps don't consume more resources than permitted.</p>
+
+<p>The API platform provides three mechanisms that enable you to optimize traffic management to minimize latency for apps while maintaing the health of backend services. Each policy type addresses a distinct aspect of traffic management. In some cases, you might use all three policy types in a single API proxy.</p>
+
+<h2>SpikeArrest</h2>
+	
+<p>This policy smooths traffic spikes by dividing a limit that you define into intervals of 10 milliseconds. For example of you define a limit of 100 messages per second, the SpikeArrest policy enforces a limit of around 10 per millisecond. The SpikeArrest limit should be close to capacity calculated for either you backend service or the API proxy itself. and should be configured for shorter time intervals seconds or minutes. This policy should be used to prevent sudden traffic bursts caused by malicious attackers attempting to disrupt a service using a denial-of-service (DOS) attack or by buggy client applications.</p>
+
+<p>See [node:53].</p>
+
+<h2>Quota</h2>
+
+<p>This policy enforces consumption limits client apps by maintaining a distributed 'counter' that tallies incoming requests. The counter can tally API calls for any identifiable entity, including apps, developers, API keys, access tokens, and so on. This policy is computationally expensive so, for high-traffic APIs, it should configured for longer time intervals--day or month. This policy should be used to enforce business contracts or SLAs with developers and partners, rather than for operational traffic management.</p>
+
+<p>See [node:56].</p>
+
+<h2>ConcurrentRateLimiting</h2>
+
+<p>This policy enables traffic management between the API Platform and your backend services. Some backend services, such as legacy applications, may have strict limits on the number of simultaneous connections they can support. Policy limits and time duration should be configured to match the capacity available for your backend service.</p>
+
+<p>See [node:11646].</p>
+
+<h2>Get help</h2>
+
+Post questions to the <a href="http://support.apigee.com/apigee">Apigee Developer Forum</a>.
+
+<h2>Next Steps</h2>
+
+<p>[node:9868]</p>
+
+

@@ -1,0 +1,56 @@
+HTTP 
+
+<p>To overcome the limitations of the traditional "Web page" model, many developers are turning to various push-related technologies.</p>
+	
+<p>Such technologies include  implement richly interactive, browser-based apps</p>
+
+<p>In the default configuration, HTTP processing on the API Platform is asynchronous and non-blocking. </p>
+
+
+<p>While processing HTTP messages, the Apigee gateway does not need to:</p>
+
+<ol><li>Allocate a single thread per request message</li>
+<li>Block threads while waiting for I/O</li></ol>
+
+<p>The implication of this architecture is that the API Platform can handle thousands of concurrent requests. The benefit to developers is the ability to leverage HTTP streaming capabilities to enable a variety of push-related technologies, including long-polling and Comet</p>
+
+That is, it works like this:
+
+<ol><li>App generates an HTTP request message and sends the request to the network address of an API proxy running on the Apigee gateway</li>
+<li>Request arrives at Apigee gateway</li>
+<li>Read all HTTP headers (waiting without blocking until the data arrives)</li>
+<li>Read message body (without blocking the thread)</li>
+<li>Classify the request for routing to the proper API proxy revision and associated Flows</li>
+<li>Evaluate any conditions to determine which Policy Flow, if any, to execute</li>
+<li>Execute ProxyEndpoint request PreFlow, any conditional Flow, and PostFlow</li>
+<li>Route to TargetEndpoint, per RouteRule</li>
+<li>Execute TargetEndpoint request PreFlow, any conditional Flow, and PostFlow</li>
+<li>Send HTTP request message to URL of HTTP service URL specified in the TargetEndpoint or TargetSever</li>
+<li>Await HTTP response with blocking thread</li>
+<li>Response arrives from backend service</li>
+<li>Read all HTTP headers (waiting without blocking until the data arrives)</li>
+<li>Read message body (without blocking the thread)</li>
+<li>Execute TargetEndpoint response PreFlow, any conditional Flow, and PostFlow</li>
+<li>Execute ProxyEndpoint response PreFlow, any conditional Flow, and PostFlow</li>
+<li>Apigee gateway returns HTTP response to requesting app</li></ol>
+
+
+<h2>AJAX</h2>
+
+<a href="https://en.wikipedia.org/wiki/Ajax_(programming)">Asynchronous JavaScript and XML</a> 
+
+<h2>Long-polling</h2>
+
+Long-polling is . 
+
+Where long-polling is implemented, step 11, above, may take a long time. Since all HTTP processing is non-blocking and asynchronous, the Apigee gateway can maintain thousands of long-polled requests at the same time.
+
+<h2>Comet</h2>
+
+<a href="http://en.wikipedia.org/wiki/Comet_(programming)">Comet</a> is 
+
+In "comet" the server uses HTTP's chunked encoding and sends the response back over a long time in lots of little chunks. By default (as seen above) this won't work because in step 9 we wait for the whole response body to come in before executing any policies.
+
+So, when you put the Gateway in streaming mode (I sent the link to the docs before, but it goes on the endpoint properties), we skip steps 3 and 9. As a result, any policy that needs access to the message body will fail. However, it means that after the Gateway processes all the policies on the response, it'll keep forwarding each chunk of the response body back to the client until the client or the server closes the connection.
+
+These are good questions and thanks for digging in. But, long term, how do we get this sort of information disseminated around CS so that we don't have to do it next time?

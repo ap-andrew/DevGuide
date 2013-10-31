@@ -1,0 +1,116 @@
+<p>[toc]</p>
+
+<h2>Overview</h2>
+
+<p>The API Platform exposes a Cache resource that can be used at runtime to persist data across transactions.</p>
+
+<p>There are three main reasons for using a cache:</p>
+<ul>
+	<li><strong>To reduce latency:</strong> The request is satisfied from the cache (which is closer to the client) instead of the origin server, so the cache gets the representation and displays it in a shorter time. This makes the server more responsive.</li>
+	<li><strong>To reduce network traffic:</strong> Representations are reused, so the impact of processing duplicate or redundant requests is reduced. Cache reduces the amount of bandwidth you use, which decreases bandwidth requirements overall.</li>
+	<li><strong>To persist data across transactions:</strong> Session data can be stored for reuse across HTTP transactions.</li>
+</ul>
+
+<h2><a class="jumplink" name="define_resource"></a>Defining a cache resource</h2>
+<p>You can create multiple Cache resources in each environment. For data segregation, the scope of a Cache is limited to an environment in which the cache is created. (For example, API proxies running in a 'test' environment cannot access data in a cache running in 'prod'.) Once the cache is created, it can be populated with any serializable data by using cache policies. For usage, see [node:259]</p>
+
+<div class="tipstricks"><p>A default cache resource is configured for every organization. Under ordinary circumstances, you do not need to explicitly configure a cache. Only configure a cache when you need to customize the Cache settings and configuration optimize performance. If you have questions about your cache resource configuration, contact <a href="mailto:support@apigee.com">Apigee Support</a>.</p></div>
+
+<p>See also: [node:26].</p>
+
+<h2>Creating and editing caches</h2>
+
+<h3>Navigate to environment configuration</h3>
+
+<p>From the main menu, select Configure Environments from the APIs drop-down:</p>
+
+<p>[[{"type":"media","view_mode":"media_large","fid":"1502","attributes":{"alt":"","class":"media-image","height":"128","typeof":"foaf:Image","width":"480"}}]]</p>
+
+<h3>Select environment</h3>
+
+<p>A drop-down menu displays a list of all available environments in your organization. Select the environment whose caches you need to view or edit.</p>
+
+<p>[[{"type":"media","view_mode":"media_large","fid":"1501","attributes":{"alt":"","class":"media-image","height":"191","typeof":"foaf:Image","width":"417"}}]]</p>
+
+<h2>Create a cache</h2>
+
+<p>Select the <strong>Add a Cache</strong> button:</p>
+
+<p>[[{"type":"media","view_mode":"media_large","fid":"1508","attributes":{"alt":"","class":"media-image","height":"330","typeof":"foaf:Image","width":"480"}}]]</p>
+
+<h3>Enter configuration settings for cache</h3>
+
+<p>A form displays that enables you to configure a cache. The form is shown below. Configuration settings are described in the table below the image.</p>
+
+<p>[[{"type":"media","view_mode":"media_large","fid":"1507","attributes":{"alt":"","class":"media-image","height":"420","typeof":"foaf:Image","width":"366"}}]]</p>
+<h3>Modifying a cache configuration</h3>
+
+<p>A cache configuration has the following properties:</p>
+<table class="table" style="width: 690px;" width="690">
+	<thead>
+		<tr>
+			<th>Property Name</th>
+			<th>Default Value</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td><code>Name</code></td>
+			<td>mycache</td>
+			<td>The name of the cache. Must be unique in the environment. Reference this cache from policies that interact with the cache resource.</td>
+		</tr>
+		<tr>
+			<td><code>Description</code></td>
+			<td>N/A</td>
+			<td>An optional description of the cache resource.</td>
+		</tr>
+		<tr>
+			<td><code>Expiration Type</code></td>
+			<td>Timeout in Seconds</td>
+			<td>Enables different expiration mechanisms to be applied to entries in the cache. Cache entries can be expired a certain number of seconds after creation, at a specific time of day each day, or on a specific date.</td>
+		</tr>
+		<tr>
+			<td><code>Timeout in seconds | Time of Day | Date</code></td>
+			<td>300</td>
+			<td>The configuration setting (either integer or dateTime) for the previous selection, "Expiration Type".</td>
+		</tr>
+		<tr>
+			<td><code>Maximum Elements in Memory</code></td>
+			<td>100</td>
+			<td>Maximum number of entries, cache keeps in memory. Upon reaching the max limit the entries are evicted using LRU algorithm.</td>
+		</tr>
+		<tr>
+
+		<tr>
+			<td><code>In Memory Size in KB</code></td>
+			<td>0</td>
+			<td>All entries larger than the configured setting size, in kilobytes, will be compressed before being cached.</td>
+		</tr>
+		
+		<tr>
+			<td><code>Compression</code></td>
+			<td>false</td>
+			<td>An option that can be enabled or disabled. When enabled, an option is exposed that enables you to configure the size threshold above which cache entries will be compressed.</td>
+		</tr>
+		<tr>
+			<td><code>Minimum Size in KB</code></td>
+			<td>1024</td>
+			<td>All entries larger than the configured setting size, in kilobytes, will be compressed before being cached.</td>
+		</tr>
+		<tr>
+			<td><code>Skip Cache if Large</code></td>
+			<td>false</td>
+			<td>An option that can be enabled or disabled. When enabled, an option is exposed that enables you to configure the maximum size of data to be cached.</td>
+		</tr>
+		<tr>
+			<td><code>Skip if Element Size in KB Exceeds</code></td>
+			<td>512 kilobytes</td>
+			<td>The size limit, in kilobytes, for cache entries. Data larger than the limit you set will not be cached.</td>
+		</tr>
+	</tbody>
+</table>
+
+
+
+
